@@ -1,0 +1,48 @@
+{
+  "app-id": "org.gnome.PyGObjectDocs.Devel",
+  "runtime": "org.gnome.Platform",
+  "runtime-version": "43",
+  "tags": [
+    "devel",
+    "development",
+    "nightly"
+  ],
+  "sdk": "org.gnome.Sdk",
+  "command": "echo",
+  "build-options": {
+    "build-args": [
+      "--share=network"
+    ]
+  },
+  "finish-args": [
+    "--filesystem=home"
+  ],
+  "modules": [
+    {
+      "name": "install",
+      "buildsystem": "simple",
+      "build-commands": [
+        "pip3 install --prefix=${FLATPAK_DEST} -r requirements.txt",
+      ],
+      "sources": [
+        {
+          "type": "file",
+          "path": "requirements.txt"
+        }
+       ]
+    },
+    {
+      "name": "build",
+      "buildsystem": "simple",
+      "build-commands": [
+        "gi-docgen"
+      ],
+      "sources": [
+        {
+          "type": "dir",
+          "path": "."
+        }
+      ]
+    }
+  ]
+}

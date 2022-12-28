@@ -1,0 +1,44 @@
+[project]
+name = "pygobject-docs"
+description = "Generate API documentation for PyGObject"
+authors = [
+    { name = "Arjan Molenaar", email = "gaphor@gmail.com" },
+]
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "GNU General Public License v3 (GPLv3)" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+]
+
+dependencies = [
+    "PyGObject",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "coverage",
+]
+
+[tool.setuptools.package-data]
+"pygobject_docs.templates" = ["*.html"]
+
+[tool.black]
+line-length = 110
+
+[tool.isort]
+profile = "black"
+line_length = 110
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
