@@ -10,6 +10,13 @@ def glib():
     return g
 
 
+@pytest.fixture
+def gobject():
+    g = _gir.load_gir_file("GObject", "2.0")
+    assert g
+    return g
+
+
 def test_gir_dirs():
     dirs = _gir.gir_dirs()
 
@@ -24,3 +31,17 @@ def test_load_gir_file(glib):
 
 def test_gir_namespace(glib):
     assert glib.namespace == ("GLib", "2.0")
+
+
+def test_gir_function_doc(glib):
+    doc = glib.doc("filename_from_utf8")
+
+    assert doc
+    assert doc.startswith("Converts ")
+
+
+def test_gir_class_doc(gobject):
+    doc = gobject.doc("Binding")
+
+    assert doc
+    assert doc.startswith("#GBinding ")

@@ -31,5 +31,6 @@ class Gir:
         namespace = self.etree.find("./namespace", namespaces=NS)
         return namespace.attrib["name"], namespace.attrib["version"]
 
-    def doc(self, name):
-        ...
+    def doc(self, name) -> str | None:
+        node = self.etree.find(f"./namespace/*[@name='{name}']", namespaces=NS)
+        return node.findtext("./doc", namespaces=NS) if node else None
