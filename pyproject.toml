@@ -38,6 +38,26 @@ addopts = [
     "--import-mode=importlib",
 ]
 
+[tool.ruff]
+exclude = [
+    ".venv",
+    "dist",
+    "__init__.py",
+]
+ignore = ["E501", "B905", "B019"]
+line-length = 88
+select = [
+    "B",
+    "B9",
+    "C",
+    "E",
+    "F",
+    "W",
+]
+
+[tool.ruff.mccabe]
+max-complexity = 18
+
 [build-system]
 requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
