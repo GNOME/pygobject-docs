@@ -26,6 +26,10 @@ exclude_patterns: list[str] = []
 html_theme = "furo"
 html_static_path = ["_static"]
 
-# -- Options for intersphinx extension ---------------------------------------
+# -- Autodoc
+
+add_module_names = False
+
+# -- Intersphinx
 
 intersphinx_mapping = {"https://docs.python.org/": None}

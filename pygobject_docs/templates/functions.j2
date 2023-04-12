@@ -7,6 +7,11 @@ Functions
 
 .. autofunction:: {{ function }}
 
-{{ gir.doc(function) | indent(3, True) }}
+{% for name, doc in parameter_docs(function) %}
+   :param {{ name }}: {{ doc | indent(6) }}
+{% endfor %}
+   :return: {{ return_doc(function) | indent(6) }}
+
+{{ docstring(function) | indent(3, True) }}
 
 {% endfor %}

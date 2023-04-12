@@ -7,11 +7,15 @@ Welcome to PyGObject API Reference's documentation!
 ===================================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    GLib-2.0/functions
+
+   GObject-2.0/functions
    
+   Gtk-4.0/functions
+
 
 Indices and tables
 ==================

@@ -26,11 +26,28 @@ class Gir:
         self.gir_file = gir_file
         self.etree = ElementTree.parse(gir_file)
 
+    def node(self, name):
+        return self.etree.find(f"./namespace/*[@name='{name}']", namespaces=NS)
+
     @property
     def namespace(self):
         namespace = self.etree.find("./namespace", namespaces=NS)
         return namespace.attrib["name"], namespace.attrib["version"]
 
     def doc(self, name) -> str:
-        node = self.etree.find(f"./namespace/*[@name='{name}']", namespaces=NS)
+        node = self.node(name)
         return node and node.findtext("./doc", namespaces=NS) or ""
+
+    def parameter_docs(self, name) -> Iterable[tuple[str, str]]:
+        if not (node := self.node(name)):
+            return
+
+        for param in node.findall("./parameters/parameter", namespaces=NS):
+            if param.attrib.get("direction") == "out":
+                continue
+            yield (param.attrib["name"], param.findtext("./doc", namespaces=NS) or "")
+
+    def return_doc(self, name) -> str:
+        if not (node := self.node(name)):
+            return ""
+        return node.findtext("./return-value/doc", namespaces=NS) or ""

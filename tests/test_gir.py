@@ -45,3 +45,16 @@ def test_gir_class_doc(gobject):
 
     assert doc
     assert doc.startswith("#GBinding ")
+
+
+def test_gir_function_parameter_docs(gobject):
+    name, doc = next(gobject.parameter_docs("boxed_copy"))
+
+    assert name == "boxed_type"
+    assert doc
+
+
+def test_gir_function_return_doc(gobject):
+    doc = gobject.return_doc("boxed_copy")
+
+    assert doc

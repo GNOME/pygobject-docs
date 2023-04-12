@@ -74,6 +74,15 @@ def import_module(namespace, version):
 def generate(namespace, version):
     mod = import_module(namespace, version)
 
+    gir = load_gir_file(namespace, version)
+
+    def docstring(name):
+        if doc := gir.doc(name):
+            return doc
+
+        field = getattr(mod, name)
+        return getattr(field, "__doc__", None) or ""
+
     env = Environment(loader=PackageLoader("pygobject_docs"))
     template = env.get_template("functions.j2")
 
@@ -86,7 +95,9 @@ def generate(namespace, version):
             version=version,
             module=mod,
             functions=[f for f in dir(mod) if determine_category(mod, f) == Category.Functions],
-            gir=load_gir_file(namespace, version),
+            docstring=docstring,
+            parameter_docs=gir.parameter_docs,
+            return_doc=gir.return_doc,
         )
     )
 
