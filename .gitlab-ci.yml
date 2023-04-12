@@ -7,6 +7,9 @@ before_script:
 test:
   stage: test
   script:
-  - pip install -e '.[dev]'
+  - pip --cache-dir /tmp/pipcache install -e '.[dev]'
   - pytest -m "not desktop"
-
+  cache:
+    key: "$CI_COMMIT_REF_SLUG"
+    paths:
+      - /tmp/pipcache
