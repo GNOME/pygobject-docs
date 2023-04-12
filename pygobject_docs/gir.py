@@ -7,9 +7,9 @@ from xml.etree import ElementTree
 from gi.repository import GLib
 
 
-def load_gir_file(name, version) -> Gir | None:
+def load_gir_file(namespace, version) -> Gir | None:
     for gir_dir in gir_dirs():
-        if (gir_file := gir_dir / f"{name}-{version}.gir").exists():
+        if (gir_file := gir_dir / f"{namespace}-{version}.gir").exists():
             return Gir(gir_file)
     return None
 
@@ -31,6 +31,6 @@ class Gir:
         namespace = self.etree.find("./namespace", namespaces=NS)
         return namespace.attrib["name"], namespace.attrib["version"]
 
-    def doc(self, name) -> str | None:
+    def doc(self, name) -> str:
         node = self.etree.find(f"./namespace/*[@name='{name}']", namespaces=NS)
-        return node.findtext("./doc", namespaces=NS) if node else None
+        return node and node.findtext("./doc", namespaces=NS) or ""

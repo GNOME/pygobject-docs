@@ -7,13 +7,14 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "PyGObject API Reference"
-copyright = "2023, Arjan Molenaar"
-author = "Arjan Molenaar"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions: list[str] = []
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
+]
 
 templates_path: list[str] = ["_templates"]
 exclude_patterns: list[str] = []
@@ -22,5 +23,9 @@ exclude_patterns: list[str] = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "alabaster"
+html_theme = "furo"
 html_static_path = ["_static"]
+
+# -- Options for intersphinx extension ---------------------------------------
+
+intersphinx_mapping = {"https://docs.python.org/": None}

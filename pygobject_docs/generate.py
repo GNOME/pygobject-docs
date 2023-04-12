@@ -9,10 +9,14 @@ import importlib
 import sys
 import types
 from enum import StrEnum, auto
+from pathlib import Path
 
 import gi
 from gi.module import repository
 from gi._gi import FunctionInfo, StructInfo, UnionInfo, ObjectInfo, InterfaceInfo, EnumInfo
+from jinja2 import Environment, PackageLoader
+
+from pygobject_docs.gir import load_gir_file
 
 
 class Category(StrEnum):
@@ -24,22 +28,6 @@ class Category(StrEnum):
     Flags = auto()
     Constants = auto()
     Ignored = auto()
-
-
-def categorize(namespace, version):
-    """Group elements in a namespace by type.
-
-    For all importable elements in the namespace,
-    group them by type:
-
-    * Functions
-    * Interfaces
-    * Classes
-    * Structures
-    * Unions
-    * Flags
-    * Constants
-    """
 
 
 def determine_category(module, name) -> Category:
@@ -84,12 +72,23 @@ def import_module(namespace, version):
 
 
 def generate(namespace, version):
-    gi.require_version(namespace, version)
+    mod = import_module(namespace, version)
 
-    mod = importlib.import_module(f"gi.repository.{namespace}")
+    env = Environment(loader=PackageLoader("pygobject_docs"))
+    template = env.get_template("functions.j2")
 
-    for name in dir(mod):
-        yield name
+    out_path = Path("source") / f"{namespace}-{version}"
+    out_path.mkdir(exist_ok=True, parents=True)
+
+    (out_path / "functions.rst").write_text(
+        template.render(
+            namespace=namespace,
+            version=version,
+            module=mod,
+            functions=[f for f in dir(mod) if determine_category(mod, f) == Category.Functions],
+            gir=load_gir_file(namespace, version),
+        )
+    )
 
 
 if __name__ == "__main__":

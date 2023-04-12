@@ -10,7 +10,8 @@ Welcome to PyGObject API Reference's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+   GLib-2.0/functions
+   
 
 Indices and tables
 ==================

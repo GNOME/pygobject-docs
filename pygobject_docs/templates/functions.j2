@@ -1,0 +1,12 @@
+Functions
+=========
+
+.. py:currentmodule:: gi.repository.{{ namespace }}
+
+{% for function in functions %}
+
+.. autofunction:: {{ function }}
+
+{{ gir.doc(function) | indent(3, True) }}
+
+{% endfor %}
