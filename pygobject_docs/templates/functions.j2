@@ -8,15 +8,15 @@ Functions
 .. autofunction:: {{ function }}
 
 {% for name, doc in parameter_docs(function) %}
-   :param {{ name }}: {{ doc | indent(6) }}
+   :param {{ name }}: {{ doc | rstify | indent(6) }}
 {% endfor %}
-   :return: {{ return_doc(function) | indent(6) }}
+   :return: {{ return_doc(function) | rstify | indent(6) }}
 
-{{ docstring(function) | indent(3, True) }}
+{{ docstring(function) | rstify | indent(3, True) }}
 
 {% set depr, version, doc = deprecated(function) %}
 {% if depr %}
-   .. deprecated:: {{ version }} {{ doc | indent(6) }}
+   .. deprecated:: {{ version }} {{ doc | rstify | indent(6) }}
 {% endif %}
 
 {% set version = since(function) %}

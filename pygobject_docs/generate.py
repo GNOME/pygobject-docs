@@ -71,6 +71,10 @@ def import_module(namespace, version):
     return importlib.import_module(f"gi.repository.{namespace}")
 
 
+def rstify(text):
+    return text.replace("`", "")
+
+
 def generate(namespace, version):
     mod = import_module(namespace, version)
 
@@ -84,6 +88,8 @@ def generate(namespace, version):
         return getattr(field, "__doc__", None) or ""
 
     env = Environment(loader=PackageLoader("pygobject_docs"))
+    env.filters["rstify"] = rstify
+
     template = env.get_template("functions.j2")
 
     out_path = Path("source") / f"{namespace}-{version}"
