@@ -24,6 +24,9 @@ dev = [
     "coverage",
 ]
 
+[tool.setuptools]
+packages = ["pygobject_docs"]
+
 [tool.setuptools.package-data]
 "pygobject_docs.templates" = ["*.html"]
 

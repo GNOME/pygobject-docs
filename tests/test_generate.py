@@ -103,6 +103,7 @@ def test_all_gobject_fields_are_categorized(gobject):
         determine_category(gobject, name)
 
 
+@pytest.mark.desktop
 @pytest.mark.parametrize(
     "namespace,version",
     [

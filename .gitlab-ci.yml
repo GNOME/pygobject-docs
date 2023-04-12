@@ -1,0 +1,12 @@
+image: python:3.11
+
+before_script:
+  - apt-get update -y
+  - apt-get install -y libgirepository1.0-dev
+
+test:
+  stage: test
+  script:
+  - pip install -e '.[dev]'
+  - pytest -m "not desktop"
+
