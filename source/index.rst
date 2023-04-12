@@ -11,11 +11,10 @@ Welcome to PyGObject API Reference's documentation!
    :caption: Contents:
 
    GLib-2.0/functions
+   GLib-2.0/classes
 
    GObject-2.0/functions
-   
-   Gtk-4.0/functions
-
+   GObject-2.0/classes
 
 Indices and tables
 ==================

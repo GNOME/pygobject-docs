@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from functools import lru_cache
 from pathlib import Path
 from xml.etree import ElementTree
 
 from gi.repository import GLib
 
 
+@lru_cache(maxsize=0)
 def load_gir_file(namespace, version) -> Gir | None:
     for gir_dir in gir_dirs():
         if (gir_file := gir_dir / f"{namespace}-{version}.gir").exists():

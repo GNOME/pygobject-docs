@@ -1,6 +1,12 @@
 import pytest
 
-from pygobject_docs.generate import import_module, generate, determine_category, Category
+from pygobject_docs.generate import (
+    determine_category,
+    Category,
+    import_module,
+    generate_classes,
+    generate_functions,
+)
 
 
 @pytest.fixture
@@ -11,13 +17,6 @@ def glib():
 @pytest.fixture
 def gobject():
     return import_module("GObject", "2.0")
-
-
-@pytest.mark.skip
-def test_import():
-    names = list(generate("GObject", "2.0"))
-
-    assert "Object" in names
 
 
 def test_determine_function(glib):
@@ -117,3 +116,16 @@ def test_all_gtk_fields_are_categorized(namespace, version):
 
     for name in dir(mod):
         determine_category(mod, name)
+
+
+def test_generate_functions(tmp_path):
+    generate_functions("GLib", "2.0", tmp_path)
+
+    assert (tmp_path / "functions.rst").exists()
+    assert ".. deprecated" in (tmp_path / "functions.rst").read_text()
+
+
+def test_generate_classes(tmp_path):
+    generate_classes("GLib", "2.0", tmp_path)
+
+    assert (tmp_path / "class-GError.rst").exists()

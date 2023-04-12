@@ -8,7 +8,9 @@ Usage:
 import importlib
 import sys
 import types
+
 from enum import StrEnum, auto
+from functools import lru_cache
 from pathlib import Path
 
 import gi
@@ -65,6 +67,7 @@ def determine_category(module, name) -> Category:
     raise TypeError(f"Type not recognized for {module.__name__}.{name}")
 
 
+@lru_cache(maxsize=0)
 def import_module(namespace, version):
     gi.require_version(namespace, version)
 
@@ -75,39 +78,81 @@ def rstify(text):
     return text.replace("`", "")
 
 
-def generate(namespace, version):
-    mod = import_module(namespace, version)
-
-    gir = load_gir_file(namespace, version)
-
-    def docstring(name):
-        if doc := gir.doc(name):
-            return doc
-
-        field = getattr(mod, name)
-        return getattr(field, "__doc__", None) or ""
-
+@lru_cache(maxsize=0)
+def jinja_env():
     env = Environment(loader=PackageLoader("pygobject_docs"))
     env.filters["rstify"] = rstify
+    return env
+
+
+def output_path(namespace, version):
+    out_path = Path("source") / f"{namespace}-{version}"
+    out_path.mkdir(exist_ok=True, parents=True)
+    return out_path
+
+
+def generate_functions(namespace, version, out_path):
+    mod = import_module(namespace, version)
+    gir = load_gir_file(namespace, version)
+    env = jinja_env()
 
     template = env.get_template("functions.j2")
 
-    out_path = Path("source") / f"{namespace}-{version}"
-    out_path.mkdir(exist_ok=True, parents=True)
-
     (out_path / "functions.rst").write_text(
         template.render(
+            functions=[f for f in dir(mod) if determine_category(mod, f) == Category.Functions],
             namespace=namespace,
             version=version,
-            module=mod,
-            functions=[f for f in dir(mod) if determine_category(mod, f) == Category.Functions],
-            docstring=docstring,
+            docstring=gir.doc,
             parameter_docs=gir.parameter_docs,
             return_doc=gir.return_doc,
             deprecated=gir.deprecated,
             since=gir.since,
         )
     )
+
+
+def generate_classes(namespace, version, out_path):
+    mod = import_module(namespace, version)
+    gir = load_gir_file(namespace, version)
+    env = jinja_env()
+
+    template = env.get_template("class-detail.j2")
+
+    class_names = [name for name in dir(mod) if determine_category(mod, name) == Category.Classes]
+
+    for name in class_names:
+        if determine_category(mod, name) != Category.Classes:
+            continue
+
+        (out_path / f"class-{name}.rst").write_text(
+            template.render(
+                name=name,
+                namespace=namespace,
+                version=version,
+                docstring=gir.doc,
+                parameter_docs=gir.parameter_docs,
+                return_doc=gir.return_doc,
+                deprecated=gir.deprecated,
+                since=gir.since,
+            )
+        )
+
+    template = env.get_template("classes.j2")
+
+    (out_path / "classes.rst").write_text(
+        template.render(
+            classes=class_names,
+            namespace=namespace,
+            version=version,
+        )
+    )
+
+
+def generate(namespace, version):
+    out_path = output_path(namespace, version)
+    generate_functions(namespace, version, out_path)
+    generate_classes(namespace, version, out_path)
 
 
 if __name__ == "__main__":

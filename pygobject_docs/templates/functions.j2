@@ -1,5 +1,5 @@
-Functions
-=========
+{{ namespace }} Functions
+========================================
 
 .. py:currentmodule:: gi.repository.{{ namespace }}
 
@@ -10,9 +10,11 @@ Functions
 {% for name, doc in parameter_docs(function) %}
    :param {{ name }}: {{ doc | rstify | indent(6) }}
 {% endfor %}
+{% if return_doc(function) %}
    :return: {{ return_doc(function) | rstify | indent(6) }}
+{% endif %}
 
-{{ docstring(function) | rstify | indent(3, True) }}
+   {{ docstring(function) | rstify | indent(3) }}
 
 {% set depr, version, doc = deprecated(function) %}
 {% if depr %}
