@@ -51,3 +51,19 @@ class Gir:
         if not (node := self.node(name)):
             return ""
         return node.findtext("./return-value/doc", namespaces=NS) or ""
+
+    def deprecated(self, name) -> tuple[bool, str, str]:
+        if not (node := self.node(name)):
+            return False, "", ""
+
+        deprecated = node.attrib.get("deprecated")
+        version = node.attrib.get("deprecated-version") or "??"
+        doc = node.findtext("./doc-deprecated", namespaces=NS) or ""
+
+        return deprecated, version, doc
+
+    def since(self, name) -> str | None:
+        if not (node := self.node(name)):
+            return None
+
+        return node.attrib.get("version")

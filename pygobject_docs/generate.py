@@ -98,6 +98,8 @@ def generate(namespace, version):
             docstring=docstring,
             parameter_docs=gir.parameter_docs,
             return_doc=gir.return_doc,
+            deprecated=gir.deprecated,
+            since=gir.since,
         )
     )
 

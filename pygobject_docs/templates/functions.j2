@@ -14,4 +14,14 @@ Functions
 
 {{ docstring(function) | indent(3, True) }}
 
+{% set depr, version, doc = deprecated(function) %}
+{% if depr %}
+   .. deprecated:: {{ version }} {{ doc | indent(6) }}
+{% endif %}
+
+{% set version = since(function) %}
+{% if version %}
+   .. versionadded:: {{ version }}
+{% endif %}
+
 {% endfor %}

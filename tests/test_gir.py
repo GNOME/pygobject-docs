@@ -58,3 +58,17 @@ def test_gir_function_return_doc(gobject):
     doc = gobject.return_doc("boxed_copy")
 
     assert doc
+
+
+def test_gir_deprecated(glib):
+    depr, ver, doc = glib.deprecated("basename")
+
+    assert depr
+    assert ver == "2.2"
+    assert doc
+
+
+def test_gir_since(glib):
+    ver = glib.since("thread_pool_get_max_idle_time")
+
+    assert ver == "2.10"
