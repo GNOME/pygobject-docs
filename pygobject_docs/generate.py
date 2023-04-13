@@ -90,8 +90,8 @@ def jinja_env():
     return env
 
 
-def output_path(namespace, version):
-    out_path = Path("source") / f"{namespace}-{version}"
+def output_path(base_path, namespace, version):
+    out_path = base_path / f"{namespace}-{version}"
     out_path.mkdir(exist_ok=True, parents=True)
     return out_path
 
@@ -154,10 +154,21 @@ def generate_classes(namespace, version, out_path):
     )
 
 
+def generate_index(out_path):
+    env = jinja_env()
+    template = env.get_template("index.j2")
+
+    (out_path / "index.rst").write_text(template.render())
+
+
 def generate(namespace, version):
-    out_path = output_path(namespace, version)
+    base_path = Path("build/source")
+    out_path = output_path(base_path, namespace, version)
+
     generate_functions(namespace, version, out_path)
     generate_classes(namespace, version, out_path)
+
+    generate_index(base_path)
 
 
 if __name__ == "__main__":
