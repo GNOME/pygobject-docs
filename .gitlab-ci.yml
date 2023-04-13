@@ -8,6 +8,8 @@ test:
   stage: test
   script:
   - pip --cache-dir /tmp/pipcache install -e '.[dev]'
+  - pip --cache-dir /tmp/pipcache install pre-commit
+  - pre-commit run --all-files
   - pytest -m "not desktop"
   cache:
     key: "$CI_COMMIT_REF_SLUG"
