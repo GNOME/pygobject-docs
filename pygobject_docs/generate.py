@@ -77,16 +77,24 @@ def generate_classes(namespace, version, out_path):
 
     class_names = [name for name in dir(mod) if determine_category(mod, name) == Category.Classes]
 
-    for name in class_names:
-        if determine_category(mod, name) != Category.Classes:
+    for class_name in class_names:
+        if determine_category(mod, class_name) != Category.Classes:
             continue
 
-        (out_path / f"class-{name}.rst").write_text(
+        klass = getattr(mod, class_name)
+        (out_path / f"class-{class_name}.rst").write_text(
             template.render(
-                name=name,
+                class_name=class_name,
                 namespace=namespace,
                 version=version,
                 docstring=gir.doc,
+                methods=[
+                    (auto := not isinstance(m, gi._gi.FunctionInfo), name if auto else m.__doc__, "")
+                    for name in dir(klass)
+                    if callable(m := getattr(klass, name))
+                    and not isinstance(m, gi._gi.VFuncInfo)
+                    and not name.startswith("_")
+                ],
                 parameter_docs=gir.parameter_docs,
                 return_doc=gir.return_doc,
                 deprecated=gir.deprecated,

@@ -1,24 +1,33 @@
 
-Class {{ name }}
+Class {{ class_name }}
 =========================================
 
 
 .. py:currentmodule:: gi.repository.{{ namespace }}
 
-.. autoclass:: {{ name }}
+.. autoclass:: {{ class_name }}
 
-   {{ docstring(name) | rstify | indent(3) }}
+   {{ docstring(class_name) | rstify | indent(3) }}
 
-{% set depr, version, doc = deprecated(name) %}
+{% set depr, version, doc = deprecated(class_name) %}
 {% if depr %}
    .. deprecated:: {{ version }} {{ doc | rstify | indent(6) }}
 {% endif %}
 
-{% set version = since(name) %}
+{% set version = since(class_name) %}
 {% if version %}
    .. versionadded:: {{ version }}
 {% endif %}
 
+{% for auto, method_name, doc in methods %}
+{% if auto %}
+   .. automethod:: {{ method_name }}
+{% else %}
+   .. method:: {{ method_name }}
+{% endif %}
+
+      Docs here
+{% endfor %}
 {#
    if method type is gi.FunctionInfo:
 
@@ -28,7 +37,7 @@ Class {{ name }}
 
     Python methods can use 
     
-    ..automethod:: name
+    ..automethod:: class_name
 
 #}
 {#
