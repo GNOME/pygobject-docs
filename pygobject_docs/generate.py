@@ -7,64 +7,15 @@ Usage:
 
 import importlib
 import sys
-import types
 
-from enum import StrEnum, auto
 from functools import lru_cache
 from pathlib import Path
 
 import gi
-from gi.module import repository
-from gi._gi import FunctionInfo, StructInfo, UnionInfo, ObjectInfo, InterfaceInfo, EnumInfo
 from jinja2 import Environment, PackageLoader
 
+from pygobject_docs.category import Category, determine_category
 from pygobject_docs.gir import load_gir_file
-
-
-class Category(StrEnum):
-    Functions = auto()
-    Interfaces = auto()
-    Classes = auto()
-    Structures = auto()  # GI type: record
-    Union = auto()
-    Flags = auto()
-    Constants = auto()
-    Ignored = auto()
-
-
-def determine_category(module, name) -> Category:
-    """Determine the category to put the field in
-
-    The category is based on the GI type info. For custom
-    and overridden fields some extra checks are done.
-    """
-    field = getattr(module, name)
-
-    namespace = module.__name__.split(".")[-1]
-    info = repository.find_by_name(namespace, name)
-
-    if name.startswith("_") or isinstance(field, types.ModuleType):
-        return Category.Ignored
-    elif isinstance(info, FunctionInfo) or type(field) in (
-        FunctionInfo,
-        types.FunctionType,
-        types.BuiltinFunctionType,
-    ):
-        return Category.Functions
-    elif isinstance(info, UnionInfo):
-        return Category.Union
-    elif isinstance(info, EnumInfo):
-        return Category.Flags
-    elif isinstance(info, StructInfo) or isinstance(field, gi.types.StructMeta):
-        return Category.Structures
-    elif isinstance(info, InterfaceInfo) or (namespace, name) == ("GObject", "GInterface"):
-        return Category.Interfaces
-    elif isinstance(info, ObjectInfo) or isinstance(field, (type, gi.types.GObjectMeta)):
-        return Category.Classes
-    elif isinstance(field, (str, int, bool, float, tuple, dict, gi._gi.GType)):
-        return Category.Constants
-
-    raise TypeError(f"Type not recognized for {module.__name__}.{name}")
 
 
 @lru_cache(maxsize=0)
