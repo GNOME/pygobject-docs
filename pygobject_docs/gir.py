@@ -69,3 +69,12 @@ class Gir:
             return None
 
         return node.attrib.get("version")
+
+
+# Classes:
+# - .@parent
+# - ./implements
+# - ./constructor (+ parameters)
+# - ./method (+ parameters+ property?)
+# - ./property
+# - ./virtual-method

@@ -1,0 +1,16 @@
+{{ namespace }}
+===============
+
+version: {{ version }}
+
+
+C API docs: ...
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Contents:
+
+{% for class in classes %}
+   class-{{ class }}
+{% endfor %}

@@ -75,6 +75,11 @@ def import_module(namespace, version):
 
 
 def rstify(text):
+    # See also https://gitlab.gnome.org/GNOME/gi-docgen/-/blob/main/gidocgen/utils.py
+    # replace @\w+
+    # replace #\w+ (type ref); #guint64 -> :obj:int
+    # replace \w+()
+    # replace %TRUE|FALSE|NULL -> ":const:`True`", etc.
     return text.replace("`", "")
 
 

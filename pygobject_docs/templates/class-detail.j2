@@ -1,0 +1,43 @@
+
+Class {{ name }}
+=========================================
+
+
+.. py:currentmodule:: gi.repository.{{ namespace }}
+
+.. autoclass:: {{ name }}
+
+   {{ docstring(name) | rstify | indent(3) }}
+
+{% set depr, version, doc = deprecated(name) %}
+{% if depr %}
+   .. deprecated:: {{ version }} {{ doc | rstify | indent(6) }}
+{% endif %}
+
+{% set version = since(name) %}
+{% if version %}
+   .. versionadded:: {{ version }}
+{% endif %}
+
+{#
+   if method type is gi.FunctionInfo:
+
+   .. method:: method.__doc__
+
+      gir docs
+
+    Python methods can use 
+    
+    ..automethod:: name
+
+#}
+{#
+
+ parent types
+ subtypes
+ fields
+ methods
+ properties
+ signals
+ virtual methods
+#}
