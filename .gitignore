@@ -4,5 +4,7 @@
 build
 dist
 
+source/*-[0-9]*
+
 __pycache__
 *.egg-info
