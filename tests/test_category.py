@@ -1,10 +1,13 @@
 import pytest
 
 from pygobject_docs.category import (
-    determine_category,
     Category,
+    determine_category,
+    determine_member_category,
+    MemberCategory,
 )
 from pygobject_docs.generate import import_module
+from pygobject_docs.members import own_dir
 
 
 @pytest.fixture
@@ -114,3 +117,51 @@ def test_all_gtk_fields_are_categorized(namespace, version):
 
     for name in dir(mod):
         determine_category(mod, name)
+
+
+@pytest.mark.parametrize("name", ["connect", "connect_data", "find_property", "bind_property"])
+def test_member_method(gobject, name):
+    obj_type = gobject.Object
+    category = determine_member_category(obj_type, name)
+
+    assert category == MemberCategory.Methods
+
+
+@pytest.mark.parametrize("name", ["do_get_property", "do_notify"])
+def test_member_virtual_method(gobject, name):
+    obj_type = gobject.Object
+    category = determine_member_category(obj_type, name)
+
+    assert category == MemberCategory.VirtualMethods
+
+
+@pytest.mark.parametrize("name", ["ref", "get_data"])
+def test_member_ignored(gobject, name):
+    obj_type = gobject.Object
+    category = determine_member_category(obj_type, name)
+
+    assert category == MemberCategory.Ignored
+
+
+def test_all_glib_error_members_are_categorized(glib):
+    obj_type = glib.Error
+
+    for name in own_dir(obj_type):
+        determine_member_category(obj_type, name)
+
+
+def test_all_gobject_members_are_categorized(gobject):
+    obj_type = gobject.Object
+
+    for name in own_dir(obj_type):
+        determine_member_category(obj_type, name)
+
+
+@pytest.mark.desktop
+def test_gtk_member_fields():
+    gtk = import_module("Gtk", "4.0")
+
+    obj_type = gtk.Window
+
+    for name in own_dir(obj_type):
+        determine_member_category(obj_type, name)

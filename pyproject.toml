@@ -42,6 +42,7 @@ line_length = 110
 [tool.pytest.ini_options]
 addopts = [
     "--import-mode=importlib",
+    "--disable-warnings",
 ]
 
 [tool.ruff]

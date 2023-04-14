@@ -2,8 +2,9 @@ import types
 from enum import StrEnum, auto
 
 from gi.module import repository
-from gi._gi import EnumInfo, FunctionInfo, GType, InterfaceInfo, ObjectInfo, StructInfo, UnionInfo
+from gi._gi import EnumInfo, FunctionInfo, GType, InterfaceInfo, ObjectInfo, StructInfo, UnionInfo, VFuncInfo
 from gi.types import GObjectMeta, StructMeta
+from gi.repository import GObject
 
 
 class Category(StrEnum):
@@ -14,6 +15,15 @@ class Category(StrEnum):
     Union = auto()
     Flags = auto()
     Constants = auto()
+    Ignored = auto()
+
+
+class MemberCategory(StrEnum):
+    Methods = auto()
+    Properties = auto()
+    Fields = auto()
+    Signals = auto()
+    VirtualMethods = auto()
     Ignored = auto()
 
 
@@ -30,10 +40,13 @@ def determine_category(module, name) -> Category:
 
     if name.startswith("_") or isinstance(field, types.ModuleType):
         return Category.Ignored
-    elif isinstance(info, FunctionInfo) or type(field) in (
-        FunctionInfo,
-        types.FunctionType,
-        types.BuiltinFunctionType,
+    elif isinstance(info, FunctionInfo) or isinstance(
+        field,
+        (
+            FunctionInfo,
+            types.FunctionType,
+            types.BuiltinFunctionType,
+        ),
     ):
         return Category.Functions
     elif isinstance(info, UnionInfo):
@@ -50,3 +63,35 @@ def determine_category(module, name) -> Category:
         return Category.Constants
 
     raise TypeError(f"Type not recognized for {module.__name__}.{name}")
+
+
+def determine_member_category(obj_type, name) -> MemberCategory:
+    field = getattr(obj_type, name, None)
+
+    if (
+        name == "props"
+        or name.startswith("_")
+        or field in (GObject.Object._unsupported_method, GObject.Object._unsupported_data_method)
+    ):
+        return MemberCategory.Ignored
+    elif isinstance(
+        field,
+        (
+            FunctionInfo,
+            types.FunctionType,
+            types.BuiltinFunctionType,
+            types.MethodDescriptorType,
+        ),
+    ):
+        return MemberCategory.Methods
+    elif (
+        isinstance(field, VFuncInfo)
+        or field is None
+        and name.startswith("do_")
+        and name[3:] in (v.get_name() for v in obj_type.__info__.get_vfuncs())
+    ):
+        return MemberCategory.VirtualMethods
+    elif isinstance(field, property):
+        return MemberCategory.Fields
+
+    raise TypeError(f"Member type not recognized for {obj_type.__name__}.{name} ({getattr(obj_type, name)})")

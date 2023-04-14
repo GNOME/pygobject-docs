@@ -14,8 +14,9 @@ from pathlib import Path
 import gi
 from jinja2 import Environment, PackageLoader
 
-from pygobject_docs.category import Category, determine_category
+from pygobject_docs.category import Category, determine_category, determine_member_category, MemberCategory
 from pygobject_docs.gir import load_gir_file
+from pygobject_docs.members import own_dir
 
 
 @lru_cache(maxsize=0)
@@ -82,6 +83,8 @@ def generate_classes(namespace, version, out_path):
             continue
 
         klass = getattr(mod, class_name)
+        members = own_dir(klass)
+
         (out_path / f"class-{class_name}.rst").write_text(
             template.render(
                 class_name=class_name,
@@ -89,10 +92,13 @@ def generate_classes(namespace, version, out_path):
                 version=version,
                 docstring=gir.doc,
                 methods=[
-                    (auto := not isinstance(m, gi._gi.FunctionInfo), name if auto else m.__doc__, "")
-                    for name in dir(klass)
-                    if callable(m := getattr(klass, name))
-                    and not isinstance(m, gi._gi.VFuncInfo)
+                    (
+                        autodoc := not isinstance(m := getattr(klass, name), gi._gi.FunctionInfo),
+                        name if autodoc else m.__doc__,
+                        "",
+                    )
+                    for name in members
+                    if determine_member_category(klass, name) == MemberCategory.Methods
                     and not name.startswith("_")
                 ],
                 parameter_docs=gir.parameter_docs,
