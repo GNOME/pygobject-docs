@@ -19,14 +19,15 @@ Class {{ class_name }}
    .. versionadded:: {{ version }}
 {% endif %}
 
-{% for auto, method_name, doc in methods %}
-{% if auto %}
+{% for autodoc, method_name, doc in methods %}
+   {% if autodoc %}
    .. automethod:: {{ method_name }}
-{% else %}
+   {% else %}
    .. method:: {{ method_name }}
-{% endif %}
+   {% endif %}
 
       Docs here
+      
 {% endfor %}
 {#
    if method type is gi.FunctionInfo:

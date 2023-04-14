@@ -36,7 +36,7 @@ def rstify(text):
 
 @lru_cache(maxsize=0)
 def jinja_env():
-    env = Environment(loader=PackageLoader("pygobject_docs"))
+    env = Environment(loader=PackageLoader("pygobject_docs"), trim_blocks=True, lstrip_blocks=True)
     env.filters["rstify"] = rstify
     return env
 
