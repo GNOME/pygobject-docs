@@ -157,6 +157,13 @@ def test_all_gobject_members_are_categorized(gobject):
         determine_member_category(obj_type, name)
 
 
+def test_all_genum_members_are_categorized(gobject):
+    obj_type = gobject.GEnum
+
+    for name in own_dir(obj_type):
+        determine_member_category(obj_type, name)
+
+
 @pytest.mark.desktop
 def test_gtk_member_fields():
     gtk = import_module("Gtk", "4.0")

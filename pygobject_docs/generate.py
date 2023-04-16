@@ -91,15 +91,31 @@ def generate_classes(namespace, version, out_path):
                 namespace=namespace,
                 version=version,
                 docstring=gir.doc,
+                fields=[
+                    (
+                        name,
+                        "",
+                    )
+                    for name in members
+                    if determine_member_category(klass, name) == MemberCategory.Fields
+                ],
                 methods=[
                     (
                         autodoc := not isinstance(m := getattr(klass, name), gi._gi.FunctionInfo),
                         name if autodoc else m.__doc__,
-                        "",
+                        gir.method_doc(class_name, name),
                     )
                     for name in members
                     if determine_member_category(klass, name) == MemberCategory.Methods
                     and not name.startswith("_")
+                ],
+                virtual_methods=[
+                    (
+                        name,
+                        gir.virtual_method_doc(class_name, name),
+                    )
+                    for name in members
+                    if determine_member_category(klass, name) == MemberCategory.VirtualMethods
                 ],
                 parameter_docs=gir.parameter_docs,
                 return_doc=gir.return_doc,

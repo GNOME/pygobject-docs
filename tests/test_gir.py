@@ -72,3 +72,10 @@ def test_gir_since(glib):
     ver = glib.since("thread_pool_get_max_idle_time")
 
     assert ver == "2.10"
+
+
+def test_virtual_method(gobject):
+    doc = gobject.virtual_method_doc("Object", "notify")
+
+    assert doc
+    assert doc.startswith("Emits ")

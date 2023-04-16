@@ -72,6 +72,7 @@ def determine_member_category(obj_type, name) -> MemberCategory:
         name == "props"
         or name.startswith("_")
         or field in (GObject.Object._unsupported_method, GObject.Object._unsupported_data_method)
+        or isinstance(field, type)
     ):
         return MemberCategory.Ignored
     elif isinstance(
@@ -80,6 +81,7 @@ def determine_member_category(obj_type, name) -> MemberCategory:
             FunctionInfo,
             types.FunctionType,
             types.BuiltinFunctionType,
+            types.MethodType,
             types.MethodDescriptorType,
         ),
     ):
@@ -91,7 +93,7 @@ def determine_member_category(obj_type, name) -> MemberCategory:
         and name[3:] in (v.get_name() for v in obj_type.__info__.get_vfuncs())
     ):
         return MemberCategory.VirtualMethods
-    elif isinstance(field, property):
+    elif isinstance(field, (property, types.GetSetDescriptorType)):
         return MemberCategory.Fields
 
     raise TypeError(f"Member type not recognized for {obj_type.__name__}.{name} ({getattr(obj_type, name)})")

@@ -19,8 +19,20 @@ Class {{ class_name }}
    .. versionadded:: {{ version }}
 {% endif %}
 
+{% if fields %}
+   Fields
+   ------
+{% endif %}
+   
+{% for name, doc in fields %}
+   .. autoproperty:: {{ name }}
+
+{% endfor %}
+
+{% if methods %}
    Methods
    -------
+{% endif %}
    
 {% for autodoc, method_name, doc in methods %}
    {% if autodoc %}
@@ -29,21 +41,22 @@ Class {{ class_name }}
    .. method:: {{ method_name }}
    {% endif %}
 
-      Docs here
+      {{ doc | rstify | indent(6) }}
 
 {% endfor %}
-{#
-   if method type is gi.FunctionInfo:
 
-   .. method:: method.__doc__
+{% if virtual_methods %}
+   Virtual Methods
+   ---------------
+{% endif %}
 
-      gir docs
+{% for method_name, doc in virtual_methods %}
+   .. method:: {{ method_name }}
 
-    Python methods can use 
-    
-    ..automethod:: class_name
+      {{ doc | rstify | indent(6) }}
 
-#}
+{% endfor %}
+
 {#
 
  parent types
