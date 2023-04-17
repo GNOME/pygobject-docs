@@ -18,7 +18,8 @@
 
 {% set depr, version, doc = deprecated(function) %}
 {% if depr %}
-   .. deprecated:: {{ version }} {{ doc | rstify | indent(6) }}
+   .. deprecated:: {{ version }}
+      {{ doc | rstify | indent(6) }}
 {% endif %}
 
 {% set version = since(function) %}

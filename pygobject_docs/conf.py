@@ -6,6 +6,9 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import gi
+
+
 project = "PyGObject API"
 
 # -- General configuration ---------------------------------------------------
@@ -24,7 +27,7 @@ exclude_patterns: list[str] = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "furo"
-html_static_path = ["_static"]
+# html_static_path = ["_static"]
 
 # -- Autodoc
 
@@ -33,3 +36,10 @@ add_module_names = False
 # -- Intersphinx
 
 intersphinx_mapping = {"https://docs.python.org/": None}
+
+gi.require_versions(
+    {
+        "Gtk": "4.0",
+        "GtkSource": "5",
+    }
+)

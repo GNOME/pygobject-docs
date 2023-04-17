@@ -59,7 +59,7 @@ class Gir:
             return False, "", ""
 
         deprecated = node.attrib.get("deprecated")
-        version = node.attrib.get("deprecated-version") or "??"
+        version = node.attrib.get("deprecated-version") or ""
         doc = node.findtext("./doc-deprecated", namespaces=NS) or ""
 
         return deprecated, version, doc

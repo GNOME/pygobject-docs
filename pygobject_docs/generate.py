@@ -128,16 +128,27 @@ def generate_classes(namespace, version, out_path):
 
     (out_path / "classes.rst").write_text(
         template.render(
-            classes=class_names,
             namespace=namespace,
             version=version,
         )
     )
 
 
-def generate_index(out_path):
+def generate_index(namespace, version, out_path):
     env = jinja_env()
     template = env.get_template("index.j2")
+
+    (out_path / "index.rst").write_text(
+        template.render(
+            namespace=namespace,
+            version=version,
+        )
+    )
+
+
+def generate_top_index(out_path):
+    env = jinja_env()
+    template = env.get_template("top-index.j2")
 
     (out_path / "index.rst").write_text(template.render())
 
@@ -148,8 +159,9 @@ def generate(namespace, version):
 
     generate_functions(namespace, version, out_path)
     generate_classes(namespace, version, out_path)
+    generate_index(namespace, version, out_path)
 
-    generate_index(base_path)
+    generate_top_index(base_path)
 
 
 if __name__ == "__main__":
