@@ -79,3 +79,24 @@ def test_virtual_method(gobject):
 
     assert doc
     assert doc.startswith("Emits ")
+
+
+def test_method_parameter_docs(gobject):
+    name, doc = next(gobject.member_parameter_docs("method", "Object", "notify"))
+
+    assert name == "property_name"
+    assert doc
+
+
+def test_class_method_parameter_docs(gobject):
+    name, doc = next(gobject.member_parameter_docs("method", "Object", "find_property"))
+
+    assert name == "property_name"
+    assert doc
+
+
+def test_virtual_method_parameter_docs(gobject):
+    name, doc = next(gobject.member_parameter_docs("virtual-method", "ParamSpec", "values_cmp"))
+
+    assert name == "value1"
+    assert doc == ""

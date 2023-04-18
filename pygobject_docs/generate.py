@@ -8,7 +8,7 @@ Usage:
 import importlib
 import sys
 
-from functools import lru_cache
+from functools import lru_cache, partial
 from pathlib import Path
 
 import gi
@@ -82,6 +82,7 @@ def generate_classes(namespace, version, out_path):
         if determine_category(mod, class_name) != Category.Classes:
             continue
 
+        # with warnings.catch_warnings(record=True) as caught_warnings:
         klass = getattr(mod, class_name)
         members = own_dir(klass)
 
@@ -112,13 +113,19 @@ def generate_classes(namespace, version, out_path):
                 virtual_methods=[
                     (
                         name,
-                        gir.virtual_method_doc(class_name, name),
+                        gir.virtual_method_doc(class_name, name[3:]),
                     )
                     for name in members
                     if determine_member_category(klass, name) == MemberCategory.VirtualMethods
                 ],
                 parameter_docs=gir.parameter_docs,
+                method_parameter_docs=partial(gir.member_parameter_docs, "method"),
+                virtual_method_parameter_docs=lambda k, n: gir.member_parameter_docs(
+                    "virtual-method", k, n[3:]
+                ),
                 return_doc=gir.return_doc,
+                method_return_doc=partial(gir.member_return_doc, "method"),
+                virtual_method_return_doc=lambda k, n: gir.member_return_doc("virtual-method", k, n[3:]),
                 deprecated=gir.deprecated,
                 since=gir.since,
             )

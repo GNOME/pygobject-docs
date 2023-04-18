@@ -28,13 +28,13 @@ class Gir:
         self.gir_file = gir_file
         self.etree = ElementTree.parse(gir_file)
 
-    def node(self, name):
-        return self.etree.find(f"./namespace/*[@name='{name}']", namespaces=NS)
-
     @property
     def namespace(self):
         namespace = self.etree.find("./namespace", namespaces=NS)
         return namespace.attrib["name"], namespace.attrib["version"]
+
+    def node(self, name):
+        return self.etree.find(f"./namespace/*[@name='{name}']", namespaces=NS)
 
     def doc(self, name) -> str:
         node = self.node(name)
@@ -79,9 +79,35 @@ class Gir:
         return self.member_doc(klass_name, "method", name)
 
     def virtual_method_doc(self, klass_name, name):
-        if name.startswith("do_"):
-            name = name[3:]
         return self.member_doc(klass_name, "virtual-method", name)
+
+    def member(self, member_type, klass_name, name):
+        if "(" in name:
+            name, _ = name.split("(", 1)
+
+        if not (node := self.node(klass_name)):
+            return None
+
+        member = node.find(f"./{member_type}[@name='{name}']", namespaces=NS)
+        if not member and (cnode := self.node(f"{klass_name}Class")):
+            member = cnode.find(f"./{member_type}[@name='{name}']", namespaces=NS)
+
+        return member
+
+    def member_parameter_docs(self, member_type, klass_name, name):
+        if not (member := self.member(member_type, klass_name, name)):
+            return
+
+        for param in member.findall("./parameters/parameter", namespaces=NS):
+            if param.attrib.get("direction") == "out":
+                continue
+            yield (param.attrib["name"], param.findtext("./doc", namespaces=NS) or "")
+
+    def member_return_doc(self, member_type, klass_name, name):
+        if not (member := self.member(member_type, klass_name, name)):
+            return ""
+
+        return member.findtext("./return-value/doc", namespaces=NS)
 
 
 # Classes:

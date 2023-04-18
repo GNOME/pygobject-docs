@@ -7,12 +7,12 @@
 
 .. autofunction:: {{ function }}
 
-{% for name, doc in parameter_docs(function) %}
+   {% for name, doc in parameter_docs(function) %}
    :param {{ name }}: {{ doc | rstify | indent(6) }}
-{% endfor %}
-{% if return_doc(function) %}
+   {% endfor %}
+   {% if return_doc(function) %}
    :return: {{ return_doc(function) | rstify | indent(6) }}
-{% endif %}
+   {% endif %}
 
    {{ docstring(function) | rstify | indent(3) }}
 

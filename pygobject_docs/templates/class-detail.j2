@@ -41,6 +41,13 @@ Class {{ class_name }}
    .. method:: {{ method_name }}
    {% endif %}
 
+      {% for name, doc in method_parameter_docs(class_name, method_name) %}
+      :param {{ name }}: {{ doc | rstify | indent(9) }}
+      {% endfor %}
+      {% if method_return_doc(class_name, method_name) %}
+      :return: {{ return_doc(function) | rstify | indent(9) }}
+      {% endif %}
+
       {{ doc | rstify | indent(6) }}
 
 {% endfor %}
@@ -52,6 +59,13 @@ Class {{ class_name }}
 
 {% for method_name, doc in virtual_methods %}
    .. method:: {{ method_name }}
+   
+      {% for name, doc in virtual_method_parameter_docs(class_name, method_name) %}
+      :param {{ name }}: {{ doc | rstify | indent(9) }}
+      {% endfor %}
+      {% if virtual_method_return_doc(class_name, method_name) %}
+      :return: {{ return_doc(function) | rstify | indent(9) }}
+      {% endif %}
 
       {{ doc | rstify | indent(6) }}
 
