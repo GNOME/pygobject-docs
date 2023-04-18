@@ -3,28 +3,27 @@
 
 .. py:currentmodule:: gi.repository.{{ namespace }}
 
-{% for function in functions %}
+{% for name, sig, doc, parameters, return_doc, deprecated, since in functions %}
 
-.. autofunction:: {{ function }}
+.. function:: {{ function }}{{ sig }}
 
-   {% for name, doc in parameter_docs(function) %}
-   :param {{ name }}: {{ doc | rstify | indent(6) }}
+   {% for pname, pdoc in parameters %}
+   :param {{ pname }}: {{ pdoc | rstify | indent(6) }}
    {% endfor %}
-   {% if return_doc(function) %}
-   :return: {{ return_doc(function) | rstify | indent(6) }}
+   {% if return_doc %}
+   :return: {{ return_doc | rstify | indent(6) }}
    {% endif %}
 
-   {{ docstring(function) | rstify | indent(3) }}
+   {{ doc | rstify | indent(3) }}
 
-{% set depr, version, doc = deprecated(function) %}
+{% set depr, version, doc = deprecated %}
 {% if depr %}
    .. deprecated:: {{ version }}
       {{ doc | rstify | indent(6) }}
 {% endif %}
 
-{% set version = since(function) %}
-{% if version %}
-   .. versionadded:: {{ version }}
+{% if since %}
+   .. versionadded:: {{ since }}
 {% endif %}
 
 {% endfor %}

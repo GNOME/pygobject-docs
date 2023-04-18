@@ -6,9 +6,11 @@ Usage:
 """
 
 import importlib
+import logging
 import sys
+import warnings
 
-from functools import lru_cache, partial
+from functools import lru_cache
 from pathlib import Path
 
 import gi
@@ -16,6 +18,7 @@ from jinja2 import Environment, PackageLoader
 
 from pygobject_docs.category import Category, determine_category, determine_member_category, MemberCategory
 from pygobject_docs.gir import load_gir_file
+from pygobject_docs.inspect import signature
 from pygobject_docs.members import own_dir
 
 
@@ -32,6 +35,8 @@ def rstify(text):
     # replace #\w+ (type ref); #guint64 -> :obj:int
     # replace \w+()
     # replace %TRUE|FALSE|NULL -> ":const:`True`", etc.
+    if not text:
+        return ""
     return text.replace("`", "")
 
 
@@ -55,18 +60,32 @@ def generate_functions(namespace, version, out_path):
 
     template = env.get_template("functions.j2")
 
-    (out_path / "functions.rst").write_text(
-        template.render(
-            functions=[f for f in dir(mod) if determine_category(mod, f) == Category.Functions],
-            namespace=namespace,
-            version=version,
-            docstring=gir.doc,
-            parameter_docs=gir.parameter_docs,
-            return_doc=gir.return_doc,
-            deprecated=gir.deprecated,
-            since=gir.since,
+    def parameter_docs(name, sig):
+        for param in sig.parameters:
+            doc = gir.parameter_doc(name, param)
+            yield param, doc
+
+    with warnings.catch_warnings(record=True):
+        (out_path / "functions.rst").write_text(
+            template.render(
+                functions=[
+                    (
+                        name,
+                        sig := signature(getattr(mod, name)),
+                        gir.doc(name),
+                        parameter_docs(name, sig),
+                        gir.return_doc(name),
+                        gir.deprecated(name),
+                        gir.since(name),
+                    )
+                    for name in dir(mod)
+                    if determine_category(mod, name) == Category.Functions
+                ],
+                namespace=namespace,
+                version=version,
+            )
         )
-    )
+        # TODO: register deprecated function
 
 
 def generate_classes(namespace, version, out_path):
@@ -82,15 +101,25 @@ def generate_classes(namespace, version, out_path):
         if determine_category(mod, class_name) != Category.Classes:
             continue
 
-        # with warnings.catch_warnings(record=True) as caught_warnings:
-        klass = getattr(mod, class_name)
+        with warnings.catch_warnings(record=True):
+            klass = getattr(mod, class_name)
+            # TODO: register deprecated class
+
         members = own_dir(klass)
+
+        def parameter_docs(member_type, member_name, sig):
+            for i, param in enumerate(sig.parameters):
+                if i == 0 and param == "self":
+                    continue
+                doc = gir.member_parameter_doc(member_type, class_name, member_name, param)  # noqa: B023
+                yield param, doc
 
         (out_path / f"class-{class_name}.rst").write_text(
             template.render(
                 class_name=class_name,
                 namespace=namespace,
                 version=version,
+                signature=lambda k, m: signature(getattr(getattr(mod, k), m)),
                 docstring=gir.doc,
                 fields=[
                     (
@@ -102,30 +131,27 @@ def generate_classes(namespace, version, out_path):
                 ],
                 methods=[
                     (
-                        autodoc := not isinstance(m := getattr(klass, name), gi._gi.FunctionInfo),
-                        name if autodoc else m.__doc__,
+                        name,
+                        sig := signature(getattr(klass, name)),
                         gir.method_doc(class_name, name),
+                        parameter_docs("method", name, sig),
+                        gir.member_return_doc("method", class_name, name),
                     )
                     for name in members
                     if determine_member_category(klass, name) == MemberCategory.Methods
-                    and not name.startswith("_")
                 ],
                 virtual_methods=[
                     (
                         name,
+                        sig := signature(getattr(klass, name)),
                         gir.virtual_method_doc(class_name, name[3:]),
+                        parameter_docs("virtual-method", name[3:], sig),
+                        gir.member_return_doc("virtual-method", class_name, name[3:]),
                     )
                     for name in members
                     if determine_member_category(klass, name) == MemberCategory.VirtualMethods
                 ],
-                parameter_docs=gir.parameter_docs,
-                method_parameter_docs=partial(gir.member_parameter_docs, "method"),
-                virtual_method_parameter_docs=lambda k, n: gir.member_parameter_docs(
-                    "virtual-method", k, n[3:]
-                ),
                 return_doc=gir.return_doc,
-                method_return_doc=partial(gir.member_return_doc, "method"),
-                virtual_method_return_doc=lambda k, n: gir.member_return_doc("virtual-method", k, n[3:]),
                 deprecated=gir.deprecated,
                 since=gir.since,
             )
@@ -172,4 +198,5 @@ def generate(namespace, version):
 
 
 if __name__ == "__main__":
+    logging.basicConfig()
     generate(sys.argv[1], sys.argv[2])

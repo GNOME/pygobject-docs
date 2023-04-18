@@ -40,14 +40,11 @@ class Gir:
         node = self.node(name)
         return node and node.findtext("./doc", namespaces=NS) or ""
 
-    def parameter_docs(self, name) -> Iterable[tuple[str, str]]:
-        if not (node := self.node(name)):
+    def parameter_doc(self, func_name, param_name):
+        if not (node := self.node(func_name)):
             return
 
-        for param in node.findall("./parameters/parameter", namespaces=NS):
-            if param.attrib.get("direction") == "out":
-                continue
-            yield (param.attrib["name"], param.findtext("./doc", namespaces=NS) or "")
+        return node.findtext(f"./parameters/parameter[@name='{param_name}']/doc", namespaces=NS) or ""
 
     def return_doc(self, name) -> str:
         if not (node := self.node(name)):
@@ -76,10 +73,10 @@ class Gir:
         return node.findtext(f"./{type_name}[@name='{name}']/doc", namespaces=NS) or ""
 
     def method_doc(self, klass_name, name):
-        return self.member_doc(klass_name, "method", name)
+        return self.member_doc(klass_name, "method", name) or ""
 
     def virtual_method_doc(self, klass_name, name):
-        return self.member_doc(klass_name, "virtual-method", name)
+        return self.member_doc(klass_name, "virtual-method", name) or ""
 
     def member(self, member_type, klass_name, name):
         if "(" in name:
@@ -94,20 +91,17 @@ class Gir:
 
         return member
 
-    def member_parameter_docs(self, member_type, klass_name, name):
-        if not (member := self.member(member_type, klass_name, name)):
+    def member_parameter_doc(self, member_type, klass_name, member_name, param_name):
+        if not (member := self.member(member_type, klass_name, member_name)):
             return
 
-        for param in member.findall("./parameters/parameter", namespaces=NS):
-            if param.attrib.get("direction") == "out":
-                continue
-            yield (param.attrib["name"], param.findtext("./doc", namespaces=NS) or "")
+        return member.findtext(f"./parameters/parameter[@name='{param_name}']/doc", namespaces=NS) or ""
 
     def member_return_doc(self, member_type, klass_name, name):
         if not (member := self.member(member_type, klass_name, name)):
             return ""
 
-        return member.findtext("./return-value/doc", namespaces=NS)
+        return member.findtext("./return-value/doc", namespaces=NS) or ""
 
 
 # Classes:

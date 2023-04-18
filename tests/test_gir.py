@@ -48,9 +48,8 @@ def test_gir_class_doc(gobject):
 
 
 def test_gir_function_parameter_docs(gobject):
-    name, doc = next(gobject.parameter_docs("boxed_copy"))
+    doc = gobject.parameter_doc("boxed_copy", "boxed_type")
 
-    assert name == "boxed_type"
     assert doc
 
 
@@ -82,21 +81,18 @@ def test_virtual_method(gobject):
 
 
 def test_method_parameter_docs(gobject):
-    name, doc = next(gobject.member_parameter_docs("method", "Object", "notify"))
+    doc = gobject.member_parameter_doc("method", "Object", "notify", "property_name")
 
-    assert name == "property_name"
     assert doc
 
 
 def test_class_method_parameter_docs(gobject):
-    name, doc = next(gobject.member_parameter_docs("method", "Object", "find_property"))
+    doc = gobject.member_parameter_doc("method", "Object", "find_property", "property_name")
 
-    assert name == "property_name"
     assert doc
 
 
 def test_virtual_method_parameter_docs(gobject):
-    name, doc = next(gobject.member_parameter_docs("virtual-method", "ParamSpec", "values_cmp"))
+    doc = gobject.member_parameter_doc("virtual-method", "ParamSpec", "values_cmp", "value1")
 
-    assert name == "value1"
     assert doc == ""

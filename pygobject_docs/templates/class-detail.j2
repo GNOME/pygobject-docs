@@ -5,7 +5,7 @@ Class {{ class_name }}
 
 .. py:currentmodule:: gi.repository.{{ namespace }}
 
-.. autoclass:: {{ class_name }}
+.. class:: {{ class_name }}
 
    {{ docstring(class_name) | rstify | indent(3) }}
 
@@ -25,8 +25,9 @@ Class {{ class_name }}
 {% endif %}
    
 {% for name, doc in fields %}
-   .. autoproperty:: {{ name }}
+   .. property:: {{ name }}
 
+   {{ doc | rstify | indent(3)}}
 {% endfor %}
 
 {% if methods %}
@@ -34,21 +35,17 @@ Class {{ class_name }}
    -------
 {% endif %}
    
-{% for autodoc, method_name, doc in methods %}
-   {% if autodoc %}
-   .. automethod:: {{ method_name }}
-   {% else %}
-   .. method:: {{ method_name }}
-   {% endif %}
+{% for method_name, signature, method_doc, parameters, return_doc in methods %}
+   .. method:: {{ method_name }}{{ signature }}
 
-      {% for name, doc in method_parameter_docs(class_name, method_name) %}
+      {% for name, doc in parameters %}
       :param {{ name }}: {{ doc | rstify | indent(9) }}
       {% endfor %}
-      {% if method_return_doc(class_name, method_name) %}
-      :return: {{ return_doc(function) | rstify | indent(9) }}
+      {% if return_doc %}
+      :return: {{ return_doc | rstify | indent(9) }}
       {% endif %}
 
-      {{ doc | rstify | indent(6) }}
+      {{ method_doc | rstify | indent(6) }}
 
 {% endfor %}
 
@@ -57,14 +54,14 @@ Class {{ class_name }}
    ---------------
 {% endif %}
 
-{% for method_name, doc in virtual_methods %}
-   .. method:: {{ method_name }}
+{% for method_name, signature, method_doc, parameters, return_doc in virtual_methods %}
+   .. method:: {{ method_name }}{{ signature }}
    
-      {% for name, doc in virtual_method_parameter_docs(class_name, method_name) %}
+      {% for name, doc in parameters %}
       :param {{ name }}: {{ doc | rstify | indent(9) }}
       {% endfor %}
-      {% if virtual_method_return_doc(class_name, method_name) %}
-      :return: {{ return_doc(function) | rstify | indent(9) }}
+      {% if return_doc %}
+      :return: {{ return_doc | rstify | indent(9) }}
       {% endif %}
 
       {{ doc | rstify | indent(6) }}
