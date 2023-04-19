@@ -20,7 +20,7 @@ def gir_dirs() -> Iterable[Path]:
     return (path for d in GLib.get_system_data_dirs() if (path := Path(d) / "gir-1.0").exists())
 
 
-NS = {"": "http://www.gtk.org/introspection/core/1.0"}
+NS = {"": "http://www.gtk.org/introspection/core/1.0", "glib": "http://www.gtk.org/introspection/glib/1.0"}
 
 
 class Gir:

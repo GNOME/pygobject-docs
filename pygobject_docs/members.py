@@ -1,5 +1,7 @@
 from itertools import chain
 
+from gi._gi import SignalInfo
+
 from pygobject_docs.inspect import gi_type_to_python
 
 
@@ -25,3 +27,12 @@ def properties(obj_type: type) -> list[tuple[str, object | type]]:
         return []
 
     return sorted((p.get_name(), gi_type_to_python(p.get_type())) for p in props)
+
+
+def signals(obj_type: type) -> list[SignalInfo]:
+    try:
+        sigs = obj_type.__info__.get_signals()  # type: ignore[attr-defined]
+    except AttributeError:
+        return []
+
+    return sorted(sigs, key=lambda s: s.get_name())

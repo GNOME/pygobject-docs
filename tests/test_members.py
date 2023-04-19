@@ -1,7 +1,7 @@
 import pytest
 
 from pygobject_docs.generate import import_module
-from pygobject_docs.members import own_dir, properties
+from pygobject_docs.members import own_dir, properties, signals
 
 
 @pytest.fixture
@@ -34,3 +34,9 @@ def test_properties(gobject):
     props = properties(gobject.Binding)
 
     assert ("source", gobject.Object) in props
+
+
+def test_signals(gobject):
+    sigs = signals(gobject.Object)
+
+    assert sigs

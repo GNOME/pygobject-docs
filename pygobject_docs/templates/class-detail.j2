@@ -62,6 +62,25 @@ Class {{ class_name }}
 
 {% endfor %}
 
+{% if signals %}
+   Signals
+   -------
+{% endif %}
+
+{% for signal_name, sig, signal_doc, parameters, return_doc in signals %}
+   .. method:: {{ signal_name }}{{ sig }}
+
+      {% for name, doc in parameters %}
+      :param {{ name }}: {{ doc | rstify | indent(9) }}
+      {% endfor %}
+      {% if return_doc %}
+      :return: {{ return_doc | rstify | indent(9) }}
+      {% endif %}
+
+      {{ signal_doc | rstify | indent(6) }}
+
+{% endfor %}
+
 {% if virtual_methods %}
    Virtual Methods
    ---------------

@@ -20,7 +20,7 @@ from sphinx.util.inspect import stringify_annotation
 from pygobject_docs.category import Category, determine_category, determine_member_category, MemberCategory
 from pygobject_docs.gir import load_gir_file
 from pygobject_docs.inspect import signature
-from pygobject_docs.members import own_dir, properties
+from pygobject_docs.members import own_dir, properties, signals
 
 
 @lru_cache(maxsize=0)
@@ -144,6 +144,16 @@ def generate_classes(namespace, version, out_path):
                 properties=[
                     (name, stringify_annotation(type), gir.member_doc("property", class_name, name))
                     for name, type in properties(klass)
+                ],
+                signals=[
+                    (
+                        name := info.get_name(),
+                        sig := signature(info),
+                        gir.member_doc("glib:signal", class_name, name),
+                        parameter_docs("glib:signal", name, sig),
+                        gir.member_return_doc("glib:signal", class_name, name),
+                    )
+                    for info in signals(klass)
                 ],
                 virtual_methods=[
                     (

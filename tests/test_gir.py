@@ -96,3 +96,9 @@ def test_virtual_method_parameter_docs(gobject):
     doc = gobject.member_parameter_doc("virtual-method", "ParamSpec", "values_cmp", "value1")
 
     assert doc == ""
+
+
+def test_signal_docs(gobject):
+    doc = gobject.member_doc("glib:signal", "Object", "notify")
+
+    assert doc
