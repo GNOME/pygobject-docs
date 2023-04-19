@@ -19,6 +19,8 @@ Class {{ class_name }}
    .. versionadded:: {{ version }}
 {% endif %}
 
+{# Constructors #}
+
 {% if fields %}
    Fields
    ------
@@ -35,8 +37,11 @@ Class {{ class_name }}
    -------
 {% endif %}
 
-{% for method_name, signature, method_doc, parameters, return_doc in methods %}
+{% for method_name, signature, method_doc, parameters, return_doc, is_classmethod in methods %}
    .. method:: {{ method_name }}{{ signature }}
+      {% if is_classmethod %}
+      :classmethod:
+      {% endif %}
 
       {% for name, doc in parameters %}
       :param {{ name }}: {{ doc | rstify | indent(9) }}

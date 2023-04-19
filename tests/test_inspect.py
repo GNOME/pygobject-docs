@@ -2,7 +2,7 @@ import inspect
 
 from gi.repository import GObject
 
-from pygobject_docs.inspect import signature
+from pygobject_docs.inspect import is_classmethod, signature
 
 
 def test_function_signature():
@@ -40,3 +40,21 @@ def test_gi_function():
         str(signature(func))
         == "(g_flags_type: type, const_values: ~gi.repository.GObject.FlagsValue) -> ~gi.repository.GObject.TypeInfo"
     )
+
+
+def test_python_method_is_classmethod():
+    class A:
+        @classmethod
+        def yup(cls):
+            ...
+
+        def nope(self):
+            ...
+
+    assert is_classmethod(A.yup)
+    assert not is_classmethod(A.nope)
+
+
+def test_gi_function_is_classmethod():
+    assert is_classmethod(GObject.Object.install_properties)
+    assert not is_classmethod(GObject.Object.notify)

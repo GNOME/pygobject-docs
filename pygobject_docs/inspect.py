@@ -5,9 +5,9 @@ methods, as well as gi objects.
 import logging
 from typing import Any, Callable, Optional, Sequence
 from importlib import import_module
-from inspect import Signature, Parameter
+from inspect import Signature, Parameter, ismethod
 
-from gi._gi import CallbackInfo, CallableInfo, TypeInfo, TypeTag, Direction
+from gi._gi import CallbackInfo, CallableInfo, TypeInfo, TypeTag, Direction, StructInfo
 from gi.repository import GLib
 from sphinx.util.inspect import signature as sphinx_signature, stringify_signature
 
@@ -15,6 +15,14 @@ from sphinx.util.inspect import signature as sphinx_signature, stringify_signatu
 log = logging.getLogger(__name__)
 
 Signature.__str__ = lambda self: stringify_signature(self, unqualified_typehints=True)  # type: ignore[method-assign]
+
+
+def is_classmethod(subject: Callable) -> bool:
+    if isinstance(subject, CallableInfo):
+        # -Class objects are structs
+        return isinstance(subject.get_container(), StructInfo)
+
+    return ismethod(subject)
 
 
 def signature(subject: Callable) -> Signature:

@@ -19,7 +19,7 @@ from sphinx.util.inspect import stringify_annotation
 
 from pygobject_docs.category import Category, determine_category, determine_member_category, MemberCategory
 from pygobject_docs.gir import load_gir_file
-from pygobject_docs.inspect import signature
+from pygobject_docs.inspect import is_classmethod, signature
 from pygobject_docs.members import own_dir, properties, signals
 
 
@@ -137,6 +137,7 @@ def generate_classes(namespace, version, out_path):
                         gir.member_doc("method", class_name, name),
                         parameter_docs("method", name, sig),
                         gir.member_return_doc("method", class_name, name),
+                        is_classmethod(getattr(klass, name)),
                     )
                     for name in members
                     if determine_member_category(klass, name) == MemberCategory.Methods
