@@ -1,7 +1,7 @@
 import pytest
 
 from pygobject_docs.generate import import_module
-from pygobject_docs.members import own_dir
+from pygobject_docs.members import own_dir, properties
 
 
 @pytest.fixture
@@ -28,3 +28,9 @@ def test_override_include_members_from_base(gobject):
 
 def test_should_not_include_unsuppoered_methods(gobject):
     ...
+
+
+def test_properties(gobject):
+    props = properties(gobject.Binding)
+
+    assert ("source", gobject.Object) in props

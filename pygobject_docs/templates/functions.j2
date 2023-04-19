@@ -5,7 +5,7 @@
 
 {% for name, sig, doc, parameters, return_doc, deprecated, since in functions %}
 
-.. function:: {{ function }}{{ sig }}
+.. function:: {{ name }}{{ sig }}
 
    {% for pname, pdoc in parameters %}
    :param {{ pname }}: {{ pdoc | rstify | indent(6) }}

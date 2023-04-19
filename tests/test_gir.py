@@ -74,7 +74,7 @@ def test_gir_since(glib):
 
 
 def test_virtual_method(gobject):
-    doc = gobject.virtual_method_doc("Object", "notify")
+    doc = gobject.member_doc("virtual-method", "Object", "notify")
 
     assert doc
     assert doc.startswith("Emits ")

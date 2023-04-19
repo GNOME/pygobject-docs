@@ -15,11 +15,12 @@ from pathlib import Path
 
 import gi
 from jinja2 import Environment, PackageLoader
+from sphinx.util.inspect import stringify_annotation
 
 from pygobject_docs.category import Category, determine_category, determine_member_category, MemberCategory
 from pygobject_docs.gir import load_gir_file
 from pygobject_docs.inspect import signature
-from pygobject_docs.members import own_dir
+from pygobject_docs.members import own_dir, properties
 
 
 @lru_cache(maxsize=0)
@@ -133,18 +134,22 @@ def generate_classes(namespace, version, out_path):
                     (
                         name,
                         sig := signature(getattr(klass, name)),
-                        gir.method_doc(class_name, name),
+                        gir.member_doc("method", class_name, name),
                         parameter_docs("method", name, sig),
                         gir.member_return_doc("method", class_name, name),
                     )
                     for name in members
                     if determine_member_category(klass, name) == MemberCategory.Methods
                 ],
+                properties=[
+                    (name, stringify_annotation(type), gir.member_doc("property", class_name, name))
+                    for name, type in properties(klass)
+                ],
                 virtual_methods=[
                     (
                         name,
                         sig := signature(getattr(klass, name)),
-                        gir.virtual_method_doc(class_name, name[3:]),
+                        gir.member_doc("virtual-method", class_name, name[3:]),
                         parameter_docs("virtual-method", name[3:], sig),
                         gir.member_return_doc("virtual-method", class_name, name[3:]),
                     )

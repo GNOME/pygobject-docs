@@ -67,16 +67,10 @@ class Gir:
 
         return node.attrib.get("version")
 
-    def member_doc(self, klass_name, type_name, name):
-        if not (node := self.node(klass_name)):
+    def member_doc(self, type_name, class_name, name):
+        if not (node := self.node(class_name)):
             return ""
         return node.findtext(f"./{type_name}[@name='{name}']/doc", namespaces=NS) or ""
-
-    def method_doc(self, klass_name, name):
-        return self.member_doc(klass_name, "method", name) or ""
-
-    def virtual_method_doc(self, klass_name, name):
-        return self.member_doc(klass_name, "virtual-method", name) or ""
 
     def member(self, member_type, klass_name, name):
         if "(" in name:

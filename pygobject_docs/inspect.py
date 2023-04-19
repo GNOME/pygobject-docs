@@ -33,8 +33,8 @@ def gi_signature(subject: CallableInfo) -> Signature:
     return_annotations = []
     for arg in subject.get_arguments():
         if arg.get_direction() in (Direction.OUT, Direction.INOUT):
-            return_annotations.append(_type_to_python(arg.get_type(), out=True))
-        elif (t := _type_to_python(arg.get_type())) is not None:
+            return_annotations.append(gi_type_to_python(arg.get_type(), out=True))
+        elif (t := gi_type_to_python(arg.get_type())) is not None:
             parameters.append(
                 Parameter(
                     arg.get_name(),
@@ -42,7 +42,7 @@ def gi_signature(subject: CallableInfo) -> Signature:
                     annotation=t,
                 )
             )
-    return_type = _type_to_python(subject.get_return_type(), out=True)
+    return_type = gi_type_to_python(subject.get_return_type(), out=True)
     if subject.may_return_null() and return_type is not None:
         return_type = Optional[return_type]
 
@@ -58,7 +58,7 @@ def gi_signature(subject: CallableInfo) -> Signature:
 # From pygobject-stubs
 
 
-def _type_to_python(
+def gi_type_to_python(
     type_info: TypeInfo,
     out: bool = False,
 ) -> object | type:
@@ -66,7 +66,7 @@ def _type_to_python(
 
     if tag == TypeTag.ARRAY:
         array_type = type_info.get_param_type(0)
-        t = _type_to_python(array_type)
+        t = gi_type_to_python(array_type)
         if out:
             # As output argument array of type uint8 are returned as bytes
             if array_type.get_tag() == TypeTag.UINT8:
@@ -78,7 +78,7 @@ def _type_to_python(
 
     if tag in (TypeTag.GLIST, TypeTag.GSLIST):
         array_type = type_info.get_param_type(0)
-        t = _type_to_python(array_type)
+        t = gi_type_to_python(array_type)
         return list[t]  # type: ignore[valid-type]
 
     if tag == TypeTag.BOOLEAN:
@@ -93,8 +93,8 @@ def _type_to_python(
     if tag == TypeTag.GHASH:
         key_type = type_info.get_param_type(0)
         value_type = type_info.get_param_type(1)
-        kt = _type_to_python(key_type)
-        vt = _type_to_python(value_type)
+        kt = gi_type_to_python(key_type)
+        vt = gi_type_to_python(value_type)
         return dict[kt, vt]  # type: ignore[valid-type]
 
     if tag in (TypeTag.FILENAME, TypeTag.UTF8, TypeTag.UNICHAR):
@@ -151,13 +151,13 @@ def _callable_with_arguments(
     return_annotations: list[object | type] = []
     for arg in subject.get_arguments():
         if arg.get_direction() in (Direction.OUT, Direction.INOUT):
-            return_annotations.append(_type_to_python(arg.get_type(), out=True))
+            return_annotations.append(gi_type_to_python(arg.get_type(), out=True))
         elif arg.get_closure() >= 0:
             parameters.append(...)
-        elif (t := _type_to_python(arg.get_type())) is not None:
+        elif (t := gi_type_to_python(arg.get_type())) is not None:
             parameters.append(t)
 
-    return_type = _type_to_python(subject.get_return_type(), out=True)
+    return_type = gi_type_to_python(subject.get_return_type(), out=True)
     if subject.may_return_null() and return_type is not None:
         return_type = Optional[return_type]
 

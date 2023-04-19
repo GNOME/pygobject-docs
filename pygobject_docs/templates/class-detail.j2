@@ -25,7 +25,7 @@ Class {{ class_name }}
 {% endif %}
    
 {% for name, doc in fields %}
-   .. property:: {{ name }}
+   .. attribute:: {{ name }}
 
    {{ doc | rstify | indent(3)}}
 {% endfor %}
@@ -34,7 +34,7 @@ Class {{ class_name }}
    Methods
    -------
 {% endif %}
-   
+
 {% for method_name, signature, method_doc, parameters, return_doc in methods %}
    .. method:: {{ method_name }}{{ signature }}
 
@@ -46,6 +46,19 @@ Class {{ class_name }}
       {% endif %}
 
       {{ method_doc | rstify | indent(6) }}
+
+{% endfor %}
+
+{% if properties %}
+   Properties
+   ----------
+{% endif %}
+
+{% for name, type, doc in properties %}
+   .. attribute:: {{ name }}
+      :type: {{ type }}
+
+      {{ doc | rstify | indent(6) }}
 
 {% endfor %}
 

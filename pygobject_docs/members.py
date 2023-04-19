@@ -1,16 +1,27 @@
 from itertools import chain
 
+from pygobject_docs.inspect import gi_type_to_python
+
 
 def own_dir(obj_type: type) -> list[str]:
     # Find all elements of a type, that are part of the type
     # and not of a parent or interface.
-    members = set(dir(obj_type))
 
     if obj_type.__module__.startswith("gi.overrides"):
         parent_types = obj_type.__base__.__bases__
     else:
         parent_types = obj_type.__bases__
 
+    members = set(dir(obj_type))
     parent_members: set[str] = set(chain(*(dir(b) for b in parent_types)))
 
     return sorted(members - parent_members)
+
+
+def properties(obj_type: type) -> list[tuple[str, object | type]]:
+    try:
+        props = obj_type.__info__.get_properties()  # type: ignore[attr-defined]
+    except AttributeError:
+        return []
+
+    return sorted((p.get_name(), gi_type_to_python(p.get_type())) for p in props)
