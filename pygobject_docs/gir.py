@@ -33,6 +33,13 @@ class Gir:
         namespace = self.etree.find("./namespace", namespaces=NS)
         return namespace.attrib["name"], namespace.attrib["version"]
 
+    @property
+    def dependencies(self):
+        return (
+            f"{d.attrib['name']}-{d.attrib['version']}"
+            for d in self.etree.findall("./include", namespaces=NS)
+        )
+
     def node(self, name):
         return self.etree.find(f"./namespace/*[@name='{name}']", namespaces=NS)
 

@@ -5,13 +5,20 @@ version: {{ version }}
 
 C API documentation: ...
 
-Dependencies: ...
+Dependencies: 
+
+{% for dep in dependencies %}
+*  :doc:`{{ dep }} <../{{ dep }}/index>`
+{% endfor%}
 
 .. toctree::
    :maxdepth: 1
    :caption: Contents:
-   :glob:
 
-   functions
    classes
-   
+   interfaces
+   structures
+   unions
+   bitfields
+   functions
+   constants

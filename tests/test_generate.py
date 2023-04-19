@@ -1,5 +1,6 @@
 import gi
 
+from pygobject_docs.category import Category
 from pygobject_docs.generate import (
     import_module,
     generate_classes,
@@ -15,7 +16,7 @@ def test_generate_functions(tmp_path):
 
 
 def test_generate_classes(tmp_path):
-    generate_classes("GLib", "2.0", tmp_path)
+    generate_classes("GLib", "2.0", tmp_path, Category.Classes, "class", "classes")
 
     assert (tmp_path / "class-GError.rst").exists()
 

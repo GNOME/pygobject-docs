@@ -95,7 +95,7 @@ def determine_member_category(obj_type, name) -> MemberCategory:
         and name[3:] in (v.get_name() for v in obj_type.__info__.get_vfuncs())
     ):
         return MemberCategory.VirtualMethods
-    elif isinstance(field, (property, types.GetSetDescriptorType)):
+    elif isinstance(field, (GObject.GEnum, GObject.GFlags, property, types.GetSetDescriptorType)):
         return MemberCategory.Fields
 
     raise TypeError(f"Member type not recognized for {obj_type.__name__}.{name} ({getattr(obj_type, name)})")

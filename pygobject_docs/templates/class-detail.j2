@@ -1,5 +1,4 @@
-
-Class {{ class_name }}
+{{ entity_type }} {{ class_name }}
 =========================================
 
 
@@ -53,6 +52,7 @@ Class {{ class_name }}
    .. attribute:: {{ name }}
 
    {{ doc | rstify | indent(3)}}
+   
 {% endfor %}
 
 {% if methods %}

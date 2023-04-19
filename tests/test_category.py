@@ -142,6 +142,13 @@ def test_member_virtual_method(gobject, name):
     assert category == MemberCategory.VirtualMethods
 
 
+def test_bitfield_member(gobject):
+    obj_type = gobject.BindingFlags
+    category = determine_member_category(obj_type, "BIDIRECTIONAL")
+
+    assert category == MemberCategory.Fields
+
+
 @pytest.mark.parametrize("name", ["ref", "get_data"])
 def test_member_ignored(gobject, name):
     obj_type = gobject.Object

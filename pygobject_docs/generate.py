@@ -89,19 +89,16 @@ def generate_functions(namespace, version, out_path):
         # TODO: register deprecated function
 
 
-def generate_classes(namespace, version, out_path):
+def generate_classes(namespace, version, out_path, category, singular, plural):
     mod = import_module(namespace, version)
     gir = load_gir_file(namespace, version)
     env = jinja_env()
 
     template = env.get_template("class-detail.j2")
 
-    class_names = [name for name in dir(mod) if determine_category(mod, name) == Category.Classes]
+    class_names = [name for name in dir(mod) if determine_category(mod, name) == category]
 
     for class_name in class_names:
-        if determine_category(mod, class_name) != Category.Classes:
-            continue
-
         with warnings.catch_warnings(record=True):
             klass = getattr(mod, class_name)
             # TODO: register deprecated class
@@ -115,20 +112,21 @@ def generate_classes(namespace, version, out_path):
                 doc = gir.member_parameter_doc(member_type, class_name, member_name, param)  # noqa: B023
                 yield param, doc
 
-        (out_path / f"class-{class_name}.rst").write_text(
+        (out_path / f"{singular}-{class_name}.rst").write_text(
             template.render(
                 class_name=class_name,
                 namespace=namespace,
                 version=version,
+                entity_type=singular.title(),
                 signature=lambda k, m: signature(getattr(getattr(mod, k), m)),
                 docstring=gir.doc,
                 constructors=[
                     (
                         name,
                         sig := signature(getattr(klass, name)),
-                        gir.member_doc("method", class_name, name),
-                        parameter_docs("method", name, sig),
-                        gir.member_return_doc("method", class_name, name),
+                        gir.member_doc("constructor", class_name, name),
+                        parameter_docs("constructor", name, sig),
+                        gir.member_return_doc("constructor", class_name, name),
                     )
                     for name in members
                     if determine_member_category(klass, name) == MemberCategory.Constructors
@@ -136,7 +134,9 @@ def generate_classes(namespace, version, out_path):
                 fields=[
                     (
                         name,
-                        "",
+                        gir.member_doc("field", class_name, name)
+                        or gir.member_doc("bitfield", class_name, name)
+                        or gir.member_doc("enumeration", class_name, name),
                     )
                     for name in members
                     if determine_member_category(klass, name) == MemberCategory.Fields
@@ -186,15 +186,18 @@ def generate_classes(namespace, version, out_path):
 
     template = env.get_template("classes.j2")
 
-    (out_path / "classes.rst").write_text(
+    (out_path / f"{plural}.rst").write_text(
         template.render(
             namespace=namespace,
             version=version,
+            entity_type=plural.title(),
+            prefix=singular,
         )
     )
 
 
 def generate_index(namespace, version, out_path):
+    gir = load_gir_file(namespace, version)
     env = jinja_env()
     template = env.get_template("index.j2")
 
@@ -202,6 +205,7 @@ def generate_index(namespace, version, out_path):
         template.render(
             namespace=namespace,
             version=version,
+            dependencies=gir.dependencies,
         )
     )
 
@@ -218,7 +222,11 @@ def generate(namespace, version):
     out_path = output_path(base_path, namespace, version)
 
     generate_functions(namespace, version, out_path)
-    generate_classes(namespace, version, out_path)
+    generate_classes(namespace, version, out_path, Category.Classes, "class", "classes")
+    generate_classes(namespace, version, out_path, Category.Interfaces, "interface", "interfaces")
+    generate_classes(namespace, version, out_path, Category.Structures, "structure", "structures")
+    generate_classes(namespace, version, out_path, Category.Union, "union", "unions")
+    generate_classes(namespace, version, out_path, Category.Flags, "bitfield", "bitfields")
     generate_index(namespace, version, out_path)
 
     generate_top_index(base_path)

@@ -33,6 +33,12 @@ def test_gir_namespace(glib):
     assert glib.namespace == ("GLib", "2.0")
 
 
+def test_gir_dependencies(gobject):
+    dep = next(gobject.dependencies)
+
+    assert dep == "GLib-2.0"
+
+
 def test_gir_function_doc(glib):
     doc = glib.doc("filename_from_utf8")
 

@@ -1,5 +1,6 @@
 import inspect
 
+import pytest
 from gi.repository import GObject
 
 from pygobject_docs.inspect import is_classmethod, signature
@@ -40,6 +41,13 @@ def test_gi_function():
         str(signature(func))
         == "(g_flags_type: type, const_values: ~gi.repository.GObject.FlagsValue) -> ~gi.repository.GObject.TypeInfo"
     )
+
+
+@pytest.mark.desktop
+def test_method_with_multiple_return_values():
+    from gi.repository import Gtk
+
+    assert str(signature(Gtk.Scrollable.get_border)) == "() -> tuple[bool, gi.repository.Gtk.Border]"
 
 
 def test_python_method_is_classmethod():

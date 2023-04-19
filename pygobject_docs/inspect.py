@@ -59,7 +59,9 @@ def gi_signature(subject: CallableInfo) -> Signature:
 
     return Signature(
         parameters,
-        return_annotation=return_annotations[0] if len(return_annotations) == 1 else return_annotations,
+        return_annotation=return_annotations[0]
+        if len(return_annotations) == 1
+        else tuple[*return_annotations],  # type: ignore[misc]
     )
 
 
