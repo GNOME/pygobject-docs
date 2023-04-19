@@ -122,6 +122,17 @@ def generate_classes(namespace, version, out_path):
                 version=version,
                 signature=lambda k, m: signature(getattr(getattr(mod, k), m)),
                 docstring=gir.doc,
+                constructors=[
+                    (
+                        name,
+                        sig := signature(getattr(klass, name)),
+                        gir.member_doc("method", class_name, name),
+                        parameter_docs("method", name, sig),
+                        gir.member_return_doc("method", class_name, name),
+                    )
+                    for name in members
+                    if determine_member_category(klass, name) == MemberCategory.Constructors
+                ],
                 fields=[
                     (
                         name,

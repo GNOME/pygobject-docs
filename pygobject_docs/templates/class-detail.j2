@@ -19,7 +19,30 @@ Class {{ class_name }}
    .. versionadded:: {{ version }}
 {% endif %}
 
-{# Constructors #}
+{#
+ parent types
+ subtypes
+#}
+
+{% if constructors %}
+   Constructors
+   ------------
+{% endif %}
+
+{% for cons_name, signature, cons_doc, parameters, return_doc in constructors %}
+   .. method:: {{ cons_name }}{{ signature }}
+      :classmethod:
+
+      {% for name, doc in parameters %}
+      :param {{ name }}: {{ doc | rstify | indent(9) }}
+      {% endfor %}
+      {% if return_doc %}
+      :return: {{ return_doc | rstify | indent(9) }}
+      {% endif %}
+
+      {{ cons_doc | rstify | indent(6) }}
+
+{% endfor %}
 
 {% if fields %}
    Fields
@@ -104,14 +127,3 @@ Class {{ class_name }}
       {{ doc | rstify | indent(6) }}
 
 {% endfor %}
-
-{#
-
- parent types
- subtypes
- fields
- methods
- properties
- signals
- virtual methods
-#}

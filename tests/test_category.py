@@ -119,6 +119,13 @@ def test_all_gtk_fields_are_categorized(namespace, version):
         determine_category(mod, name)
 
 
+def test_member_constructor(gobject):
+    obj_type = gobject.Object
+    category = determine_member_category(obj_type, "newv")
+
+    assert category == MemberCategory.Constructors
+
+
 @pytest.mark.parametrize("name", ["connect", "connect_data", "find_property", "bind_property"])
 def test_member_method(gobject, name):
     obj_type = gobject.Object

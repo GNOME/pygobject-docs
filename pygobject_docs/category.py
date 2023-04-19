@@ -19,6 +19,7 @@ class Category(StrEnum):
 
 
 class MemberCategory(StrEnum):
+    Constructors = auto()
     Methods = auto()
     Properties = auto()
     Fields = auto()
@@ -75,10 +76,11 @@ def determine_member_category(obj_type, name) -> MemberCategory:
         or isinstance(field, type)
     ):
         return MemberCategory.Ignored
+    elif isinstance(field, FunctionInfo):
+        return MemberCategory.Constructors if field.is_constructor() else MemberCategory.Methods
     elif isinstance(
         field,
         (
-            FunctionInfo,
             types.FunctionType,
             types.BuiltinFunctionType,
             types.MethodType,
