@@ -1,8 +1,7 @@
-image: python:3.11
+image: fedora:38
 
 before_script:
-  - apt-get update -y
-  - apt-get install -y libgirepository1.0-dev
+  - dnf install -y git-core python3-pip python3-gobject gobject-introspection-devel gtk4-devel
 
 test:
   stage: test
@@ -10,7 +9,7 @@ test:
   - pip --cache-dir /tmp/pipcache install -e '.[dev]'
   - pip --cache-dir /tmp/pipcache install pre-commit
   - pre-commit run --all-files
-  - pytest -m "not desktop"
+  - pytest
   cache:
     key: "$CI_COMMIT_REF_SLUG"
     paths:
