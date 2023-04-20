@@ -93,6 +93,37 @@ def generate_functions(namespace, version, out_path):
         # TODO: register deprecated function
 
 
+def generate_constants(namespace, version, out_path):
+    mod = import_module(namespace, version)
+
+    if not any(determine_category(mod, name) == Category.Constants for name in dir(mod)):
+        return
+
+    gir = load_gir_file(namespace, version)
+    env = jinja_env()
+
+    template = env.get_template("constants.j2")
+
+    with warnings.catch_warnings(record=True):
+        (out_path / "constants.rst").write_text(
+            template.render(
+                constants=[
+                    (
+                        name,
+                        getattr(mod, name),
+                        gir.doc(name),
+                        gir.deprecated(name),
+                        gir.since(name),
+                    )
+                    for name in dir(mod)
+                    if determine_category(mod, name) == Category.Constants
+                ],
+                namespace=namespace,
+                version=version,
+            )
+        )
+
+
 def generate_classes(namespace, version, out_path, category, singular, plural):
     mod = import_module(namespace, version)
     gir = load_gir_file(namespace, version)
@@ -245,6 +276,7 @@ def generate(namespace, version):
     generate_classes(namespace, version, out_path, Category.Structures, "structure", "structures")
     generate_classes(namespace, version, out_path, Category.Unions, "union", "unions")
     generate_classes(namespace, version, out_path, Category.Flags, "bitfield", "bitfields")
+    generate_constants(namespace, version, out_path)
     generate_index(namespace, version, out_path)
 
     generate_top_index(base_path)

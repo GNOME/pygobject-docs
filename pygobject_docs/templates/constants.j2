@@ -1,0 +1,23 @@
+{{ namespace }} Constants
+========================================
+
+.. py:currentmodule:: gi.repository.{{ namespace }}
+
+{% for name, value, doc, deprecated, since in constants %}
+
+.. data:: {{ name }}
+   :value: {{ value }}
+
+   {{ doc | rstify | indent(3) }}
+
+{% set depr, version, doc = deprecated %}
+{% if depr %}
+   .. deprecated:: {{ version }}
+      {{ doc | rstify | indent(6) }}
+{% endif %}
+
+{% if since %}
+   .. versionadded:: {{ since }}
+{% endif %}
+
+{% endfor %}
