@@ -56,6 +56,10 @@ def output_path(base_path, namespace, version):
 
 def generate_functions(namespace, version, out_path):
     mod = import_module(namespace, version)
+
+    if not any(determine_category(mod, name) == Category.Functions for name in dir(mod)):
+        return
+
     gir = load_gir_file(namespace, version)
     env = jinja_env()
 
@@ -97,6 +101,9 @@ def generate_classes(namespace, version, out_path, category, singular, plural):
     template = env.get_template("class-detail.j2")
 
     class_names = [name for name in dir(mod) if determine_category(mod, name) == category]
+
+    if not class_names:
+        return
 
     for class_name in class_names:
         with warnings.catch_warnings(record=True):
@@ -184,17 +191,16 @@ def generate_classes(namespace, version, out_path, category, singular, plural):
             )
         )
 
-    if class_names:
-        template = env.get_template("classes.j2")
+    template = env.get_template("classes.j2")
 
-        (out_path / f"{plural}.rst").write_text(
-            template.render(
-                namespace=namespace,
-                version=version,
-                entity_type=plural.title(),
-                prefix=singular,
-            )
+    (out_path / f"{plural}.rst").write_text(
+        template.render(
+            namespace=namespace,
+            version=version,
+            entity_type=plural.title(),
+            prefix=singular,
         )
+    )
 
 
 def generate_index(namespace, version, out_path):

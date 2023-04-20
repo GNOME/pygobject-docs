@@ -13,7 +13,6 @@ project = "PyGObject API"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
 ]
 
