@@ -12,7 +12,7 @@ class Category(StrEnum):
     Interfaces = auto()
     Classes = auto()
     Structures = auto()  # GI type: record
-    Union = auto()
+    Unions = auto()
     Flags = auto()
     Constants = auto()
     Ignored = auto()
@@ -51,7 +51,7 @@ def determine_category(module, name) -> Category:
     ):
         return Category.Functions
     elif isinstance(info, UnionInfo):
-        return Category.Union
+        return Category.Unions
     elif isinstance(info, EnumInfo):
         return Category.Flags
     elif isinstance(info, StructInfo) or isinstance(field, StructMeta):

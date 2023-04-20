@@ -184,28 +184,40 @@ def generate_classes(namespace, version, out_path, category, singular, plural):
             )
         )
 
-    template = env.get_template("classes.j2")
+    if class_names:
+        template = env.get_template("classes.j2")
 
-    (out_path / f"{plural}.rst").write_text(
-        template.render(
-            namespace=namespace,
-            version=version,
-            entity_type=plural.title(),
-            prefix=singular,
+        (out_path / f"{plural}.rst").write_text(
+            template.render(
+                namespace=namespace,
+                version=version,
+                entity_type=plural.title(),
+                prefix=singular,
+            )
         )
-    )
 
 
 def generate_index(namespace, version, out_path):
+    mod = import_module(namespace, version)
     gir = load_gir_file(namespace, version)
     env = jinja_env()
     template = env.get_template("index.j2")
+
+    def has(category):
+        return any(determine_category(mod, name) == category for name in dir(mod))
 
     (out_path / "index.rst").write_text(
         template.render(
             namespace=namespace,
             version=version,
             dependencies=gir.dependencies,
+            classes=has(Category.Classes),
+            interfaces=has(Category.Interfaces),
+            structures=has(Category.Structures),
+            unions=has(Category.Unions),
+            bitfields=has(Category.Flags),
+            functions=has(Category.Functions),
+            constants=has(Category.Constants),
         )
     )
 
@@ -225,7 +237,7 @@ def generate(namespace, version):
     generate_classes(namespace, version, out_path, Category.Classes, "class", "classes")
     generate_classes(namespace, version, out_path, Category.Interfaces, "interface", "interfaces")
     generate_classes(namespace, version, out_path, Category.Structures, "structure", "structures")
-    generate_classes(namespace, version, out_path, Category.Union, "union", "unions")
+    generate_classes(namespace, version, out_path, Category.Unions, "union", "unions")
     generate_classes(namespace, version, out_path, Category.Flags, "bitfield", "bitfields")
     generate_index(namespace, version, out_path)
 

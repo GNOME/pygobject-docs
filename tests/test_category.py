@@ -49,7 +49,7 @@ def test_determine_gobject_structure(gobject, name):
 def test_determine_glib_union(glib):
     category = determine_category(glib, "FloatIEEE754")
 
-    assert category == Category.Union
+    assert category == Category.Unions
 
 
 @pytest.mark.parametrize("name", ["GInterface", "TypePlugin"])
