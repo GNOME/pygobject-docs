@@ -8,8 +8,15 @@ from pygobject_docs.generate import (
 )
 
 
-def test_generate_functions(tmp_path):
+def test_generate_glib_functions(tmp_path):
     generate_functions("GLib", "2.0", tmp_path)
+
+    assert (tmp_path / "functions.rst").exists()
+    assert ".. deprecated" in (tmp_path / "functions.rst").read_text()
+
+
+def test_generate_gobject_functions(tmp_path):
+    generate_functions("GObject", "2.0", tmp_path)
 
     assert (tmp_path / "functions.rst").exists()
     assert ".. deprecated" in (tmp_path / "functions.rst").read_text()
