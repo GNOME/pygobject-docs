@@ -60,7 +60,7 @@ def determine_category(module, name) -> Category:
         return Category.Interfaces
     elif isinstance(info, ObjectInfo) or isinstance(field, (type, GObjectMeta)):
         return Category.Classes
-    elif isinstance(field, (str, int, bool, float, tuple, dict, GType)):
+    elif field is None or isinstance(field, (str, int, bool, float, tuple, dict, GType)):
         return Category.Constants
 
     raise TypeError(f"Type not recognized for {module.__name__}.{name}")

@@ -110,6 +110,7 @@ def test_all_gobject_fields_are_categorized(gobject):
         ["Gtk", "4.0"],
         ["Gdk", "4.0"],
         ["Pango", "1.0"],
+        ["HarfBuzz", "0.0"],
     ],
 )
 def test_all_gtk_fields_are_categorized(namespace, version):
