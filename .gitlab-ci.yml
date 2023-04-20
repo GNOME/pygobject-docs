@@ -2,11 +2,11 @@ image: fedora:38
 
 before_script:
   - dnf install -y git-core python3-pip python3-gobject gobject-introspection-devel gtk4-devel
+  - pip --cache-dir /tmp/pipcache install -e '.[dev]'
 
 test:
   stage: test
   script:
-  - pip --cache-dir /tmp/pipcache install -e '.[dev]'
   - pip --cache-dir /tmp/pipcache install pre-commit
   - pre-commit run --all-files
   - pytest
@@ -14,3 +14,14 @@ test:
     key: "$CI_COMMIT_REF_SLUG"
     paths:
       - /tmp/pipcache
+
+pages:
+  script:
+  - python3 -m pygobject_docs.generate GLib 2.0
+  - python3 -m pygobject_docs.generate GObject 2.0
+  - sphinx-build -M html build/source public -c pygobject_docs
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH

@@ -6,8 +6,6 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-import gi
-
 
 project = "PyGObject API"
 
@@ -36,10 +34,3 @@ add_module_names = False
 # -- Intersphinx
 
 intersphinx_mapping = {"https://docs.python.org/": None}
-
-gi.require_versions(
-    {
-        "Gtk": "4.0",
-        "GtkSource": "5",
-    }
-)
