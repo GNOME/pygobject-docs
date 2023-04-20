@@ -18,9 +18,8 @@ test:
 pages:
   script:
   - ls /usr/share/gir-1.0
-  - python3 -m pygobject_docs.generate GLib 2.0
-  - python3 -m pygobject_docs.generate GObject 2.0
-  - sphinx-build -M html build/source public -c pygobject_docs
+  - cat libraries.txt| xargs -L 1 python -m pygobject_docs.generate
+  - sphinx-build -M html -c pygobject_docs build/source public
   artifacts:
     paths:
       - public
