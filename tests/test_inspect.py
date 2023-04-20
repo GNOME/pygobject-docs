@@ -18,6 +18,7 @@ def test_builtin_function_signature():
     )
 
 
+@pytest.mark.desktop
 def test_function_with_callback_signature():
     assert (
         str(signature(GObject.signal_add_emission_hook))
