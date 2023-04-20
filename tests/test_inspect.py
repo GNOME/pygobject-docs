@@ -1,5 +1,3 @@
-import inspect
-
 import pytest
 from gi.repository import GObject
 
@@ -11,11 +9,13 @@ def test_function_signature():
         return 1
 
     assert str(signature(func)) == "(arg: str, obj: ~gi.overrides.GObject.Object) -> str | int"
-    assert str(inspect.signature(func)) == "(arg: str, obj: ~gi.overrides.GObject.Object) -> str | int"
 
 
 def test_builtin_function_signature():
-    assert str(signature(GObject.add_emission_hook)) == "(*tbd)"
+    assert (
+        str(signature(GObject.add_emission_hook))
+        == "(value1: ~gi.overrides.GObject.Object, value2: str, value3: ~typing.Callable[[...], None], value4: ..., /) -> None"
+    )
 
 
 def test_function_with_callback_signature():
@@ -31,15 +31,16 @@ def test_class_signature():
             ...
 
     assert str(signature(Foo.method)) == "(self, arg: int) -> ~gi.overrides.GObject.Object"
-    assert str(inspect.signature(Foo.method)) == "(self, arg: int) -> ~gi.overrides.GObject.Object"
 
 
-def test_gi_function():
-    func = GObject.flags_complete_type_info
-
+def test_gi_function_signature():
     assert (
-        str(signature(func))
+        str(signature(GObject.flags_complete_type_info))
         == "(g_flags_type: type, const_values: ~gi.repository.GObject.FlagsValue) -> ~gi.repository.GObject.TypeInfo"
+    )
+    assert (
+        str(signature(GObject.signal_handler_unblock))
+        == "(instance: ~gi.overrides.GObject.Object, handler_id: int) -> None"
     )
 
 

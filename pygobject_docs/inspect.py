@@ -8,13 +8,33 @@ from importlib import import_module
 from inspect import Signature, Parameter, ismethod
 
 from gi._gi import CallbackInfo, CallableInfo, TypeInfo, TypeTag, Direction, StructInfo
-from gi.repository import GLib
+from gi.repository import GLib, GObject
 from sphinx.util.inspect import signature as sphinx_signature, stringify_signature
 
 
 log = logging.getLogger(__name__)
 
 Signature.__str__ = lambda self: stringify_signature(self, unqualified_typehints=True)  # type: ignore[method-assign]
+
+SIGNATURE_OVERRIDES = {
+    # GLib
+    ("gi._gi", "add_emission_hook"): ((GObject.Object, str, Callable[[...], None], ...), None),
+    ("gi._gi", "spawn_async"): (
+        (str, Sequence[str], Sequence[str], GLib.SpawnFlags, Callable[[...], None]),
+        tuple[bool, int],
+    ),
+    ("gi._gi", "Pid", "close"): ((), None),
+    ("gi._gi", "OptionContext", "add_group"): ((GLib.OptionGroup,), None),
+    ("gi._gi", "OptionContext", "get_help_enabled"): ((), bool),
+    ("gi._gi", "OptionContext", "get_ignore_unknown_options"): ((), bool),
+    ("gi._gi", "OptionContext", "get_main_group"): ((), GLib.OptionGroup),
+    ("gi._gi", "OptionContext", "parse"): ((str,), tuple[bool, list[str]]),
+    ("gi._gi", "OptionContext", "set_help_enabled"): ((bool,), None),
+    ("gi._gi", "OptionContext", "set_ignore_unknown_options"): ((bool,), None),
+    ("gi._gi", "OptionContext", "set_main_group"): ((GLib.OptionGroup,), None),
+    ("gi._gi", "OptionGroup", "add_entries"): ((list[GLib.OptionEntry],), None),
+    ("gi._gi", "OptionGroup", "set_translation_domain"): ((str,), None),
+}
 
 
 def is_classmethod(subject: Callable) -> bool:
@@ -26,14 +46,33 @@ def is_classmethod(subject: Callable) -> bool:
 
 
 def signature(subject: Callable) -> Signature:
+    if sig := SIGNATURE_OVERRIDES.get(_override_key(subject)):
+        param_types, return_type = sig
+        return Signature(
+            [
+                Parameter(f"value{i}", Parameter.POSITIONAL_ONLY, annotation=t)
+                for i, t in enumerate(param_types, start=1)
+            ],
+            return_annotation=return_type,
+        )
+
     if isinstance(subject, CallableInfo):
         return gi_signature(subject)
 
     try:
         return sphinx_signature(subject)
     except ValueError as e:
-        log.warning(str(e))
+        log.warning(f"{e} {_override_key(subject)}")
         return Signature([Parameter("tbd", Parameter.VAR_POSITIONAL)])
+
+
+def _override_key(subject):
+    if mod := getattr(subject, "__module__", None):
+        return (mod, subject.__name__)
+    elif ocls := getattr(subject, "__objclass__", None):
+        return (ocls.__module__, ocls.__name__, subject.__name__)
+
+    return None
 
 
 def gi_signature(subject: CallableInfo) -> Signature:
