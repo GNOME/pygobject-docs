@@ -16,19 +16,20 @@ extensions = [
     "sphinx.ext.intersphinx",
 ]
 
+# include_patterns = ["build/source/**"]
 templates_path: list[str] = ["_templates"]
 exclude_patterns: list[str] = []
 
+# Default role for backtick text `like this`.
+# default_role = "py:obj"
+add_module_names = False
+# toc_object_entries = False
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "furo"
+# html_theme = "furo"
 # html_static_path = ["_static"]
-
-# -- Autodoc
-
-add_module_names = False
 
 # -- Intersphinx
 
