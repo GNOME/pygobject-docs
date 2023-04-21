@@ -18,6 +18,7 @@ from jinja2 import Environment, PackageLoader
 from sphinx.util.inspect import stringify_annotation
 
 from pygobject_docs.category import Category, determine_category, determine_member_category, MemberCategory
+from pygobject_docs.doc import rstify
 from pygobject_docs.gir import load_gir_file
 from pygobject_docs.inspect import is_classmethod, signature
 from pygobject_docs.members import own_dir, properties, signals
@@ -28,17 +29,6 @@ def import_module(namespace, version):
     gi.require_version(namespace, version)
 
     return importlib.import_module(f"gi.repository.{namespace}")
-
-
-def rstify(text):
-    # See also https://gitlab.gnome.org/GNOME/gi-docgen/-/blob/main/gidocgen/utils.py
-    # replace @\w+
-    # replace #\w+ (type ref); #guint64 -> :obj:int
-    # replace \w+()
-    # replace %TRUE|FALSE|NULL -> ":const:`True`", etc.
-    if not text:
-        return ""
-    return text.replace("`", "")
 
 
 @lru_cache(maxsize=0)
