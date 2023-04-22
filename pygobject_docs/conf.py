@@ -8,6 +8,7 @@
 
 
 project = "GNOME Python API"
+author = "GNOME Developers"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -17,7 +18,7 @@ extensions = [
 ]
 
 # include_patterns = ["build/source/**"]
-templates_path: list[str] = ["_templates"]
+templates_path: list[str] = ["./sphinx"]
 exclude_patterns: list[str] = []
 
 # Default role for backtick text `like this`.
@@ -28,8 +29,18 @@ add_module_names = False
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-# html_theme = "furo"
+# html_theme = "alabaster"
+
+# See https://alabaster.readthedocs.io/en/latest/customization.html
+html_theme_options = {
+    "globaltoc_maxdepth": 2,
+    "fixed_sidebar": False,
+}
+
 # html_static_path = ["_static"]
+html_sidebars = {
+    "**": ["about.html", "searchbox.html", "globaltoc.html"],
+}
 
 # -- Intersphinx
 
