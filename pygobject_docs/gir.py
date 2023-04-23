@@ -1,14 +1,17 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterable
 from functools import lru_cache
 from pathlib import Path
-from xml.etree import ElementTree
 
 from gi.repository import GLib
+from gidocgen.gir import GirParser, Enumeration, Function, Repository, Type
 
 
-@lru_cache(maxsize=0)
+log = logging.getLogger(__name__)
+
+
 def load_gir_file(namespace, version) -> Gir | None:
     for gir_dir in gir_dirs():
         if (gir_file := gir_dir / f"{namespace}-{version}.gir").exists():
@@ -16,8 +19,17 @@ def load_gir_file(namespace, version) -> Gir | None:
     return None
 
 
+@lru_cache(maxsize=0)
+def _parse(gir_file) -> Repository:
+    parser = GirParser(gir_dirs())
+    parser.parse(gir_file)
+    repo = parser.get_repository()
+    assert repo
+    return repo
+
+
 def gir_dirs() -> Iterable[Path]:
-    return (path for d in GLib.get_system_data_dirs() if (path := Path(d) / "gir-1.0").exists())
+    return [path for d in GLib.get_system_data_dirs() if (path := Path(d) / "gir-1.0").exists()]
 
 
 NS = {"": "http://www.gtk.org/introspection/core/1.0", "glib": "http://www.gtk.org/introspection/glib/1.0"}
@@ -25,90 +37,109 @@ NS = {"": "http://www.gtk.org/introspection/core/1.0", "glib": "http://www.gtk.o
 
 class Gir:
     def __init__(self, gir_file: Path):
-        self.gir_file = gir_file
-        self.etree = ElementTree.parse(gir_file)
+        self.repo = _parse(gir_file)
 
     @property
     def namespace(self):
-        namespace = self.etree.find("./namespace", namespaces=NS)
-        return namespace.attrib["name"], namespace.attrib["version"]
+        ns = self.repo.namespace
+        return ns.name, ns.version
 
     @property
     def dependencies(self):
-        return (
-            f"{d.attrib['name']}-{d.attrib['version']}"
-            for d in self.etree.findall("./include", namespaces=NS)
-        )
+        return (f"{r.namespace.name}-{r.namespace.version}" for r in self.repo.includes.values())
 
-    def node(self, name):
-        return self.etree.find(f"./namespace/*[@name='{name}']", namespaces=NS)
+    def _node(self, name) -> Function | Type | None:
+        node = self.repo.namespace.find_real_type(name) or self.repo.namespace.find_function(name)
+        if not node:
+            log.debug("No GIR type found for %s", name)
+        return node
 
     def doc(self, name) -> str:
-        node = self.node(name)
-        return node and node.findtext("./doc", namespaces=NS) or ""
+        if not (obj := self._node(name)) or not obj.doc:
+            return ""
+
+        return obj.doc.content or ""
 
     def parameter_doc(self, func_name, param_name):
-        if not (node := self.node(func_name)):
-            return
+        if not (obj := self.repo.namespace.find_function(func_name)):
+            return ""
 
-        return node.findtext(f"./parameters/parameter[@name='{param_name}']/doc", namespaces=NS) or ""
+        param = next((p for p in obj.parameters if p.name == param_name), None)
+        if not param or not param.doc:
+            return ""
+
+        return param.doc.content or ""
 
     def return_doc(self, name) -> str:
-        if not (node := self.node(name)):
-            return ""
-        return node.findtext("./return-value/doc", namespaces=NS) or ""
+        if (obj := self.repo.namespace.find_function(name)) and obj.return_value and obj.return_value.doc:
+            return obj.return_value.doc.content or ""
+
+        return ""
 
     def deprecated(self, name) -> tuple[bool, str, str]:
-        if not (node := self.node(name)):
+        if not (obj := self._node(name)):
             return False, "", ""
 
-        deprecated = node.attrib.get("deprecated")
-        version = node.attrib.get("deprecated-version") or ""
-        doc = node.findtext("./doc-deprecated", namespaces=NS) or ""
-
-        return deprecated, version, doc
+        return (obj.deprecated, *(obj.deprecated_since or ("", "")))  # type: ignore[return-value]
 
     def since(self, name) -> str | None:
-        if not (node := self.node(name)):
+        if not (obj := self._node(name)):
             return None
 
-        return node.attrib.get("version")
+        return obj.available_since
 
-    def member_doc(self, type_name, class_name, name):
-        if not (node := self.node(class_name)):
-            return ""
-        return node.findtext(f"./{type_name}[@name='{name}']/doc", namespaces=NS) or ""
-
-    def member(self, member_type, klass_name, name):
+    def member(self, member_type, class_name, name):
         if "(" in name:
             name, _ = name.split("(", 1)
 
-        if not (node := self.node(klass_name)):
+        if not (node := self._node(class_name)):
             return None
 
-        member = node.find(f"./{member_type}[@name='{name}']", namespaces=NS)
-        if not member and (cnode := self.node(f"{klass_name}Class")):
-            member = cnode.find(f"./{member_type}[@name='{name}']", namespaces=NS)
+        if member_type == "constructor":
+            return next((m for m in node.constructors if m.name == name), None)
+        if member_type == "method":
+            return (hasattr(node, "methods") and next((m for m in node.methods if m.name == name), None)) or (
+                hasattr(node, "functions")
+                and next((m for m in node.functions if m.name in (name, f"interface_{name}")), None)
+            )
+        if member_type == "virtual-method":
+            return next((m for m in node.virtual_methods if m.name == name), None)
+        if member_type == "property":
+            return node.properties.get(name, None)
+        if member_type == "signal":
+            return node.signals.get(name, None)
+        if member_type == "field":
+            if isinstance(node, Enumeration):
+                return next((m for m in node.members if m.name == name), "")
+            return next((m for m in node.fields if m.name == name), "")
 
-        return member
+        raise ValueError("Unhandled member type %s", member_type)
+
+    def member_doc(self, member_type, class_name, name):
+        if (member := self.member(member_type, class_name, name)) and member.doc:
+            return member.doc.content or ""
+
+        return ""
 
     def member_parameter_doc(self, member_type, klass_name, member_name, param_name):
         if not (member := self.member(member_type, klass_name, member_name)):
             return
 
-        return member.findtext(f"./parameters/parameter[@name='{param_name}']/doc", namespaces=NS) or ""
+        param = next((p for p in member.parameters if p.name == param_name), None)
+        if param and param.doc:
+            return param.doc.content or ""
+
+        return ""
 
     def member_return_doc(self, member_type, klass_name, name):
         if not (member := self.member(member_type, klass_name, name)):
             return ""
 
-        return member.findtext("./return-value/doc", namespaces=NS) or ""
+        if (
+            (member := self.repo.namespace.find_function(name))
+            and member.return_value
+            and member.return_value.doc
+        ):
+            return member.return_value.doc.content or ""
 
-
-# Classes:
-# - .@parent
-# - ./implements
-# - ./constructor (+ parameters)
-# - ./method (+ parameters+ property?)
-# - ./property
-# - ./virtual-method
+        return ""

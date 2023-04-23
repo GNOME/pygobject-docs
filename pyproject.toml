@@ -16,6 +16,7 @@ dependencies = [
     "PyGObject",
     "jinja2",
     "sphinx",
+    "gi-docgen",
 ]
 dynamic = ["version"]
 

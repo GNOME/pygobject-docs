@@ -160,12 +160,7 @@ def generate_classes(namespace, version, out_path, category, singular, plural):
                     if determine_member_category(klass, name) == MemberCategory.Constructors
                 ],
                 fields=[
-                    (
-                        name,
-                        gir.member_doc("field", class_name, name)
-                        or gir.member_doc("bitfield", class_name, name)
-                        or gir.member_doc("enumeration", class_name, name),
-                    )
+                    (name, gir.member_doc("field", class_name, name))
                     for name in members
                     if determine_member_category(klass, name) == MemberCategory.Fields
                 ],
@@ -189,9 +184,9 @@ def generate_classes(namespace, version, out_path, category, singular, plural):
                     (
                         name := info.get_name(),
                         sig := signature(info),
-                        gir.member_doc("glib:signal", class_name, name),
-                        parameter_docs("glib:signal", name, sig),
-                        gir.member_return_doc("glib:signal", class_name, name),
+                        gir.member_doc("signal", class_name, name),
+                        parameter_docs("signal", name, sig),
+                        gir.member_return_doc("signal", class_name, name),
                     )
                     for info in signals(klass)
                 ],

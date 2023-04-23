@@ -23,12 +23,6 @@ def test_gir_dirs():
     assert dirs
 
 
-def test_load_gir_file(glib):
-    assert str(glib.gir_file) == "/usr/share/gir-1.0/GLib-2.0.gir"
-    assert glib.etree
-    assert next(glib.etree.iter(), None)
-
-
 def test_gir_namespace(glib):
     assert glib.namespace == ("GLib", "2.0")
 
@@ -74,9 +68,9 @@ def test_gir_deprecated(glib):
 
 
 def test_gir_since(glib):
-    ver = glib.since("thread_pool_get_max_idle_time")
+    ver = glib.since("atomic_int_add")
 
-    assert ver == "2.10"
+    assert ver == "2.4"
 
 
 def test_virtual_method(gobject):
@@ -105,6 +99,6 @@ def test_virtual_method_parameter_docs(gobject):
 
 
 def test_signal_docs(gobject):
-    doc = gobject.member_doc("glib:signal", "Object", "notify")
+    doc = gobject.member_doc("signal", "Object", "notify")
 
     assert doc
