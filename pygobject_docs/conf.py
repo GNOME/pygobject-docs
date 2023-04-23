@@ -9,6 +9,7 @@
 
 project = "GNOME Python API"
 author = "GNOME Developers"
+copyright = "2023"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -34,13 +35,15 @@ add_module_names = False
 # See https://alabaster.readthedocs.io/en/latest/customization.html
 html_theme_options = {
     "globaltoc_maxdepth": 2,
-    "fixed_sidebar": False,
+    "fixed_sidebar": True,
 }
 
 # html_static_path = ["_static"]
 html_sidebars = {
     "**": ["about.html", "searchbox.html", "globaltoc.html"],
 }
+
+html_css_files = ["custom.css"]
 
 # -- Intersphinx
 
