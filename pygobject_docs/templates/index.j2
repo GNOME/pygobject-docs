@@ -10,7 +10,7 @@ C API documentation: ...
 Dependencies: 
 
 {% for dep in dependencies %}
-*  :doc:`{{ dep }} <../{{ dep }}/index>`
+*  :doc:`{{ dep }} <{% if dep == "cairo-1.0" %}https://pycairo.readthedocs.io/{% else %}../{{ dep }}/index{% endif %}>`
 {% endfor%}
 
 .. toctree::
