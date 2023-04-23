@@ -38,3 +38,19 @@ def test_convert_code_snippet():
     assert ".. code-block:: C" in rst
     assert "   char " in rst
     assert "]|" not in rst
+
+
+def test_class_link():
+    text = "Lorem ipsum [class@Gtk.Builder] et amilet"
+
+    rst = rstify(text)
+
+    assert ":obj:`~gi.repository.Gtk.Builder`" in rst
+
+
+def test_method_link():
+    text = "Lorem ipsum [method@Gtk.Builder.foo] et amilet"
+
+    rst = rstify(text)
+
+    assert ":obj:`~gi.repository.Gtk.Builder.foo`" in rst

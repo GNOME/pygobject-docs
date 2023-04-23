@@ -23,7 +23,7 @@ templates_path: list[str] = ["./sphinx"]
 exclude_patterns: list[str] = []
 
 # Default role for backtick text `like this`.
-# default_role = "py:obj"
+default_role = "py:obj"
 add_module_names = False
 # toc_object_entries = False
 

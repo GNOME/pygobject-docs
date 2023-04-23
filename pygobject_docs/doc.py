@@ -8,7 +8,9 @@ def rstify(text):
 
     lines = text.splitlines(keepends=False)
 
-    return pipe(lines, inline_code, constants, markdown_images, markdown_links, code_snippets, "\n".join)
+    return pipe(
+        lines, inline_code, constants, markdown_images, markdown_links, code_snippets, gtk_doc_link, "\n".join
+    )
 
 
 def pipe(obj, *filters):
@@ -58,6 +60,10 @@ def code_snippets(lines):
             yield f"{' ' * indent}{line}"
         else:
             yield line
+
+
+def gtk_doc_link(lines):
+    return (re.sub(r"\[(?:class|method)@(.*?)\]", r":obj:`~gi.repository.\1`", line) for line in lines)
 
 
 # See also https://gitlab.gnome.org/GNOME/gi-docgen/-/blob/main/gidocgen/utils.py
