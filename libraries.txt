@@ -22,6 +22,5 @@ PangoFT2 1.0
 PangoFc 1.0
 PangoOT 1.0
 PangoXft 1.0
-Vulkan 1.0
 fontconfig 2.0
 freetype2 2.0
