@@ -33,7 +33,7 @@ def import_module(namespace, version):
 
 @lru_cache(maxsize=0)
 def jinja_env():
-    env = Environment(loader=PackageLoader("pygobject_docs"), trim_blocks=True, lstrip_blocks=True)
+    env = Environment(loader=PackageLoader("pygobject_docs"), lstrip_blocks=True)
     env.filters["rstify"] = rstify
     return env
 
@@ -148,6 +148,8 @@ def generate_classes(namespace, version, out_path, category, singular, plural):
                 entity_type=singular.title(),
                 signature=lambda k, m: signature(getattr(getattr(mod, k), m)),
                 docstring=gir.doc,
+                ancestors=gir.ancestors(class_name),
+                implements=gir.implements(class_name),
                 constructors=[
                     (
                         name,

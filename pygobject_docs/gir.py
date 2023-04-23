@@ -6,7 +6,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from gi.repository import GLib
-from gidocgen.gir import GirParser, Enumeration, Function, Repository, Type
+from gidocgen.gir import GirParser, Class, Enumeration, Function, Repository, Type
 
 
 log = logging.getLogger(__name__)
@@ -53,6 +53,18 @@ class Gir:
         if not node:
             log.debug("No GIR type found for %s", name)
         return node
+
+    def ancestors(self, name) -> Iterable[str]:
+        if not (node := self._node(name)) or not isinstance(node, Class):
+            return []
+
+        return [f"gi.repository.{anc.fqtn}" for anc in node.ancestors]
+
+    def implements(self, name) -> list[str]:
+        if not (node := self._node(name)) or not isinstance(node, Class):
+            return []
+
+        return [f"gi.repository.{impl.fqtn}" for impl in node.implements]
 
     def doc(self, name) -> str:
         if not (obj := self._node(name)) or not obj.doc:

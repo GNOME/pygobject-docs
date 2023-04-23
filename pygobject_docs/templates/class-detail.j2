@@ -8,6 +8,13 @@
 
 .. class:: {{ class_name }}
 
+{% if ancestors %}
+   Ancestors: {% for p in ancestors %}{% if not loop.first %}, {% endif %}:class:`~{{p}}`{% endfor %}
+{% endif %}
+{% if implements %}
+   Implements: {% for p in implements %}{% if not loop.first %}, {% endif %}:class:`~{{p}}`{% endfor %}
+{% endif %}
+
    {{ docstring(class_name) | rstify | indent(3) }}
 
 {% set depr, version, doc = deprecated(class_name) %}
