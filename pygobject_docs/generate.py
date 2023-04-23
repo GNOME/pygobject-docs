@@ -10,7 +10,7 @@ import logging
 import sys
 import warnings
 
-from functools import lru_cache
+from functools import lru_cache, partial
 from pathlib import Path
 
 import gi
@@ -23,6 +23,14 @@ from pygobject_docs.gir import load_gir_file
 from pygobject_docs.inspect import is_classmethod, signature
 from pygobject_docs.members import own_dir, properties, signals
 
+C_API_DOCS = {
+    "GLib": "https://docs.gtk.org/glib",
+    "GObject": "https://docs.gtk.org/gobject",
+    "Gio": "https://docs.gtk.org/gio",
+    "Gdk": "https://docs.gtk.org/gdk4",
+    "Gtk": "https://docs.gtk.org/gtk4",
+}
+
 
 @lru_cache(maxsize=0)
 def import_module(namespace, version):
@@ -32,9 +40,9 @@ def import_module(namespace, version):
 
 
 @lru_cache(maxsize=0)
-def jinja_env():
+def jinja_env(namespace):
     env = Environment(loader=PackageLoader("pygobject_docs"), lstrip_blocks=True)
-    env.filters["rstify"] = rstify
+    env.filters["rstify"] = partial(rstify, image_base_url=C_API_DOCS.get(namespace, ""))
     return env
 
 
@@ -51,7 +59,7 @@ def generate_functions(namespace, version, out_path):
         return
 
     gir = load_gir_file(namespace, version)
-    env = jinja_env()
+    env = jinja_env(namespace)
 
     template = env.get_template("functions.j2")
 
@@ -90,7 +98,7 @@ def generate_constants(namespace, version, out_path):
         return
 
     gir = load_gir_file(namespace, version)
-    env = jinja_env()
+    env = jinja_env(namespace)
 
     template = env.get_template("constants.j2")
 
@@ -117,7 +125,7 @@ def generate_constants(namespace, version, out_path):
 def generate_classes(namespace, version, out_path, category, singular, plural):
     mod = import_module(namespace, version)
     gir = load_gir_file(namespace, version)
-    env = jinja_env()
+    env = jinja_env(namespace)
 
     template = env.get_template("class-detail.j2")
 
@@ -224,7 +232,7 @@ def generate_classes(namespace, version, out_path, category, singular, plural):
 def generate_index(namespace, version, out_path):
     mod = import_module(namespace, version)
     gir = load_gir_file(namespace, version)
-    env = jinja_env()
+    env = jinja_env(namespace)
     template = env.get_template("index.j2")
 
     def has(category):
@@ -247,7 +255,7 @@ def generate_index(namespace, version, out_path):
 
 
 def generate_top_index(out_path):
-    env = jinja_env()
+    env = jinja_env("")
     template = env.get_template("top-index.j2")
 
     (out_path / "index.rst").write_text(template.render())

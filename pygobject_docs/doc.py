@@ -1,7 +1,8 @@
+from functools import partial
 import re
 
 
-def rstify(text):
+def rstify(text, image_base_url=""):
     """Convert gtk-doc to rst."""
     if not text:
         return ""
@@ -9,7 +10,15 @@ def rstify(text):
     lines = text.splitlines(keepends=False)
 
     return pipe(
-        lines, inline_code, constants, markdown_images, markdown_links, code_snippets, gtk_doc_link, "\n".join
+        lines,
+        code_snippets,
+        inline_code,
+        constants,
+        partial(markdown_images, image_url=image_base_url),
+        markdown_links,
+        gtk_doc_link,
+        parameters,
+        "\n".join,
     )
 
 
@@ -23,6 +32,10 @@ def inline_code(lines):
     return (re.sub(r"`", r"``", line) for line in lines)
 
 
+def parameters(lines):
+    return (re.sub(r"@(\w+)", r"``\1``", line) for line in lines)
+
+
 def constants(lines):
     return (
         line.replace("%TRUE", ":const:`True`")
@@ -32,38 +45,43 @@ def constants(lines):
     )
 
 
-def markdown_images(lines):
-    return (re.sub(r" *!\[\]\((.*?)\)", r"\n..image:: https://doc.gtk.org/glib/\1\n", line) for line in lines)
+def markdown_images(lines, image_url):
+    return (re.sub(r" *!\[.*?\]\((.+?)\)", f"\n.. image:: {image_url}/\\1\n", line) for line in lines)
 
 
 def markdown_links(lines):
-    return (re.sub(r"\[(.*?)\]\((.*?)\)", r"`\1 <\2>`_", line) for line in lines)
+    return (re.sub(r"\[(.+?)\]\((.+?)\)", r"`\1 <\2>`_", line) for line in lines)
 
 
 def code_snippets(lines):
+    """Deal with markdown and gtk-doc style code blocks."""
     in_code = False
-    indent = -1
     for line in lines:
-        if re.search(r"^ *\|\[", line):
-            yield re.sub(r' *\|\[ *(<!-- *language="(\w+)" *-->)?', r"\n.. code-block:: \2\n", line)
+        if not in_code and line.startswith("```"):
+            yield "\n.. code-block::\n   :dedent:\n"
             in_code = True
+        elif not in_code and re.search(r"^ *\|\[", line):
+            yield re.sub(
+                r' *\|\[ *(<!-- *language="(\w+)" *-->)?', r"\n.. code-block:: \2\n   :dedent:\n", line
+            )
+            in_code = True
+        elif in_code and line == "```":
+            yield ""
+            in_code = False
         elif in_code and re.search(r"^ *\]\|", line):
             yield ""
             in_code = False
-            indent = -1
         elif in_code:
-            if indent == -1:
-                if line.startswith("  "):
-                    indent = 1
-                else:
-                    indent = 3
-            yield f"{' ' * indent}{line}"
+            yield f"   {line}"
         else:
             yield line
 
 
 def gtk_doc_link(lines):
-    return (re.sub(r"\[(?:class|method)@(.*?)\]", r":obj:`~gi.repository.\1`", line) for line in lines)
+    return (
+        re.sub(r"\[(?:enum|class|id|method|property|signal|vfunc)@(.+?)\]", r":obj:`~gi.repository.\1`", line)
+        for line in lines
+    )
 
 
 # See also https://gitlab.gnome.org/GNOME/gi-docgen/-/blob/main/gidocgen/utils.py

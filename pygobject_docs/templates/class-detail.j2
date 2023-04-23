@@ -15,22 +15,22 @@
    Implements: {% for p in implements %}{% if not loop.first %}, {% endif %}:class:`~{{p}}`{% endfor %}
 {% endif %}
 
+   Description
+   -----------
+
    {{ docstring(class_name) | rstify | indent(3) }}
 
 {% set depr, version, doc = deprecated(class_name) %}
 {% if depr %}
-   .. deprecated:: {{ version }} {{ doc | rstify | indent(6) }}
+   .. deprecated:: {{ version }}
+   
+      {{ doc | rstify | indent(6) }}
 {% endif %}
 
 {% set version = since(class_name) %}
 {% if version %}
    .. versionadded:: {{ version }}
 {% endif %}
-
-{#
- parent types
- subtypes
-#}
 
 {% if constructors %}
    Constructors
@@ -71,9 +71,7 @@
 
 {% for method_name, signature, method_doc, parameters, return_doc, is_classmethod in methods %}
    .. method:: {{ method_name }}{{ signature }}
-      {% if is_classmethod %}
-      :classmethod:
-      {% endif %}
+{% if is_classmethod %}      :classmethod:{% endif %}
 
       {% for name, doc in parameters %}
       :param {{ name }}: {{ doc | rstify | indent(9) }}
@@ -94,6 +92,7 @@
 {% for name, type, doc in properties %}
    .. attribute:: {{ name }}
       :type: {{ type }}
+      :canonical: gi.repository.{{ namespace }}.{{ class_name }}:{{ name }}
 
       {{ doc | rstify | indent(6) }}
 
@@ -106,6 +105,8 @@
 
 {% for signal_name, sig, signal_doc, parameters, return_doc in signals %}
    .. method:: {{ signal_name }}{{ sig }}
+      :canonical: gi.repository.{{ namespace }}.{{ class_name }}::{{ signal_name }}
+      :noindex:
 
       {% for name, doc in parameters %}
       :param {{ name }}: {{ doc | rstify | indent(9) }}

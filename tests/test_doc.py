@@ -54,3 +54,11 @@ def test_method_link():
     rst = rstify(text)
 
     assert ":obj:`~gi.repository.Gtk.Builder.foo`" in rst
+
+
+def test_parameters():
+    text = "Lorem @ipsum et amilet"
+
+    rst = rstify(text)
+
+    assert rst == "Lorem ``ipsum`` et amilet"
