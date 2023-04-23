@@ -16,8 +16,9 @@ def rstify(text, image_base_url=""):
         constants,
         partial(markdown_images, image_url=image_base_url),
         markdown_links,
+        markdown_heading,
         gtk_doc_link,
-        parameters,
+        parameters,  # after gtk-doc links, since those also contain `@` symbols
         "\n".join,
     )
 
@@ -53,6 +54,16 @@ def markdown_links(lines):
     return (re.sub(r"\[(.+?)\]\((.+?)\)", r"`\1 <\2>`_", line) for line in lines)
 
 
+def markdown_heading(lines):
+    for line in lines:
+        if re.search(r"^#+ ", line):
+            h = line.split(" ", 1)[1]
+            yield h
+            yield "~" * len(h)
+        else:
+            yield line
+
+
 def code_snippets(lines):
     """Deal with markdown and gtk-doc style code blocks."""
     in_code = False
@@ -79,7 +90,11 @@ def code_snippets(lines):
 
 def gtk_doc_link(lines):
     return (
-        re.sub(r"\[(?:enum|class|id|method|property|signal|vfunc)@(.+?)\]", r":obj:`~gi.repository.\1`", line)
+        re.sub(
+            r"\[`*(?:ctor|class|enum|id|method|property|signal|vfunc)@(.+?)`*\]",
+            r":obj:`~gi.repository.\1`",
+            line,
+        )
         for line in lines
     )
 

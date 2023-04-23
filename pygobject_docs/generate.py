@@ -28,7 +28,11 @@ C_API_DOCS = {
     "GObject": "https://docs.gtk.org/gobject",
     "Gio": "https://docs.gtk.org/gio",
     "Gdk": "https://docs.gtk.org/gdk4",
+    "Gsk": "https://docs.gtk.org/gsk4",
     "Gtk": "https://docs.gtk.org/gtk4",
+    "Pango": "https://docs.gtk.org/Pango",
+    "GdkPixbuf": "https://docs.gtk.org/gdk-pixbuf",
+    "Adw": "https://gnome.pages.gitlab.gnome.org/libadwaita/doc/1.3",
 }
 
 
