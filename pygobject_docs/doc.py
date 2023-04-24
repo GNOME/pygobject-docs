@@ -1,3 +1,16 @@
+"""Translate gtk-doc text to reStructuredText.
+
+TODO:
+
+- replace #\\w+ (type ref); #guint64 -> :obj:int
+  else lookup Type.ctype or some field/member and provide official type
+- replace \\w+() -> look up Callable.identifier in GIR repo and return official type
+- convert tables to list-tables. https://docutils.sourceforge.io/docs/ref/rst/directives.html#list-table
+
+See also https://gitlab.gnome.org/GNOME/gi-docgen/-/blob/main/gidocgen/utils.py
+
+"""
+
 from functools import partial
 import re
 
@@ -30,6 +43,7 @@ def pipe(obj, *filters):
 
 
 def inline_code(lines):
+    # TODO: `Class`s -> ``Class``'s
     return (re.sub(r"`", r"``", line) for line in lines)
 
 
@@ -97,9 +111,3 @@ def gtk_doc_link(lines):
         )
         for line in lines
     )
-
-
-# See also https://gitlab.gnome.org/GNOME/gi-docgen/-/blob/main/gidocgen/utils.py
-# replace @\w+
-# replace #\w+ (type ref); #guint64 -> :obj:int
-# replace \w+()
