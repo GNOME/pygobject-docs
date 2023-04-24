@@ -35,6 +35,8 @@ C_API_DOCS = {
     "Adw": "https://gnome.pages.gitlab.gnome.org/libadwaita/doc/1.3",
 }
 
+log = logging.getLogger(__name__)
+
 
 @lru_cache(maxsize=0)
 def import_module(namespace, version):
@@ -282,5 +284,11 @@ def generate(namespace, version):
 
 
 if __name__ == "__main__":
-    logging.basicConfig()
-    generate(sys.argv[1], sys.argv[2])
+    logging.basicConfig(
+        format="%(asctime)s %(levelname)s:%(message)s", datefmt="%H:%M:%S", level=logging.INFO
+    )
+
+    for arg in sys.argv[1:]:
+        namespace, version = arg.split("-")
+        log.info("Generating pages for %s", namespace)
+        generate(namespace, version)

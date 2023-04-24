@@ -18,7 +18,7 @@ test:
 pages:
   script:
   - ls /usr/share/gir-1.0
-  - cat libraries.txt| xargs -L 1 python3 -m pygobject_docs.generate
+  - python3 -m pygobject_docs.generate $(cat libraries.txt)
   - sphinx-build -M html build/source build -c pygobject_docs 
   - mv build/html public
   artifacts:
