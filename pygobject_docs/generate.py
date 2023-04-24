@@ -126,7 +126,7 @@ def generate_constants(namespace, version, out_path):
         )
 
 
-def generate_classes(namespace, version, out_path, category, singular):
+def generate_classes(namespace, version, out_path, category):
     mod = import_module(namespace, version)
     gir = load_gir_file(namespace, version)
     env = jinja_env(namespace)
@@ -152,12 +152,12 @@ def generate_classes(namespace, version, out_path, category, singular):
                 doc = gir.member_parameter_doc(member_type, class_name, member_name, param)  # noqa: B023
                 yield param, doc
 
-        (out_path / f"{singular}-{class_name}.rst").write_text(
+        (out_path / f"{category.single}-{class_name}.rst").write_text(
             template.render(
                 class_name=class_name,
                 namespace=namespace,
                 version=version,
-                entity_type=singular.title(),
+                entity_type=category.single.title(),
                 signature=lambda k, m: signature(getattr(getattr(mod, k), m)),
                 docstring=gir.doc,
                 ancestors=gir.ancestors(class_name),
@@ -228,7 +228,7 @@ def generate_classes(namespace, version, out_path, category, singular):
             namespace=namespace,
             version=version,
             entity_type=category.title(),
-            prefix=singular,
+            prefix=category.single,
         )
     )
 
@@ -270,11 +270,11 @@ def generate(namespace, version):
     out_path = output_path(base_path, namespace, version)
 
     generate_functions(namespace, version, out_path)
-    generate_classes(namespace, version, out_path, Category.Classes, "class")
-    generate_classes(namespace, version, out_path, Category.Interfaces, "interface")
-    generate_classes(namespace, version, out_path, Category.Structures, "structure")
-    generate_classes(namespace, version, out_path, Category.Unions, "union")
-    generate_classes(namespace, version, out_path, Category.Enums, "enum")
+    generate_classes(namespace, version, out_path, Category.Classes)
+    generate_classes(namespace, version, out_path, Category.Interfaces)
+    generate_classes(namespace, version, out_path, Category.Structures)
+    generate_classes(namespace, version, out_path, Category.Unions)
+    generate_classes(namespace, version, out_path, Category.Enums)
     generate_constants(namespace, version, out_path)
     generate_index(namespace, version, out_path)
 

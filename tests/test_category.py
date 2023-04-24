@@ -187,3 +187,13 @@ def test_gtk_member_fields():
 
     for name in own_dir(obj_type):
         determine_member_category(obj_type, name)
+
+
+def test_singular_name():
+    assert Category.Functions.single == "function"
+    assert Category.Interfaces.single == "interface"
+    assert Category.Classes.single == "class"
+    assert Category.Structures.single == "structure"
+    assert Category.Unions.single == "union"
+    assert Category.Enums.single == "enum"
+    assert Category.Constants.single == "constant"

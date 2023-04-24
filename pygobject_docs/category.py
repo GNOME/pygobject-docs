@@ -17,6 +17,12 @@ class Category(StrEnum):
     Constants = auto()
     Ignored = auto()
 
+    @property
+    def single(self):
+        if self is Category.Classes:
+            return "class"
+        return str(self)[:-1]
+
 
 class MemberCategory(StrEnum):
     Constructors = auto()

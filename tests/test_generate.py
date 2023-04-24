@@ -23,8 +23,9 @@ def test_generate_gobject_functions(tmp_path):
 
 
 def test_generate_classes(tmp_path):
-    generate_classes("GLib", "2.0", tmp_path, Category.Classes, "class")
+    generate_classes("GLib", "2.0", tmp_path, Category.Classes)
 
+    assert (tmp_path / "classes.rst").exists()
     assert (tmp_path / "class-GError.rst").exists()
 
 
