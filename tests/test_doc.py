@@ -1,6 +1,29 @@
 from textwrap import dedent
 
+import pytest
+
 from pygobject_docs.doc import rstify
+
+
+@pytest.mark.parametrize(
+    "text, expected",
+    [
+        ["`class`", "``class``"],
+        ["`char*[]`", "``char*[]``"],
+        ["`func()`", "``func()``"],
+        ["`cls::prop`", "``cls::prop``"],
+        ["`interface`s", "``interface``'s"],
+        ["test `Class` and `Interface`s.", "test ``Class`` and ``Interface``'s."],
+        [
+            "[`DBusActivatable` interface](https://some-url#dbus)",
+            "```DBusActivatable`` interface <https://some-url#dbus>`_",
+        ],
+    ],
+)
+def test_markdown_inline_code(text, expected):
+    rst = rstify(text)
+
+    assert rst == expected
 
 
 def test_convert_constant():
@@ -62,3 +85,29 @@ def test_parameters():
     rst = rstify(text)
 
     assert rst == "Lorem ``ipsum`` et amilet"
+
+
+def test_whitespace_before_lists():
+    text = dedent(
+        """\
+        line of text.
+        - list item.
+        """
+    )
+
+    rst = rstify(text)
+
+    assert rst == dedent(
+        """\
+        line of text.
+
+        - list item."""
+    )
+
+
+def test_remove_tags():
+    text = "I/O Priority # {#io-priority}"
+
+    rst = rstify(text)
+
+    assert rst == "I/O Priority"

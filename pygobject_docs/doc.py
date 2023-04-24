@@ -6,7 +6,7 @@ TODO:
   else lookup Type.ctype or some field/member and provide official type
 - replace \\w+() -> look up Callable.identifier in GIR repo and return official type
 - convert tables to list-tables. https://docutils.sourceforge.io/docs/ref/rst/directives.html#list-table
-
+- blank line before unnumbered lists (start with "-")
 See also https://gitlab.gnome.org/GNOME/gi-docgen/-/blob/main/gidocgen/utils.py
 
 """
@@ -25,13 +25,16 @@ def rstify(text, image_base_url=""):
     return pipe(
         lines,
         code_snippets,
-        inline_code,
+        tags,
         constants,
+        whitespace_before_lists,
         partial(markdown_images, image_url=image_base_url),
-        markdown_links,
-        markdown_heading,
         gtk_doc_link,
         parameters,  # after gtk-doc links, since those also contain `@` symbols
+        markdown_inline_code,
+        markdown_links,
+        s_after_inline_code,
+        markdown_heading,
         "\n".join,
     )
 
@@ -42,9 +45,12 @@ def pipe(obj, *filters):
     return obj
 
 
-def inline_code(lines):
-    # TODO: `Class`s -> ``Class``'s
-    return (re.sub(r"`", r"``", line) for line in lines)
+def markdown_inline_code(lines):
+    return (re.sub(r"(?:(?<![:`])|^)`([^` ]+?)`(?=[^`]|$)", r"``\1``", line) for line in lines)
+
+
+def s_after_inline_code(lines):
+    return (re.sub(r"(?<=`)s(?=\W|$)", r"'s", line) for line in lines)
 
 
 def parameters(lines):
@@ -102,12 +108,38 @@ def code_snippets(lines):
             yield line
 
 
+def tags(lines):
+    return (re.sub(r" *# +\{#[\w-]+\}$", "", line) for line in lines)
+
+
 def gtk_doc_link(lines):
-    return (
+    tmp = (
         re.sub(
-            r"\[`*(?:ctor|class|enum|id|method|property|signal|vfunc)@(.+?)`*\]",
+            r"\[`*(?:ctor|class|const|enum|flags|func|id|iface|method|property|signal|struct|vfunc)@(.+?)`*\]",
             r":obj:`~gi.repository.\1`",
             line,
         )
         for line in lines
     )
+    return (
+        re.sub(
+            r"\[`*(?:alias|callback|error|type)@(.+?)`*\]",
+            r"``\1``",
+            line,
+        )
+        for line in tmp
+    )
+
+
+def whitespace_before_lists(lines):
+    paragraph = True
+    for line in lines:
+        if paragraph and line.startswith("-"):
+            yield ""
+            yield line
+            paragraph = False
+        elif not paragraph and line and line[0] not in (" ", "-"):
+            yield line
+            paragraph = True
+        else:
+            yield line
