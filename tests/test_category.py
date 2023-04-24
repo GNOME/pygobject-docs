@@ -63,7 +63,7 @@ def test_determine_gobject_interface(gobject, name):
 def test_determine_glib_flag(glib, name):
     category = determine_category(glib, name)
 
-    assert category == Category.Flags
+    assert category == Category.Enums
 
 
 @pytest.mark.parametrize("name", ["GINT32_FORMAT", "BIG_ENDIAN"])
@@ -143,7 +143,7 @@ def test_member_virtual_method(gobject, name):
     assert category == MemberCategory.VirtualMethods
 
 
-def test_bitfield_member(gobject):
+def test_enum_member(gobject):
     obj_type = gobject.BindingFlags
     category = determine_member_category(obj_type, "BIDIRECTIONAL")
 
