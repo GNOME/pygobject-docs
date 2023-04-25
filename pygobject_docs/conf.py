@@ -31,17 +31,17 @@ add_module_names = False
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 # html_theme = "alabaster"
+pygments_style = "tango"
+html_theme = "sphinx_rtd_theme"
+html_show_copyright = False
+html_title = project
 
-# See https://alabaster.readthedocs.io/en/latest/customization.html
 html_theme_options = {
+    "display_version": False,
     "globaltoc_maxdepth": 2,
-    "fixed_sidebar": True,
 }
 
-# html_static_path = ["_static"]
-html_sidebars = {
-    "**": ["about.html", "searchbox.html", "globaltoc.html"],
-}
+html_static_path = ["static"]
 
 html_css_files = ["custom.css"]
 
