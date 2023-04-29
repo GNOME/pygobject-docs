@@ -6,7 +6,7 @@ TODO:
   else lookup Type.ctype or some field/member and provide official type
 - replace \\w+() -> look up Callable.identifier in GIR repo and return official type
 - convert tables to list-tables. https://docutils.sourceforge.io/docs/ref/rst/directives.html#list-table
-- blank line before unnumbered lists (start with "-")
+
 See also https://gitlab.gnome.org/GNOME/gi-docgen/-/blob/main/gidocgen/utils.py
 
 """
