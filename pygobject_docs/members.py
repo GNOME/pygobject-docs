@@ -1,6 +1,6 @@
 from itertools import chain
 
-from gi._gi import SignalInfo
+from gi._gi import SignalInfo, VFuncInfo
 
 from pygobject_docs.inspect import gi_type_to_python
 
@@ -27,6 +27,15 @@ def properties(obj_type: type) -> list[tuple[str, object | type]]:
         return []
 
     return sorted((p.get_name(), gi_type_to_python(p.get_type())) for p in props)
+
+
+def virtual_methods(obj_type: type) -> list[VFuncInfo]:
+    try:
+        vfuncs = obj_type.__info__.get_vfuncs()  # type: ignore[attr-defined]
+    except AttributeError:
+        return []
+
+    return sorted(vfuncs, key=lambda v: v.get_name())
 
 
 def signals(obj_type: type) -> list[SignalInfo]:

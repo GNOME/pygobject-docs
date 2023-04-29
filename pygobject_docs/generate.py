@@ -21,7 +21,7 @@ from pygobject_docs.category import Category, determine_category, determine_memb
 from pygobject_docs.doc import rstify
 from pygobject_docs.gir import load_gir_file
 from pygobject_docs.inspect import is_classmethod, signature
-from pygobject_docs.members import own_dir, properties, signals
+from pygobject_docs.members import own_dir, properties, signals, virtual_methods
 
 C_API_DOCS = {
     "GLib": "https://docs.gtk.org/glib",
@@ -208,14 +208,13 @@ def generate_classes(namespace, version, out_path, category):
                 ],
                 virtual_methods=[
                     (
-                        name,
-                        sig := signature(getattr(klass, name)),
-                        gir.member_doc("virtual-method", class_name, name[3:]),
-                        parameter_docs("virtual-method", name[3:], sig),
-                        gir.member_return_doc("virtual-method", class_name, name[3:]),
+                        f"do_{info.get_name()}",
+                        sig := signature(info),
+                        gir.member_doc("virtual-method", class_name, info.get_name()),
+                        parameter_docs("virtual-method", info.get_name(), sig),
+                        gir.member_return_doc("virtual-method", class_name, info.get_name()),
                     )
-                    for name in members
-                    if determine_member_category(klass, name) == MemberCategory.VirtualMethods
+                    for info in virtual_methods(klass)
                 ],
                 return_doc=gir.return_doc,
                 deprecated=gir.deprecated,
