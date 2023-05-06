@@ -15,7 +15,7 @@ from functools import partial
 import re
 
 
-def rstify(text, image_base_url=""):
+def rstify(text, *, image_base_url="", gir=None):
     """Convert gtk-doc to rst."""
     if not text:
         return ""
@@ -35,6 +35,7 @@ def rstify(text, image_base_url=""):
         markdown_links,
         s_after_inline_code,
         markdown_heading,
+        partial(c_type, gir=gir),
         "\n".join,
     )
 
@@ -143,3 +144,19 @@ def whitespace_before_lists(lines):
             paragraph = True
         else:
             yield line
+
+
+def c_type(lines, gir):
+    if not gir:
+        return lines
+
+    def repl(m: re.Match[str]) -> str:
+        p = m.group(1)
+        g = m.group(2)
+        if g.startswith("gint") or g.startswith("gunit"):
+            return f"{p}:obj:int"
+        if t := gir.c_type(g):
+            return f"{p}:obj:gi.repository.{t}"
+        return f"{p}``{g}``"
+
+    return (re.sub(r"(\W|\A)#(\w+)", repl, line) for line in lines)

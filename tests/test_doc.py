@@ -3,6 +3,7 @@ from textwrap import dedent
 import pytest
 
 from pygobject_docs.doc import rstify
+from pygobject_docs.gir import load_gir_file
 
 
 @pytest.mark.parametrize(
@@ -111,3 +112,23 @@ def test_remove_tags():
     rst = rstify(text)
 
     assert rst == "I/O Priority"
+
+
+@pytest.fixture
+def glib():
+    return load_gir_file("GLib", "2.0")
+
+
+@pytest.mark.parametrize(
+    "text, expected",
+    [
+        ["This is a #GQueue", "This is a :obj:gi.repository.GLib.Queue"],
+        ["a #gint32 value", "a :obj:int value"],
+        ["#gint32 value", ":obj:int value"],
+        ["In a url http://example.com#section-123", "In a url http://example.com#section-123"],
+    ],
+)
+def test_c_type_to_python(text, expected, glib):
+    rst = rstify(text, gir=glib)
+
+    assert rst == expected

@@ -46,9 +46,10 @@ def import_module(namespace, version):
 
 
 @lru_cache(maxsize=0)
-def jinja_env(namespace):
+def jinja_env(gir):
+    namespace, _version = gir.namespace if gir else ("", "")
     env = Environment(loader=PackageLoader("pygobject_docs"), lstrip_blocks=True)
-    env.filters["rstify"] = partial(rstify, image_base_url=C_API_DOCS.get(namespace, ""))
+    env.filters["rstify"] = partial(rstify, image_base_url=C_API_DOCS.get(namespace, ""), gir=gir)
     return env
 
 
@@ -65,7 +66,7 @@ def generate_functions(namespace, version, out_path):
         return
 
     gir = load_gir_file(namespace, version)
-    env = jinja_env(namespace)
+    env = jinja_env(gir)
 
     template = env.get_template("functions.j2")
 
@@ -104,7 +105,7 @@ def generate_constants(namespace, version, out_path):
         return
 
     gir = load_gir_file(namespace, version)
-    env = jinja_env(namespace)
+    env = jinja_env(gir)
 
     template = env.get_template("constants.j2")
 
@@ -131,7 +132,7 @@ def generate_constants(namespace, version, out_path):
 def generate_classes(namespace, version, out_path, category):
     mod = import_module(namespace, version)
     gir = load_gir_file(namespace, version)
-    env = jinja_env(namespace)
+    env = jinja_env(gir)
 
     template = env.get_template("class-detail.j2")
 
@@ -237,7 +238,7 @@ def generate_classes(namespace, version, out_path, category):
 def generate_index(namespace, version, out_path):
     mod = import_module(namespace, version)
     gir = load_gir_file(namespace, version)
-    env = jinja_env(namespace)
+    env = jinja_env(gir)
     template = env.get_template("index.j2")
 
     def has(category):
@@ -260,7 +261,7 @@ def generate_index(namespace, version, out_path):
 
 
 def generate_top_index(out_path):
-    env = jinja_env("")
+    env = jinja_env(None)
     template = env.get_template("top-index.j2")
 
     (out_path / "index.rst").write_text(template.render())

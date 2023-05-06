@@ -155,3 +155,19 @@ class Gir:
             return member.return_value.doc.content or ""
 
         return ""
+
+    def c_type(self, name: str) -> str | None:
+        # symbol = self.repo.find_symbol(name)
+
+        for ts in self.repo.types.values():
+            for t in ts:
+                ctype = getattr(t, "ctype", "")
+                if ctype.startswith("const "):
+                    ctype = ctype[6:]
+                while ctype.endswith("*"):
+                    ctype = ctype[:-1]
+                if name == ctype:
+                    return t.fqtn
+
+        log.warning("No C type %s found", name)
+        return None
