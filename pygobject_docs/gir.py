@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Iterable
 from functools import lru_cache
+from itertools import chain
 from pathlib import Path
 
 from gi.repository import GLib
@@ -157,17 +158,38 @@ class Gir:
         return ""
 
     def c_type(self, name: str) -> str | None:
-        # symbol = self.repo.find_symbol(name)
+        def find(name: str):
+            for ts in self.repo.types.values():
+                for t in ts:
+                    ctype = getattr(t, "ctype", "")
+                    if ctype.startswith("const "):
+                        ctype = ctype[6:]
+                    while ctype.endswith("*"):
+                        ctype = ctype[:-1]
+                    if name == ctype:
+                        return t.fqtn
 
-        for ts in self.repo.types.values():
-            for t in ts:
-                ctype = getattr(t, "ctype", "")
-                if ctype.startswith("const "):
-                    ctype = ctype[6:]
-                while ctype.endswith("*"):
-                    ctype = ctype[:-1]
-                if name == ctype:
-                    return t.fqtn
+        if maybe_type := find(name):
+            return maybe_type
 
-        log.warning("No C type %s found", name)
+        # Deal with plurals:
+        if name.endswith("s") and (maybe_type := find(name[:-1])):
+            return maybe_type
+
+        log.warning("C type %s not found", name)
+        return None
+
+    def c_symbol(self, name: str) -> str | None:
+        if not (symbol := self.repo.find_symbol(name)):
+            return None
+
+        ns, s = symbol
+        if isinstance(s, Type) and (
+            method := next((m for m in chain(s.methods, s.functions) if m.identifier == name), None)
+        ):
+            return f"{ns.name}.{s.name}.{method.name}"
+        elif isinstance(s, Function):
+            return f"{ns.name}.{s.name}"
+
+        log.warning("C symbol %s not found", name)
         return None

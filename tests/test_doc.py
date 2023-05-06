@@ -122,13 +122,18 @@ def glib():
 @pytest.mark.parametrize(
     "text, expected",
     [
-        ["This is a #GQueue", "This is a :obj:gi.repository.GLib.Queue"],
-        ["a #gint32 value", "a :obj:int value"],
-        ["#gint32 value", ":obj:int value"],
+        ["This is a #GQueue", "This is a :obj:`~gi.repository.GLib.Queue`"],
+        ["a #gint32 value", "a :obj:`int` value"],
+        ["#gint32 value", ":obj:`int` value"],
         ["In a url http://example.com#section-123", "In a url http://example.com#section-123"],
+        [
+            "If we were to use g_variant_get_child_value()",
+            "If we were to use :func:`~gi.repository.GLib.Variant.get_child_value`",
+        ],
+        ["Good old function g_access()", "Good old function :func:`~gi.repository.GLib.access`"],
     ],
 )
-def test_c_type_to_python(text, expected, glib):
+def test_c_symbol_to_python(text, expected, glib):
     rst = rstify(text, gir=glib)
 
     assert rst == expected

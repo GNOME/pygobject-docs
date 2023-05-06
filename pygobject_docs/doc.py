@@ -36,6 +36,7 @@ def rstify(text, *, image_base_url="", gir=None):
         s_after_inline_code,
         markdown_heading,
         partial(c_type, gir=gir),
+        partial(c_symbol, gir=gir),
         "\n".join,
     )
 
@@ -154,9 +155,24 @@ def c_type(lines, gir):
         p = m.group(1)
         g = m.group(2)
         if g.startswith("gint") or g.startswith("gunit"):
-            return f"{p}:obj:int"
+            return f"{p}:obj:`int`"
+        if g == "gdouble":
+            return f"{p}:obj:`float`"
         if t := gir.c_type(g):
-            return f"{p}:obj:gi.repository.{t}"
+            return f"{p}:obj:`~gi.repository.{t}`"
         return f"{p}``{g}``"
 
     return (re.sub(r"(\W|\A)#(\w+)", repl, line) for line in lines)
+
+
+def c_symbol(lines, gir):
+    if not gir:
+        return lines
+
+    def repl(m: re.Match[str]) -> str:
+        g = m.group(1)
+        if s := gir.c_symbol(g):
+            return f":func:`~gi.repository.{s}`"
+        return f"``{g}``"
+
+    return (re.sub(r"(\w+)\(\)", repl, line) for line in lines)
