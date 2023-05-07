@@ -7,7 +7,7 @@ from itertools import chain
 from pathlib import Path
 
 from gi.repository import GLib
-from gidocgen.gir import GirParser, Class, Enumeration, Function, Repository, Type
+from gidocgen.gir import GirParser, Class, Constant, Enumeration, Function, FunctionMacro, Repository, Type
 
 
 log = logging.getLogger(__name__)
@@ -39,6 +39,7 @@ NS = {"": "http://www.gtk.org/introspection/core/1.0", "glib": "http://www.gtk.o
 class Gir:
     def __init__(self, gir_file: Path):
         self.repo = _parse(gir_file)
+        self._constants: dict[str, Constant | Enumeration] = self._resolve_constants()
 
     @property
     def namespace(self):
@@ -169,6 +170,8 @@ class Gir:
                     if name == ctype:
                         return t.fqtn
 
+        if name == "NULL":
+            return "None"
         if maybe_type := find(name):
             return maybe_type
 
@@ -181,15 +184,46 @@ class Gir:
 
     def c_symbol(self, name: str) -> str | None:
         if not (symbol := self.repo.find_symbol(name)):
+            log.warning("C symbol %s not found", name)
             return None
 
         ns, s = symbol
-        if isinstance(s, Type) and (
-            method := next((m for m in chain(s.methods, s.functions) if m.identifier == name), None)
-        ):
-            return f"{ns.name}.{s.name}.{method.name}"
-        elif isinstance(s, Function):
+        if isinstance(s, Type):
+            if method := next(
+                (
+                    m
+                    for m in chain(
+                        s.methods, s.functions, s.constructors if hasattr(s, "constructors") else []
+                    )
+                    if m.identifier == name
+                ),
+                None,
+            ):
+                return f"{ns.name}.{s.name}.{method.name}"
+            else:
+                raise RuntimeError("Field not found %s %s", s, name)
+        elif isinstance(s, (Function, FunctionMacro)):
             return f"{ns.name}.{s.name}"
 
-        log.warning("C symbol %s not found", name)
-        return None
+        raise RuntimeError("Unexpected type for %s", s)
+
+    def c_const(self, name: str) -> str | None:
+        if not (symbol := self._constants.get(name)):
+            log.warning("C constant %s not found", name)
+            return None
+
+        ns, t, m = symbol
+        return f"{ns.name}.{t.name}.{m.name.upper()}" if t else f"{ns.name}.{m.name.upper()}"
+
+    def _resolve_constants(self):
+        constants = {}
+        ns = self.repo.namespace
+
+        for const in ns.get_constants():
+            constants[const.ctype] = (ns, None, const)
+
+        for type in chain(ns.get_enumerations(), ns.get_bitfields(), ns.get_error_domains()):
+            for member in type.members:
+                constants[member.identifier] = (ns, type, member)
+
+        return constants

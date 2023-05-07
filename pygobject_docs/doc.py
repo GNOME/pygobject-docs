@@ -26,7 +26,7 @@ def rstify(text, *, image_base_url="", gir=None):
         lines,
         code_snippets,
         tags,
-        constants,
+        partial(c_constants, gir=gir),
         whitespace_before_lists,
         partial(markdown_images, image_url=image_base_url),
         gtk_doc_link,
@@ -57,15 +57,6 @@ def s_after_inline_code(lines):
 
 def parameters(lines):
     return (re.sub(r"@(\w+)", r"``\1``", line) for line in lines)
-
-
-def constants(lines):
-    return (
-        line.replace("%TRUE", ":const:`True`")
-        .replace("%FALSE", ":const:`False`")
-        .replace("%NULL", ":const:`None`")
-        for line in lines
-    )
 
 
 def markdown_images(lines, image_url):
@@ -173,6 +164,47 @@ def c_symbol(lines, gir):
         g = m.group(1)
         if s := gir.c_symbol(g):
             return f":func:`~gi.repository.{s}`"
-        return f"``{g}``"
+        return f"``{g}()``"
 
     return (re.sub(r"(\w+)\(\)", repl, line) for line in lines)
+
+
+_python_consts = {
+    "TRUE": ":const:`True`",
+    "FALSE": ":const:`False`",
+    "NULL": ":const:`None`",
+    "G_TYPE_CHAR": ":obj:`int`",
+    "G_TYPE_INT": ":obj:`int`",
+    "G_TYPE_INT64": ":obj:`int`",
+    "G_TYPE_LONG": ":obj:`int`",
+    "G_TYPE_UCHAR": "unsigned :obj:`int`",
+    "G_TYPE_UINT": "unsigned :obj:`int`",
+    "G_TYPE_UINT64": "unsigned :obj:`int`",
+    "G_TYPE_ULONG": "unsigned :obj:`int`",
+    "G_TYPE_OBJECT": ":obj:`object`",
+    "G_TYPE_PARAM": ":obj:`~gi.repository.GObject.ParamSpec`",
+    "G_TYPE_BOXED": "``Boxed``",
+    "G_TYPE_STRING": ":obj:`str`",
+    "G_TYPE_FLOAT": ":obj:`float`",
+    "G_TYPE_BOOLEAN": ":obj:`bool`",
+    "G_TYPE_DOUBLE": ":obj:`float`",
+    "G_TYPE_ENUM": "``Enum``",
+    "G_TYPE_FLAGS": "``Flags``",
+    "G_TYPE_GTYPE": "``GType``",
+    "G_TYPE_INVALID": "``Invalid``",
+}
+
+
+def c_constants(lines, gir):
+    if not gir:
+        return lines
+
+    def repl(m: re.Match[str]) -> str:
+        g = m.group(1)
+        if g in _python_consts:
+            return _python_consts[g]
+        if s := gir.c_const(g):
+            return f":const:`~gi.repository.{s}`"
+        return f"``{g}``"
+
+    return (re.sub(r"%(\w+)", repl, line) for line in lines)

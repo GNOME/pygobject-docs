@@ -27,10 +27,10 @@ def test_markdown_inline_code(text, expected):
     assert rst == expected
 
 
-def test_convert_constant():
-    text = """Lorem %TRUE ipsum %FALSE %NULL."""
+def test_convert_constant(glib):
+    text = r"""Lorem %TRUE ipsum %FALSE %NULL."""
 
-    rst = rstify(text)
+    rst = rstify(text, gir=glib)
 
     assert rst == "Lorem :const:`True` ipsum :const:`False` :const:`None`."
 
@@ -131,6 +131,7 @@ def glib():
             "If we were to use :func:`~gi.repository.GLib.Variant.get_child_value`",
         ],
         ["Good old function g_access()", "Good old function :func:`~gi.repository.GLib.access`"],
+        [r"%G_SPAWN_ERROR_TOO_BIG", ":const:`~gi.repository.GLib.SpawnError.TOO_BIG`"],
     ],
 )
 def test_c_symbol_to_python(text, expected, glib):
