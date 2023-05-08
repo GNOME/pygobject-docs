@@ -241,6 +241,12 @@ def generate_index(namespace, version, out_path):
     env = jinja_env(gir)
     template = env.get_template("index.j2")
 
+    library_version = (
+        ".".join(map(str, [mod.MAJOR_VERSION, mod.MINOR_VERSION, mod.MICRO_VERSION]))
+        if hasattr(mod, "MAJOR_VERSION")
+        else "-"
+    )
+
     def has(category):
         return any(determine_category(mod, name) == category for name in dir(mod))
 
@@ -248,7 +254,7 @@ def generate_index(namespace, version, out_path):
         template.render(
             namespace=namespace,
             version=version,
-            library_version=".".join(map(str, [mod.MAJOR_VERSION, mod.MINOR_VERSION, mod.MICRO_VERSION])),
+            library_version=library_version,
             c_api_doc_link=C_API_DOCS.get(namespace, ""),
             dependencies=gir.dependencies,
             classes=has(Category.Classes),
