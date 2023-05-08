@@ -248,6 +248,8 @@ def generate_index(namespace, version, out_path):
         template.render(
             namespace=namespace,
             version=version,
+            library_version=".".join(map(str, [mod.MAJOR_VERSION, mod.MINOR_VERSION, mod.MICRO_VERSION])),
+            c_api_doc_link=C_API_DOCS.get(namespace, ""),
             dependencies=gir.dependencies,
             classes=has(Category.Classes),
             interfaces=has(Category.Interfaces),

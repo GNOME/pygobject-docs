@@ -3,9 +3,13 @@
 
 .. module:: ~gi.repository.{{ namespace }}
 
-version: {{ version }}
+Module version: {{ version }}
 
-C API documentation: ...
+Library version: {{ library_version }}
+
+{% if c_api_doc_link%}
+C API documentation: `{{ c_api_doc_link }} <{{ c_api_doc_link }}>`_
+{% endif%}
 
 Dependencies: 
 

@@ -205,6 +205,6 @@ def c_constants(lines, gir):
             return _python_consts[g]
         if s := gir.c_const(g):
             return f":const:`~gi.repository.{s}`"
-        return f"``{g}``"
+        return f"``%{g}``"
 
     return (re.sub(r"%(\w+)", repl, line) for line in lines)
