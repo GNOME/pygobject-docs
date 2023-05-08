@@ -11,15 +11,9 @@ Library version: {{ library_version }}
 C API documentation: `{{ c_api_doc_link }} <{{ c_api_doc_link }}>`_
 {% endif%}
 
-Dependencies: 
-
-{% for dep in dependencies %}
-*  :doc:`{{ dep }} <{% if dep == "cairo-1.0" %}https://pycairo.readthedocs.io/{% else %}../{{ dep }}/index{% endif %}>`
-{% endfor%}
-
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
+   :caption: API
 
    {% if classes %}
    classes
@@ -42,3 +36,10 @@ Dependencies:
    {% if constants %}
    constants
    {% endif %}
+
+Dependencies
+------------
+
+{% for dep in dependencies %}
+*  :doc:`{{ dep }} <{% if dep == "cairo-1.0" %}https://pycairo.readthedocs.io/{% else %}../{{ dep }}/index{% endif %}>`
+{% endfor%}
