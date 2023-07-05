@@ -109,7 +109,7 @@ def gtk_doc_link(lines):
     tmp = (
         re.sub(
             r"\[`*(?:ctor|class|const|enum|flags|func|id|iface|method|property|signal|struct|vfunc)@(.+?)`*\]",
-            r":obj:`~gi.repository.\1`",
+            lambda m: f":obj:`~gi.repository.{m.group(1)}`" if "." in m.group(1) else f":obj:`{m.group(1)}`",
             line,
         )
         for line in lines
