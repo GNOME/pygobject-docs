@@ -48,4 +48,7 @@ html_css_files = ["custom.css"]
 
 # -- Intersphinx
 
-intersphinx_mapping = {"https://docs.python.org/": None}
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/", None),
+    "pycairo": ("https://pycairo.readthedocs.io/en/latest/", None),
+}
