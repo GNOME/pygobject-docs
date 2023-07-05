@@ -37,6 +37,7 @@ def rstify(text, *, image_base_url="", gir=None):
         markdown_heading,
         partial(c_type, gir=gir),
         partial(c_symbol, gir=gir),
+        partial(html_picture, image_url=image_base_url),
         "\n".join,
     )
 
@@ -135,6 +136,20 @@ def whitespace_before_lists(lines):
             yield line
             paragraph = True
         else:
+            yield line
+
+
+def html_picture(lines, image_url):
+    picture = False
+    for line in lines:
+        if "<picture>" in line:
+            picture = True
+        if "</picture>" in line:
+            picture = False
+        elif picture and "<img " in line:
+            path = re.sub(r'^.* src="([^"]+)".*$', r"\1", line)
+            yield f".. image:: {image_url}/{path}"
+        elif not picture:
             yield line
 
 

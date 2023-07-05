@@ -72,6 +72,14 @@ def test_class_link():
     assert ":obj:`~gi.repository.Gtk.Builder`" in rst
 
 
+def test_class_link_without_namespace():
+    text = "Lorem ipsum [class@Builder] et amilet"
+
+    rst = rstify(text)
+
+    assert ":obj:`Builder`" in rst
+
+
 def test_method_link():
     text = "Lorem ipsum [method@Gtk.Builder.foo] et amilet"
 
@@ -138,3 +146,22 @@ def test_c_symbol_to_python(text, expected, glib):
     rst = rstify(text, gir=glib)
 
     assert rst == expected
+
+
+def test_html_picture_tag():
+    text = """
+    Freeform text.
+
+    <picture>
+        <source srcset="application-window-dark.png" media="(prefers-color-scheme: dark)">
+        <img src="application-window.png" alt="application-window">
+    </picture>
+
+    More freeform text.
+    """
+
+    rst = rstify(text, image_base_url="https://example.com")
+
+    assert "Freeform text." in rst
+    assert "More freeform text." in rst
+    assert ".. image:: https://example.com/application-window.png" in rst
