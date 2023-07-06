@@ -194,7 +194,11 @@ def generate_classes(namespace, version, out_path, category):
                     if determine_member_category(klass, name) == MemberCategory.Methods
                 ],
                 properties=[
-                    (name, stringify_annotation(type), gir.member_doc("property", class_name, name))
+                    (
+                        name,
+                        stringify_annotation(type, mode="smart"),
+                        gir.member_doc("property", class_name, name),
+                    )
                     for name, type in properties(klass)
                 ],
                 signals=[
