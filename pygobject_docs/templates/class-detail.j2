@@ -22,7 +22,7 @@
 {% if depr %}
    .. deprecated:: {{ version }}
    
-      {{ doc | rstify | indent(6) }}
+      {{ doc | replace("\n", " ") | rstify | indent(6) }}
 {% endif %}
 
    Description
