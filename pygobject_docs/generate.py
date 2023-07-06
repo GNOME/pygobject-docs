@@ -15,11 +15,12 @@ from pathlib import Path
 
 import gi
 from jinja2 import Environment, PackageLoader
+from sphinx.util.inspect import stringify_annotation
 
 from pygobject_docs.category import Category, determine_category, determine_member_category, MemberCategory
 from pygobject_docs.doc import rstify
 from pygobject_docs.gir import load_gir_file
-from pygobject_docs.inspect import is_classmethod, signature, property_type, patch_gi_overrides
+from pygobject_docs.inspect import is_classmethod, signature, patch_gi_overrides
 from pygobject_docs.members import own_dir, properties, signals, virtual_methods
 
 C_API_DOCS = {
@@ -193,7 +194,7 @@ def generate_classes(namespace, version, out_path, category):
                     if determine_member_category(klass, name) == MemberCategory.Methods
                 ],
                 properties=[
-                    (name, property_type(type), gir.member_doc("property", class_name, name))
+                    (name, stringify_annotation(type), gir.member_doc("property", class_name, name))
                     for name, type in properties(klass)
                 ],
                 signals=[
