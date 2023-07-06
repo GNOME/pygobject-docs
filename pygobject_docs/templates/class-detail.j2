@@ -13,10 +13,10 @@
    Implements: {% for p in implements %}{% if not loop.first %}, {% endif %}:class:`~{{p}}`{% endfor %}
 {% endif %}
 
-   Description
-   -----------
-
-   {{ docstring(class_name) | rstify | indent(3) }}
+{% set version = since(class_name) %}
+{% if version %}
+   .. versionadded:: {{ version }}
+{% endif %}
 
 {% set depr, version, doc = deprecated(class_name) %}
 {% if depr %}
@@ -25,10 +25,10 @@
       {{ doc | rstify | indent(6) }}
 {% endif %}
 
-{% set version = since(class_name) %}
-{% if version %}
-   .. versionadded:: {{ version }}
-{% endif %}
+   Description
+   -----------
+
+   {{ docstring(class_name) | rstify | indent(3) }}
 
 {% if constructors %}
    Constructors
