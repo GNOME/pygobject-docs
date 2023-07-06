@@ -16,6 +16,20 @@ log = logging.getLogger(__name__)
 
 Signature.__str__ = lambda self: stringify_signature(self, unqualified_typehints=True)  # type: ignore[method-assign]
 
+
+def patch_gi_overrides():
+    import gi.overrides
+    from gi.overrides import override as real_override
+
+    def override(type_):
+        namespace = type_.__module__.rsplit(".", 1)[-1]
+        new_type = real_override(type_)
+        new_type.__module__ = "gi.repository." + namespace
+        return new_type
+
+    gi.overrides.override = override
+
+
 SIGNATURE_OVERRIDES = {
     # GLib
     ("gi._gi", "add_emission_hook"): ((GObject.Object, str, Callable[[...], None], ...), None),

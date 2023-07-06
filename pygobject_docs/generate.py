@@ -19,7 +19,7 @@ from jinja2 import Environment, PackageLoader
 from pygobject_docs.category import Category, determine_category, determine_member_category, MemberCategory
 from pygobject_docs.doc import rstify
 from pygobject_docs.gir import load_gir_file
-from pygobject_docs.inspect import is_classmethod, signature, property_type
+from pygobject_docs.inspect import is_classmethod, signature, property_type, patch_gi_overrides
 from pygobject_docs.members import own_dir, properties, signals, virtual_methods
 
 C_API_DOCS = {
@@ -295,6 +295,7 @@ if __name__ == "__main__":
         format="%(asctime)s %(levelname)s:%(message)s", datefmt="%H:%M:%S", level=logging.INFO
     )
 
+    patch_gi_overrides()
     for arg in sys.argv[1:]:
         namespace, version = arg.split("-")
         log.info("Generating pages for %s", namespace)
