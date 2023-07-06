@@ -9,7 +9,7 @@ from inspect import Signature, Parameter, ismethod, unwrap
 
 from gi._gi import CallbackInfo, CallableInfo, TypeInfo, TypeTag, Direction, StructInfo
 from gi.repository import GLib, GObject
-from sphinx.util.inspect import signature as sphinx_signature, stringify_signature
+from sphinx.util.inspect import signature as sphinx_signature, stringify_annotation, stringify_signature
 
 
 log = logging.getLogger(__name__)
@@ -61,6 +61,10 @@ def is_classmethod(subject: Callable) -> bool:
         return isinstance(subject.get_container(), StructInfo)
 
     return ismethod(subject)
+
+
+def property_type(type) -> str:
+    return stringify_annotation(type, mode="smart").replace("gi.overrides", "gi.repository")
 
 
 def signature(subject: Callable) -> Signature:
