@@ -1,4 +1,4 @@
-image: fedora:38
+image: fedora:39
 
 before_script:
   - dnf install -y git-core python3-pip python3-gobject gobject-introspection-devel gtk4-devel gtksourceview5-devel libadwaita-devel
