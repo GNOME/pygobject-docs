@@ -26,6 +26,7 @@ def rstify(text, *, image_base_url="", gir=None):
         lines,
         code_snippets,
         tags,
+        markdown_italic,
         partial(c_constants, gir=gir),
         whitespace_before_lists,
         partial(markdown_images, image_url=image_base_url),
@@ -46,6 +47,10 @@ def pipe(obj, *filters):
     for f in filters:
         obj = f(obj)
     return obj
+
+
+def markdown_italic(lines):
+    return (re.sub(r"(?:(?<!\w)|^)_([^_]+?)_((?!\w)|$)", r"*\1*", line) for line in lines)
 
 
 def markdown_inline_code(lines):

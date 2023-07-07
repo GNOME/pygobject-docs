@@ -96,6 +96,14 @@ def test_parameters():
     assert rst == "Lorem ``ipsum`` et amilet"
 
 
+def test_italic_text():
+    text = "This is a func_name and _italic text_."
+
+    rst = rstify(text)
+
+    assert rst == "This is a func_name and *italic text*."
+
+
 def test_whitespace_before_lists():
     text = dedent(
         """\

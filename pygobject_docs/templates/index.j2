@@ -11,6 +11,17 @@ Library version: {{ library_version }}
 C API documentation: `{{ c_api_doc_link }} <{{ c_api_doc_link }}>`_
 {% endif%}
 
+Usage:
+
+.. code-block::
+   :dedent:
+   
+   import gi
+   gi.require_version("{{ namespace}}", "{{ version }}")
+   
+   from gi.repository import {{ namespace }}
+
+
 .. toctree::
    :maxdepth: 1
    :caption: API
