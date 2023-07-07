@@ -27,6 +27,7 @@ def rstify(text, *, image_base_url="", gir=None):
         code_snippets,
         tags,
         markdown_italic,
+        code_abbreviations,
         partial(c_constants, gir=gir),
         whitespace_before_lists,
         partial(markdown_images, image_url=image_base_url),
@@ -55,6 +56,10 @@ def markdown_italic(lines):
 
 def markdown_inline_code(lines):
     return (re.sub(r"(?:(?<![:`])|^)`([^` ]+?)`(?=[^`]|$)", r"``\1``", line) for line in lines)
+
+
+def code_abbreviations(lines):
+    return (re.sub(r"(?:(?<!\w)|^)(\w+_[\.]*)(?!\w)", r"``\1``", line) for line in lines)
 
 
 def s_after_inline_code(lines):

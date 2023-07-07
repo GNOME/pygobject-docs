@@ -104,6 +104,14 @@ def test_italic_text():
     assert rst == "This is a func_name and *italic text*."
 
 
+def test_code_abbreviation():
+    text = "This is a func_name_ and _italic text_."
+
+    rst = rstify(text)
+
+    assert rst == "This is a ``func_name_`` and *italic text*."
+
+
 def test_whitespace_before_lists():
     text = dedent(
         """\
