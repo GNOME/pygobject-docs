@@ -20,7 +20,9 @@ Usage:
    gi.require_version("{{ namespace}}", "{{ version }}")
    
    from gi.repository import {{ namespace }}
-
+{% if init_function %}
+   {{ namespace }}.init()
+{% endif%}
 
 .. toctree::
    :maxdepth: 1

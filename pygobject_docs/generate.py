@@ -268,6 +268,7 @@ def generate_index(namespace, version, out_path):
             enums=has(Category.Enums),
             functions=has(Category.Functions),
             constants=has(Category.Constants),
+            init_function="init" in dir(mod),
         )
     )
 
