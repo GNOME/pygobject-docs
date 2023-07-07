@@ -12,6 +12,7 @@ See also https://gitlab.gnome.org/GNOME/gi-docgen/-/blob/main/gidocgen/utils.py
 """
 
 from functools import partial
+from itertools import zip_longest
 import re
 
 
@@ -73,17 +74,26 @@ def parameters(lines):
 
 def markdown_table(lines, image_url, gir):
     def as_table(table_lines):
-        cells = [[f" {cell.strip()} " for cell in line[1:-1].split("|")] for line in table_lines]
-        lens = [max(len(cell) for cell in col) for col in zip(*cells)]
+        cells = [
+            [
+                rstify(cell.strip(), image_base_url=image_url, gir=gir).strip()
+                for cell in line[1:-1].split("|")
+            ]
+            for line in table_lines
+        ]
+        lens = [max(max(len(line) for line in cell.split("\n")) for cell in col) for col in zip(*cells)]
         sep = "-"
         for row in cells:
-            if " --- " in row:
+            if "---" in row:
                 sep = "="
             else:
-                yield "+" + "+".join(sep * len for len in lens) + "+"
-                yield "|" + "|".join(cell.ljust(length) for cell, length in zip(row, lens)) + "|"
+                yield "+" + "+".join(sep * (len + 2) for len in lens) + "+"
+                for line in zip_longest(*(cell.split("\n") for cell in row), fillvalue=""):
+                    yield "| " + " | ".join(
+                        cell.lstrip().ljust(length) for cell, length in zip(line, lens)
+                    ) + " |"
                 sep = "-"
-        yield "+" + "+".join("-" * len for len in lens) + "+"
+        yield "+" + "+".join("-" * (len + 2) for len in lens) + "+"
         yield ""
 
     table_lines = []

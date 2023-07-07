@@ -180,6 +180,35 @@ def test_table_with_header_row():
     )
 
 
+def test_table_with_multiline_content():
+    text = dedent(
+        """\
+        | | | | |
+        | --- | --- | ---- | --- |
+        | "none" | ![](default.png) "default" | ![](help.png) "help" |
+        | ![](pointer.png) "pointer" | ![](cell_cursor.png) "cell" |
+
+        """
+    )
+
+    rst = rstify(text, image_base_url="http://example.com")
+
+    assert rst == dedent(
+        """\
+        +-------------------------------------------+-----------------------------------------------+
+        |                                           |                                               |
+        +===========================================+===============================================+
+        | "none"                                    | .. image:: http://example.com/default.png     |
+        |                                           | "default"                                     |
+        +-------------------------------------------+-----------------------------------------------+
+        | .. image:: http://example.com/pointer.png | .. image:: http://example.com/cell_cursor.png |
+        | "pointer"                                 | "cell"                                        |
+        +-------------------------------------------+-----------------------------------------------+
+
+        """
+    )
+
+
 def test_remove_tags():
     text = "I/O Priority # {#io-priority}"
 
