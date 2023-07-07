@@ -130,6 +130,56 @@ def test_whitespace_before_lists():
     )
 
 
+def test_simple_table():
+    text = dedent(
+        """\
+        | field 1 | field 2 |
+        | field 3 | long field 4 |
+
+        """
+    )
+
+    rst = rstify(text)
+
+    assert rst == dedent(
+        """\
+        +---------+--------------+
+        | field 1 | field 2      |
+        +---------+--------------+
+        | field 3 | long field 4 |
+        +---------+--------------+
+
+        """
+    )
+
+
+def test_table_with_header_row():
+    text = dedent(
+        """\
+        | header 1 | header 2     |
+        | -        | ---          |
+        | field 1  | field 2      |
+        | field 3  | long field 4 |
+
+        """
+    )
+
+    rst = rstify(text)
+
+    assert rst == dedent(
+        """\
+        +----------+--------------+
+        | header 1 | header 2     |
+        +==========+==============+
+        | field 1  | field 2      |
+        +----------+--------------+
+        | field 3  | long field 4 |
+        +----------+--------------+
+
+        """
+    )
+
+
 def test_remove_tags():
     text = "I/O Priority # {#io-priority}"
 

@@ -30,6 +30,7 @@ def rstify(text, *, image_base_url="", gir=None):
         code_abbreviations,
         partial(c_constants, gir=gir),
         whitespace_before_lists,
+        partial(markdown_table, image_url=image_base_url, gir=gir),
         partial(markdown_images, image_url=image_base_url),
         gtk_doc_link,
         parameters,  # after gtk-doc links, since those also contain `@` symbols
@@ -68,6 +69,35 @@ def s_after_inline_code(lines):
 
 def parameters(lines):
     return (re.sub(r"@(\w+)", r"``\1``", line) for line in lines)
+
+
+def markdown_table(lines, image_url, gir):
+    def as_table(table_lines):
+        cells = [[f" {cell.strip()} " for cell in line[1:-1].split("|")] for line in table_lines]
+        lens = [max(len(cell) for cell in col) for col in zip(*cells)]
+        sep = "-"
+        for row in cells:
+            if " --- " in row:
+                sep = "="
+            else:
+                yield "+" + "+".join(sep * len for len in lens) + "+"
+                yield "|" + "|".join(cell.ljust(length) for cell, length in zip(row, lens)) + "|"
+                sep = "-"
+        yield "+" + "+".join("-" * len for len in lens) + "+"
+        yield ""
+
+    table_lines = []
+    for line in lines:
+        if line.startswith("| ") and line.endswith("|"):
+            table_lines.append(line)
+        else:
+            if table_lines:
+                yield from as_table(table_lines)
+                del table_lines[:]
+            yield line
+
+    if table_lines:
+        yield from as_table(table_lines)
 
 
 def markdown_images(lines, image_url):
