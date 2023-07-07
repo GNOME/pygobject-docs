@@ -24,5 +24,6 @@ pages:
   artifacts:
     paths:
       - public
+      - build/source
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH

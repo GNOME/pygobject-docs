@@ -112,6 +112,14 @@ def test_code_abbreviation():
     assert rst == "This is a ``func_name_`` and *italic text*."
 
 
+def test_code_abbreviation_with_ellipsis():
+    text = "the g_convert_… functions"
+
+    rst = rstify(text)
+
+    assert rst == "the ``g_convert_``… functions"
+
+
 def test_whitespace_before_lists():
     text = dedent(
         """\
