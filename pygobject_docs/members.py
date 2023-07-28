@@ -13,15 +13,10 @@ def own_dir(obj_type: type) -> list[str]:
     if obj_type.__module__ == "gi.overrides.GObject" and obj_type.__name__ == "Object":
         return dir(obj_type)
 
-    if obj_type.__module__.startswith("gi.overrides"):
-        bases = obj_type.__base__.__bases__
-    else:
-        bases = obj_type.__bases__
+    if hasattr(obj_type, "__overridden__"):
+        return sorted(chain(obj_type.__dict__.keys(), obj_type.__base__.__dict__.keys()))
 
-    members = set(dir(obj_type))
-    parent_members: set[str] = set(chain(*(dir(b) for b in bases)))
-
-    return sorted(members - parent_members)
+    return sorted(obj_type.__dict__.keys())
 
 
 def properties(obj_type: type) -> list[tuple[str, object | type]]:
