@@ -45,6 +45,13 @@ def test_gi_function_signature():
     )
 
 
+def test_builtin_method():
+    assert (
+        str(signature(GObject.GObject.bind_property))
+        == "(value1: str, value2: ~gi.overrides.GObject.Object, value3: str, value4: ~gi.repository.GObject.BindingFlags | None, /) -> None"
+    )
+
+
 @pytest.mark.desktop
 def test_method_with_multiple_return_values():
     from gi.repository import Gtk

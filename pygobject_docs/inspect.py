@@ -38,6 +38,35 @@ SIGNATURE_OVERRIDES = {
         tuple[bool, int],
     ),
     ("gi._gi", "Pid", "close"): ((), None),
+    # GObject
+    ("gi._gi", "list_properties"): ((), list[GObject.ParamSpec]),
+    ("gi._gi", "new"): ((GObject.GType,), None),
+    ("gi._gi", "signal_new"): ((str, type[GObject.Object], GObject.SignalFlags, type, list[type]), int),  # type: ignore[index]
+    ("gi._gi", "type_register"): ((type[GObject.Object],), GObject.GType),  # type: ignore[index]
+    ("gi._gi", "GObject", "bind_property"): (
+        (str, GObject.Object, str, Optional[GObject.BindingFlags]),
+        None,
+    ),
+    ("gi._gi", "GObject", "chain"): ((...,), None),
+    ("gi._gi", "GObject", "connect"): ((str, Callable[[GObject.Object, ...], Any], ...), int),
+    ("gi._gi", "GObject", "connect_after"): ((str, Callable[[GObject.Object, ...], Any], ...), int),
+    ("gi._gi", "GObject", "connect_object"): (
+        (str, Callable[[GObject.Object, ...], Any], GObject.Object, ...),
+        int,
+    ),
+    ("gi._gi", "GObject", "connect_object_after"): (
+        (str, Callable[[GObject.Object, Any], Any], GObject.Object, ...),
+        int,
+    ),
+    ("gi._gi", "GObject", "disconnect_by_func"): ((Callable[[GObject.Object, ...], Any],), None),
+    ("gi._gi", "GObject", "emit"): ((str, ...), None),
+    ("gi._gi", "GObject", "get_properties"): ((str, ...), tuple[Any, ...]),
+    ("gi._gi", "GObject", "get_property"): ((str,), Any),
+    ("gi._gi", "GObject", "handler_block_by_func"): ((Callable[[GObject.Object, ...], ...],), int),
+    ("gi._gi", "GObject", "handler_unblock_by_func"): ((Callable[[GObject.Object, ...], ...],), int),
+    ("gi._gi", "GObject", "set_properties"): ((...,), None),
+    ("gi._gi", "GObject", "set_property"): ((str, Any), None),
+    ("gi._gi", "GObject", "weak_ref"): ((Callable[[Any], None], Any), GObject.Object),
     ("gi._gi", "OptionContext", "add_group"): ((GLib.OptionGroup,), None),
     ("gi._gi", "OptionContext", "get_help_enabled"): ((), bool),
     ("gi._gi", "OptionContext", "get_ignore_unknown_options"): ((), bool),
@@ -48,13 +77,8 @@ SIGNATURE_OVERRIDES = {
     ("gi._gi", "OptionContext", "set_main_group"): ((GLib.OptionGroup,), None),
     ("gi._gi", "OptionGroup", "add_entries"): ((list[GLib.OptionEntry],), None),
     ("gi._gi", "OptionGroup", "set_translation_domain"): ((str,), None),
-    # GObject
-    ("gi._gi", "list_properties"): ((), list[GObject.ParamSpec]),
-    ("gi._gi", "new"): ((GObject.GType,), None),
-    ("gi._gi", "signal_new"): ((str, type[GObject.Object], GObject.SignalFlags, type, list[type]), int),  # type: ignore[index]
-    ("gi._gi", "type_register"): ((type[GObject.Object],), GObject.GType),  # type: ignore[index]
-    ("gobject", "GBoxed", "copy"): ((), GObject.GBoxed),
     ("gi._gi", "GObjectWeakRef", "unref"): ((), None),
+    ("gobject", "GBoxed", "copy"): ((), GObject.GBoxed),
     (None, "from_name"): ((str,), GObject.GType),
     ("gobject", "GType", "has_value_table"): ((), None),
     ("gobject", "GType", "is_a"): ((GObject.Object,), bool),

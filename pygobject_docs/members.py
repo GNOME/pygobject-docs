@@ -9,13 +9,17 @@ def own_dir(obj_type: type) -> list[str]:
     # Find all elements of a type, that are part of the type
     # and not of a parent or interface.
 
+    # GObject.Object is our base type - show all members
+    if obj_type.__module__ == "gi.overrides.GObject" and obj_type.__name__ == "Object":
+        return dir(obj_type)
+
     if obj_type.__module__.startswith("gi.overrides"):
-        parent_types = obj_type.__base__.__bases__
+        bases = obj_type.__base__.__bases__
     else:
-        parent_types = obj_type.__bases__
+        bases = obj_type.__bases__
 
     members = set(dir(obj_type))
-    parent_members: set[str] = set(chain(*(dir(b) for b in parent_types)))
+    parent_members: set[str] = set(chain(*(dir(b) for b in bases)))
 
     return sorted(members - parent_members)
 
