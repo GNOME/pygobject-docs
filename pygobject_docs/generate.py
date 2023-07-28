@@ -144,7 +144,6 @@ def generate_classes(namespace, version, out_path, category):
     for class_name in class_names:
         with warnings.catch_warnings(record=True):
             klass = getattr(mod, class_name)
-            # TODO: register deprecated class
 
         members = own_dir(klass)
 
