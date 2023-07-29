@@ -7,22 +7,22 @@ Functions
 
 .. function:: {{ name }}{{ sig }}
 
+{% if since %}
+   .. versionadded:: {{ since }}
+{% endif %}
+
+{% if deprecated %}
+{% set version, doc_ = deprecated %}
+   .. deprecated:: {{ version }}
+      {{ doc_ | rstify | indent(6) }}
+{% endif %}
+
    {% for pname, pdoc in parameters %}
    :param {{ pname }}: {{ pdoc | rstify | indent(6) }}
    {% endfor %}
    {% if return_doc %}
    :return: {{ return_doc | rstify | indent(6) }}
    {% endif %}
-
-{% if since %}
-   .. versionadded:: {{ since }}
-{% endif %}
-
-{% set depr, version, doc = deprecated %}
-{% if depr %}
-   .. deprecated:: {{ version }}
-      {{ doc | rstify | indent(6) }}
-{% endif %}
 
    {{ doc | rstify | indent(3) }}
 

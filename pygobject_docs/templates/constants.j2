@@ -12,10 +12,10 @@ Constants
    .. versionadded:: {{ since }}
 {% endif %}
 
-{% set depr, version, doc = deprecated %}
-{% if depr %}
+{% if deprecated %}
+{% set version, doc_ = deprecated %}
    .. deprecated:: {{ version }}
-      {{ doc | rstify | indent(6) }}
+      {{ doc_ | rstify | indent(6) }}
 {% endif %}
 
    {{ doc | rstify | indent(3) }}

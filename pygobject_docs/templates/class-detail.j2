@@ -4,19 +4,18 @@
 
 .. currentmodule:: gi.repository.{{ namespace }}
 
-{% set version = since(class_name) %}
-{% if version %}
-.. versionadded:: {{ version }}
+{% if since %}
+.. versionadded:: {{ since }}
 {% endif %}
 
-{% set depr, version, doc = deprecated(class_name) %}
-{% if depr %}
+{% if deprecated %}
+{% set version, doc_ = deprecated %}
 .. deprecated:: {{ version }}
 
-   {{ doc | replace("\n", " ") | rstify | indent(3) }}
+   {{ doc_ | replace("\n", " ") | rstify | indent(3) }}
 {% endif %}
 
-{{ docstring(class_name) | rstify }}
+{{ doc | rstify }}
 
 
 .. class:: {{ class_name }}

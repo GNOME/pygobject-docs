@@ -95,7 +95,6 @@ def generate_functions(namespace, version, out_path):
                 version=version,
             )
         )
-        # TODO: register deprecated function
 
 
 def generate_constants(namespace, version, out_path):
@@ -161,7 +160,9 @@ def generate_classes(namespace, version, out_path, category):
                 version=version,
                 entity_type=category.single.title(),
                 signature=lambda k, m: signature(getattr(getattr(mod, k), m)),
-                docstring=gir.doc,
+                doc=gir.doc(class_name),
+                deprecated=gir.deprecated(class_name),
+                since=gir.since(class_name),
                 ancestors=gir.ancestors(class_name),
                 implements=gir.implements(class_name),
                 constructors=[
@@ -220,9 +221,6 @@ def generate_classes(namespace, version, out_path, category):
                     )
                     for info in virtual_methods(klass)
                 ],
-                return_doc=gir.return_doc,
-                deprecated=gir.deprecated,
-                since=gir.since,
             )
         )
 

@@ -90,11 +90,11 @@ class Gir:
 
         return ""
 
-    def deprecated(self, name) -> tuple[bool, str, str]:
+    def deprecated(self, name) -> tuple[str, str] | None:
         if not (obj := self._node(name)):
-            return False, "", ""
+            return None
 
-        return (obj.deprecated, *(obj.deprecated_since or ("", "")))  # type: ignore[return-value]
+        return obj.deprecated_since
 
     def since(self, name) -> str | None:
         if not (obj := self._node(name)):
