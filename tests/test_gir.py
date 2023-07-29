@@ -60,9 +60,8 @@ def test_gir_function_return_doc(gobject):
 
 
 def test_gir_deprecated(glib):
-    depr, ver, doc = glib.deprecated("basename")
+    ver, doc = glib.deprecated("basename")
 
-    assert depr
     assert ver == "2.2"
     assert doc
 
