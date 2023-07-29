@@ -156,6 +156,7 @@ def generate_classes(namespace, version, out_path, category):
         (out_path / f"{category.single}-{class_name}.rst").write_text(
             template.render(
                 class_name=class_name,
+                class_signature=signature(getattr(mod, class_name).__init__),
                 namespace=namespace,
                 version=version,
                 entity_type=category.single.title(),

@@ -113,10 +113,16 @@ def signature(subject: Callable) -> Signature:
             return_annotation=return_type,
         )
 
+    if subject is GObject.Object.__init__:
+        return sphinx_signature(gobject_init_placeholder)
     if isinstance(s := unwrap(subject), CallableInfo):
         return gi_signature(s)
 
     return sphinx_signature(subject)
+
+
+def gobject_init_placeholder(**properties: Any):
+    ...
 
 
 def _override_key(subject):

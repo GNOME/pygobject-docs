@@ -18,7 +18,7 @@
 {{ doc | rstify }}
 
 
-.. class:: {{ class_name }}
+.. class:: {{ class_name }}{{ class_signature }}
 
 {% if ancestors %}
    Ancestors: {% for p in ancestors %}{% if not loop.first %}, {% endif %}:class:`~{{p}}`{% endfor %}
