@@ -156,7 +156,7 @@ def generate_classes(namespace, version, out_path, category):
         (out_path / f"{category.single}-{class_name}.rst").write_text(
             template.render(
                 class_name=class_name,
-                class_signature=signature(getattr(mod, class_name).__init__),
+                class_signature=signature(getattr(mod, class_name).__init__, bound=True),
                 namespace=namespace,
                 version=version,
                 entity_type=category.single.title(),
@@ -169,7 +169,7 @@ def generate_classes(namespace, version, out_path, category):
                 constructors=[
                     (
                         name,
-                        sig := signature(getattr(klass, name)),
+                        sig := signature(getattr(klass, name), bound=True),
                         gir.member_doc("constructor", class_name, name),
                         parameter_docs("constructor", name, sig),
                         gir.member_return_doc("constructor", class_name, name),
@@ -185,7 +185,7 @@ def generate_classes(namespace, version, out_path, category):
                 methods=[
                     (
                         name,
-                        sig := signature(getattr(klass, name)),
+                        sig := signature(getattr(klass, name), bound=True),
                         gir.member_doc("method", class_name, name),
                         parameter_docs("method", name, sig),
                         gir.member_return_doc("method", class_name, name),

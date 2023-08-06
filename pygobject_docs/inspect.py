@@ -102,7 +102,7 @@ def is_classmethod(subject: Callable) -> bool:
     return ismethod(subject)
 
 
-def signature(subject: Callable) -> Signature:
+def signature(subject: Callable, bound=False) -> Signature:
     if sig := SIGNATURE_OVERRIDES.get(_override_key(subject)):
         param_types, return_type = sig
         return Signature(
@@ -118,7 +118,7 @@ def signature(subject: Callable) -> Signature:
     if isinstance(s := unwrap(subject), CallableInfo):
         return gi_signature(s)
 
-    return sphinx_signature(subject)
+    return sphinx_signature(subject, bound_method=bound)
 
 
 def gobject_init_placeholder(**properties: Any):
