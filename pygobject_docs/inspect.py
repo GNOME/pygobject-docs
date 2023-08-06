@@ -141,6 +141,8 @@ def gi_signature(subject: CallableInfo) -> Signature:
     array_length_indices.add(subject.get_return_type().get_array_length())
 
     for i, arg in enumerate(subject.get_arguments()):
+        if arg.get_name().startswith("dummy"):
+            continue
         if i in array_length_indices:
             continue
 
