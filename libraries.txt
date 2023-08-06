@@ -28,3 +28,4 @@ PangoFc-1.0
 PangoOT-1.0
 PangoXft-1.0
 Shumate-1.0
+Soup-3.0
