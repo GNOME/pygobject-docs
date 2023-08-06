@@ -1,7 +1,10 @@
 image: fedora:38
 
 before_script:
-  - dnf install -y git-core python3-pip python3-gobject gobject-introspection-devel gtk4-devel gtksourceview5-devel libadwaita-devel
+  - >
+    dnf install -y git-core python3-pip python3-gobject gobject-introspection-devel
+    gtk4-devel gtksourceview5-devel libadwaita-devel gcr-devel gstreamer1-devel
+    libshumate-devel
   - pip --cache-dir /tmp/pipcache install -e '.[dev]'
 
 test:

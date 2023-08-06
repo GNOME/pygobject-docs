@@ -4,6 +4,7 @@ DBusGLib-1.0
 GLib-2.0
 GModule-2.0
 GObject-2.0
+Gcr-4
 Gdk-4.0
 GdkPixbuf-2.0
 GdkPixdata-2.0
@@ -12,6 +13,11 @@ GdkX11-4.0
 Gio-2.0
 Graphene-1.0
 Gsk-4.0
+Gst-1.0
+GstBase-1.0
+GstCheck-1.0
+GstController-1.0
+GstNet-1.0
 Gtk-4.0
 GtkSource-5
 HarfBuzz-0.0
@@ -21,3 +27,4 @@ PangoFT2-1.0
 PangoFc-1.0
 PangoOT-1.0
 PangoXft-1.0
+Shumate-1.0
