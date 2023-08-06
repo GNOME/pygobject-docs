@@ -137,7 +137,13 @@ def _override_key(subject):
 def gi_signature(subject: CallableInfo) -> Signature:
     parameters = []
     return_annotations = []
-    for arg in subject.get_arguments():
+    array_length_indices = {arg.get_type().get_array_length() for arg in subject.get_arguments()}
+    array_length_indices.add(subject.get_return_type().get_array_length())
+
+    for i, arg in enumerate(subject.get_arguments()):
+        if i in array_length_indices:
+            continue
+
         if arg.get_direction() in (Direction.OUT, Direction.INOUT):
             return_annotations.append(gi_type_to_python(arg.get_type(), out=True))
         elif (t := gi_type_to_python(arg.get_type())) is not None:
@@ -148,6 +154,7 @@ def gi_signature(subject: CallableInfo) -> Signature:
                     annotation=t,
                 )
             )
+
     return_type = gi_type_to_python(subject.get_return_type(), out=True)
     if subject.may_return_null() and return_type is not None:
         return_type = Optional[return_type]

@@ -75,3 +75,10 @@ def test_python_method_is_classmethod():
 def test_gi_function_is_classmethod():
     assert is_classmethod(GObject.Object.install_properties)
     assert not is_classmethod(GObject.Object.notify)
+
+
+def test_method_with_length_parameter():
+    # C signature is like: GArray* (..., int *length)
+    sig = signature(GObject.type_children)
+
+    assert str(sig) == "(type: type) -> list[type]"
