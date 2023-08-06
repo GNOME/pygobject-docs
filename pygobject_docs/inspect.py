@@ -6,6 +6,7 @@ import logging
 from typing import Any, Callable, Optional, Sequence
 from importlib import import_module
 from inspect import Signature, Parameter, unwrap
+from keyword import iskeyword
 
 from gi._gi import CallbackInfo, CallableInfo, TypeInfo, TypeTag, Direction
 from gi.repository import GLib, GObject
@@ -152,7 +153,7 @@ def gi_signature(subject: CallableInfo) -> Signature:
         elif (t := gi_type_to_python(arg.get_type())) is not None:
             parameters.append(
                 Parameter(
-                    arg.get_name(),
+                    f"{arg.get_name()}_" if iskeyword(arg.get_name()) else arg.get_name(),
                     Parameter.POSITIONAL_OR_KEYWORD,
                     annotation=t,
                 )
