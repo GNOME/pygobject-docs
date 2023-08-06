@@ -29,3 +29,4 @@ PangoOT-1.0
 PangoXft-1.0
 Shumate-1.0
 Soup-3.0
+Vte-3.91
