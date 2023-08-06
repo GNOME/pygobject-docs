@@ -30,3 +30,7 @@ PangoXft-1.0
 Shumate-1.0
 Soup-3.0
 Vte-3.91
+WebKit2-4.1
+WebKit2WebExtension-4.1
+Xdp-1.0
+XdpGtk4-1.0
