@@ -68,13 +68,14 @@ def test_python_method_is_classmethod():
         def nope(self):
             ...
 
-    assert is_classmethod(A.yup)
-    assert not is_classmethod(A.nope)
+    assert is_classmethod(A, "yup")
+    assert not is_classmethod(A, "nope")
 
 
 def test_gi_function_is_classmethod():
-    assert is_classmethod(GObject.Object.install_properties)
-    assert not is_classmethod(GObject.Object.notify)
+    assert is_classmethod(GObject.Object, "install_properties")
+    assert not is_classmethod(GObject.Object, "notify")
+    assert not is_classmethod(GObject.ValueArray, "append")
 
 
 def test_method_with_length_parameter():

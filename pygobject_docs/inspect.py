@@ -5,9 +5,9 @@ methods, as well as gi objects.
 import logging
 from typing import Any, Callable, Optional, Sequence
 from importlib import import_module
-from inspect import Signature, Parameter, ismethod, unwrap
+from inspect import Signature, Parameter, unwrap
 
-from gi._gi import CallbackInfo, CallableInfo, TypeInfo, TypeTag, Direction, StructInfo
+from gi._gi import CallbackInfo, CallableInfo, TypeInfo, TypeTag, Direction
 from gi.repository import GLib, GObject
 from sphinx.util.inspect import signature as sphinx_signature, stringify_signature
 
@@ -94,12 +94,13 @@ SIGNATURE_OVERRIDES = {
 }
 
 
-def is_classmethod(subject: Callable) -> bool:
-    if isinstance(subject, CallableInfo):
-        # -Class objects are structs
-        return isinstance(subject.get_container(), StructInfo)
-
-    return ismethod(subject)
+def is_classmethod(klass: type, name: str) -> bool:
+    assert getattr(klass, name)
+    for c in klass.__mro__:
+        if name in c.__dict__:
+            obj = c.__dict__.get(name)
+            return isinstance(obj, (classmethod, staticmethod))
+    return False
 
 
 def signature(subject: Callable, bound=False) -> Signature:

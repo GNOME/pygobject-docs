@@ -189,7 +189,7 @@ def generate_classes(namespace, version, out_path, category):
                         gir.member_doc("method", class_name, name),
                         parameter_docs("method", name, sig),
                         gir.member_return_doc("method", class_name, name),
-                        is_classmethod(getattr(klass, name)),
+                        is_classmethod(klass, name),
                     )
                     for name in members
                     if determine_member_category(klass, name) == MemberCategory.Methods
