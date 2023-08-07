@@ -47,18 +47,6 @@
 
 {% endfor %}
 
-{% if fields %}
-   Fields
-   ------
-{% endif %}
-   
-{% for name, doc in fields %}
-   .. attribute:: {{ name }}
-
-   {{ doc | rstify | indent(3)}}
-
-{% endfor %}
-
 {% if methods %}
    Methods
    -------
@@ -132,3 +120,17 @@
       {{ doc | rstify | indent(6) }}
 
 {% endfor %}
+
+{% if fields %}
+   Fields
+   ------
+{% endif %}
+   
+{% for name, doc in fields %}
+   .. attribute:: {{ name }}
+
+   {{ doc | rstify | indent(3)}}
+
+{% endfor %}
+
+
