@@ -12,6 +12,8 @@ from gi._gi import CallbackInfo, CallableInfo, TypeInfo, TypeTag, Direction
 from gi.repository import GLib, GObject
 from sphinx.util.inspect import signature as sphinx_signature, stringify_signature
 
+from pygobject_docs import overrides
+
 
 log = logging.getLogger(__name__)
 
@@ -32,69 +34,6 @@ def patch_gi_overrides():
     gi.overrides.override = override
 
 
-SIGNATURE_OVERRIDES = {
-    # GLib
-    ("gi._gi", "add_emission_hook"): ((GObject.Object, str, Callable[[...], None], ...), None),
-    ("gi._gi", "spawn_async"): (
-        (str, Sequence[str], Sequence[str], GLib.SpawnFlags, Callable[[...], None]),
-        tuple[bool, int],
-    ),
-    ("gi._gi", "Pid", "close"): ((), None),
-    # GObject
-    ("gi._gi", "list_properties"): ((), list[GObject.ParamSpec]),
-    ("gi._gi", "new"): ((GObject.GType,), None),
-    ("gi._gi", "signal_new"): ((str, type[GObject.Object], GObject.SignalFlags, type, list[type]), int),  # type: ignore[index]
-    ("gi._gi", "type_register"): ((type[GObject.Object],), GObject.GType),  # type: ignore[index]
-    ("gi._gi", "GObject", "bind_property"): (
-        (str, GObject.Object, str, Optional[GObject.BindingFlags]),
-        None,
-    ),
-    ("gi._gi", "GObject", "chain"): ((...,), None),
-    ("gi._gi", "GObject", "connect"): ((str, Callable[[GObject.Object, ...], Any], ...), int),
-    ("gi._gi", "GObject", "connect_after"): ((str, Callable[[GObject.Object, ...], Any], ...), int),
-    ("gi._gi", "GObject", "connect_object"): (
-        (str, Callable[[GObject.Object, ...], Any], GObject.Object, ...),
-        int,
-    ),
-    ("gi._gi", "GObject", "connect_object_after"): (
-        (str, Callable[[GObject.Object, Any], Any], GObject.Object, ...),
-        int,
-    ),
-    ("gi._gi", "GObject", "disconnect_by_func"): ((Callable[[GObject.Object, ...], Any],), None),
-    ("gi._gi", "GObject", "emit"): ((str, ...), None),
-    ("gi._gi", "GObject", "get_properties"): ((str, ...), tuple[Any, ...]),
-    ("gi._gi", "GObject", "get_property"): ((str,), Any),
-    ("gi._gi", "GObject", "handler_block_by_func"): ((Callable[[GObject.Object, ...], ...],), int),
-    ("gi._gi", "GObject", "handler_unblock_by_func"): ((Callable[[GObject.Object, ...], ...],), int),
-    ("gi._gi", "GObject", "set_properties"): ((...,), None),
-    ("gi._gi", "GObject", "set_property"): ((str, Any), None),
-    ("gi._gi", "GObject", "weak_ref"): ((Callable[[Any], None], Any), GObject.Object),
-    ("gi._gi", "OptionContext", "add_group"): ((GLib.OptionGroup,), None),
-    ("gi._gi", "OptionContext", "get_help_enabled"): ((), bool),
-    ("gi._gi", "OptionContext", "get_ignore_unknown_options"): ((), bool),
-    ("gi._gi", "OptionContext", "get_main_group"): ((), GLib.OptionGroup),
-    ("gi._gi", "OptionContext", "parse"): ((str,), tuple[bool, list[str]]),
-    ("gi._gi", "OptionContext", "set_help_enabled"): ((bool,), None),
-    ("gi._gi", "OptionContext", "set_ignore_unknown_options"): ((bool,), None),
-    ("gi._gi", "OptionContext", "set_main_group"): ((GLib.OptionGroup,), None),
-    ("gi._gi", "OptionGroup", "add_entries"): ((list[GLib.OptionEntry],), None),
-    ("gi._gi", "OptionGroup", "set_translation_domain"): ((str,), None),
-    ("gi._gi", "GObjectWeakRef", "unref"): ((), None),
-    ("gobject", "GBoxed", "copy"): ((), GObject.GBoxed),
-    (None, "from_name"): ((str,), GObject.GType),
-    ("gobject", "GType", "has_value_table"): ((), None),
-    ("gobject", "GType", "is_a"): ((GObject.Object,), bool),
-    ("gobject", "GType", "is_abstract"): ((), bool),
-    ("gobject", "GType", "is_classed"): ((), bool),
-    ("gobject", "GType", "is_deep_derivable"): ((), bool),
-    ("gobject", "GType", "is_derivable"): ((), bool),
-    ("gobject", "GType", "is_instantiatable"): ((), bool),
-    ("gobject", "GType", "is_interface"): ((), bool),
-    ("gobject", "GType", "is_value_abstract"): ((), bool),
-    ("gobject", "GType", "is_value_type"): ((), bool),
-}
-
-
 def is_classmethod(klass: type, name: str) -> bool:
     assert getattr(klass, name)
     for c in klass.__mro__:
@@ -105,16 +44,8 @@ def is_classmethod(klass: type, name: str) -> bool:
 
 
 def signature(subject: Callable, bound=False) -> Signature:
-    if sig := SIGNATURE_OVERRIDES.get(_override_key(subject)):
-        param_types, return_type = sig
-        return Signature(
-            [
-                Parameter(f"value{i}", Parameter.POSITIONAL_ONLY, annotation=t)
-                for i, t in enumerate(param_types, start=1)
-            ],
-            return_annotation=return_type,
-        )
-
+    if fun := getattr(overrides, _override_key(subject), None):
+        return sphinx_signature(fun)
     if subject is GObject.Object.__init__:
         return sphinx_signature(gobject_init_placeholder)
     if isinstance(s := unwrap(subject), CallableInfo):
@@ -129,9 +60,9 @@ def gobject_init_placeholder(**properties: Any):
 
 def _override_key(subject):
     if hasattr(subject, "__module__"):
-        return (subject.__module__, subject.__name__)
+        return f"{subject.__module__}_{subject.__name__}".replace(".", "_")
     elif ocls := getattr(subject, "__objclass__", None):
-        return (ocls.__module__, ocls.__name__, subject.__name__)
+        return f"{ocls.__module__}_{ocls.__name__}_{subject.__name__}".replace(".", "_")
 
     return None
 
