@@ -78,7 +78,13 @@ def generate_functions(namespace, version, out_path):
             doc = gir.parameter_doc(name, param)
             yield param, doc
 
-    with warnings.catch_warnings(record=True):
+    with warnings.catch_warnings(record=True) as caught_warnings:
+
+        def func_deprecation():
+            depr = ("PyGObject-3.16.0", str(caught_warnings[0].message)) if caught_warnings else None
+            caught_warnings.clear()
+            return depr
+
         (out_path / "functions.rst").write_text(
             template.render(
                 functions=[
@@ -88,7 +94,7 @@ def generate_functions(namespace, version, out_path):
                         gir.doc(name),
                         parameter_docs(name, sig),
                         gir.return_doc(name),
-                        gir.deprecated(name),
+                        gir.deprecated(name) or func_deprecation(),
                         gir.since(name),
                     )
                     for name in dir(mod)
@@ -111,7 +117,13 @@ def generate_constants(namespace, version, out_path):
 
     template = env.get_template("constants.j2")
 
-    with warnings.catch_warnings(record=True):
+    with warnings.catch_warnings(record=True) as caught_warnings:
+
+        def const_deprecation():
+            depr = ("PyGObject-3.16.0", str(caught_warnings[0].message)) if caught_warnings else None
+            caught_warnings.clear()
+            return depr
+
         (out_path / "constants.rst").write_text(
             template.render(
                 constants=[
@@ -119,7 +131,7 @@ def generate_constants(namespace, version, out_path):
                         name,
                         getattr(mod, name),
                         gir.doc(name),
-                        gir.deprecated(name),
+                        gir.deprecated(name) or const_deprecation(),
                         gir.since(name),
                     )
                     for name in dir(mod)
@@ -148,9 +160,10 @@ def generate_classes(namespace, version, out_path, category):
         return
 
     for class_name in class_names:
-        with warnings.catch_warnings(record=True):
+        with warnings.catch_warnings(record=True) as caught_warnings:
             klass = getattr(mod, class_name)
 
+        class_deprecation = ("PyGObject-3.16.0", caught_warnings[0].message) if caught_warnings else None
         members = own_dir(klass)
 
         def parameter_docs(member_type, member_name, sig):
@@ -169,7 +182,7 @@ def generate_classes(namespace, version, out_path, category):
                 entity_type=category.single.title(),
                 signature=lambda k, m: signature(getattr(getattr(mod, k), m)),
                 doc=gir.doc(class_name),
-                deprecated=gir.deprecated(class_name),
+                deprecated=gir.deprecated(class_name) or class_deprecation,
                 since=gir.since(class_name),
                 ancestors=gir.ancestors(class_name),
                 implements=gir.implements(class_name),
