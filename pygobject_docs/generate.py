@@ -35,6 +35,9 @@ C_API_DOCS = {
     "Adw": "https://gnome.pages.gitlab.gnome.org/libadwaita/doc/1.3",
 }
 
+BLACKLIST = [("GObject", "GObject")]  # Should use GObject.Object instead
+
+
 log = logging.getLogger(__name__)
 
 
@@ -135,7 +138,11 @@ def generate_classes(namespace, version, out_path, category):
 
     template = env.get_template("class-detail.j2")
 
-    class_names = [name for name in dir(mod) if determine_category(mod, name) == category]
+    class_names = [
+        name
+        for name in dir(mod)
+        if determine_category(mod, name) == category and (namespace, name) not in BLACKLIST
+    ]
 
     if not class_names:
         return
