@@ -26,3 +26,62 @@
 footer hr {
     margin-bottom: 6px;
 }
+
+.local-toc {
+    display: none;
+}
+
+@media screen and (min-width: 1400px) {
+
+    .wy-body-for-nav {
+        background: #efefef;
+    }
+
+    .wy-grid-for-nav {
+        width: auto;
+    }
+
+    .wy-nav-content-wrap {
+        max-width: 800px;
+        background: transparent;
+    }
+
+    .wy-nav-content {
+        width: 800px;
+    }
+
+    .local-toc {
+        display: block;
+        position: fixed;
+        left: 1100px;
+        top: 0;
+        bottom: 0;
+        padding: 12px 0 0;
+        width: 300px;
+        overflow-y: scroll;
+        background-color: #d6d6d6;
+        overflow-x: hidden;
+    }
+
+    .local-toc li {
+        font-size: .9em;
+        line-height: 18px;
+        padding: .4045em 1.618em;
+    }
+
+    .local-toc a {
+        display: block;
+        color: #404040;
+        line-height: 18px;
+    }
+
+    .local-toc code {
+        background: none;
+        border: none;
+        color: inherit;
+        font-family: inherit;
+        font-size: inherit;
+        padding: 0;
+    }
+
+}
