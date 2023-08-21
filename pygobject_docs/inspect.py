@@ -33,6 +33,20 @@ def patch_gi_overrides():
 
     gi.overrides.override = override
 
+    # Fix already loaded types
+
+    GLib.Idle.__module__ = "gi.repository.GLib"
+    GLib.IOChannel.__module__ = "gi.repository.GLib"
+    GLib.MainContext.__module__ = "gi.repository.GLib"
+    GLib.MainLoop.__module__ = "gi.repository.GLib"
+    GLib.PollFD.__module__ = "gi.repository.GLib"
+    GLib.Source.__module__ = "gi.repository.GLib"
+    GLib.Timeout.__module__ = "gi.repository.GLib"
+    GLib.Variant.__module__ = "gi.repository.GLib"
+    GObject.Binding.__module__ = "gi.repository.GObject"
+    GObject.Object.__module__ = "gi.repository.GObject"
+    GObject.Value.__module__ = "gi.repository.GObject"
+
 
 def is_classmethod(klass: type, name: str) -> bool:
     assert getattr(klass, name)
