@@ -14,7 +14,7 @@ def test_function_signature():
 def test_builtin_function_signature():
     assert (
         str(signature(GObject.add_emission_hook))
-        == "(value1: ~gi.overrides.GObject.Object, value2: str, value3: ~typing.Callable[[...], None], value4: ..., /) -> None"
+        == "(type: ~gi.overrides.GObject.Object, name: str, callback: ~typing.Callable[[...], None], *args: ~typing.Any) -> None"
     )
 
 
@@ -48,7 +48,7 @@ def test_gi_function_signature():
 def test_builtin_method():
     assert (
         str(signature(GObject.GObject.bind_property))
-        == "(value1: str, value2: ~gi.overrides.GObject.Object, value3: str, value4: ~gi.repository.GObject.BindingFlags | None, /) -> None"
+        == "(source_property: str, target: ~gi.overrides.GObject.Object, target_property: str, flags: ~gi.repository.GObject.BindingFlags | None) -> ~gi.overrides.GObject.Binding"
     )
 
 
