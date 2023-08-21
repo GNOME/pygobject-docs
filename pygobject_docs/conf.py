@@ -39,6 +39,7 @@ html_title = project
 html_theme_options = {
     "display_version": False,
     "globaltoc_maxdepth": 2,
+    "navigation_depth": 3,
     "prev_next_buttons_location": None,
 }
 
