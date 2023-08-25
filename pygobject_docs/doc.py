@@ -123,7 +123,7 @@ def markdown_heading(lines):
         if re.search(r"^#+ ", line):
             h = line.split(" ", 1)[1]
             yield h
-            yield "~" * len(h)
+            yield "-" * len(h)
         else:
             yield line
 

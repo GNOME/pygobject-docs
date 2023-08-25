@@ -3,8 +3,10 @@
 {{ class_name }}
 ===================================================================
 
-
 .. currentmodule:: gi.repository.{{ namespace }}
+
+.. class:: {{ class_name }}{{ class_signature }}
+   :no-index:
 
 {% if since %}
 .. versionadded:: {{ since }}
@@ -19,117 +21,114 @@
 
 {{ doc | rstify }}
 
-
-.. class:: {{ class_name }}{{ class_signature }}
-
 {% if ancestors %}
-   Ancestors: {% for p in ancestors %}{% if not loop.first %}, {% endif %}:class:`~{{p}}`{% endfor %}
+Ancestors: {% for p in ancestors %}{% if not loop.first %}, {% endif %}:class:`~{{p}}`{% endfor %}
 {% endif %}
 {% if implements %}
-   Implements: {% for p in implements %}{% if not loop.first %}, {% endif %}:class:`~{{p}}`{% endfor %}
+Implements: {% for p in implements %}{% if not loop.first %}, {% endif %}:class:`~{{p}}`{% endfor %}
 {% endif %}
 
 {% if constructors %}
-   Constructors
-   ------------
+Constructors
+------------
 {% endif %}
 
 {% for cons_name, signature, cons_doc, parameters, return_doc in constructors %}
-   .. method:: {{ cons_name }}{{ signature }}
-      :classmethod:
+.. method:: {{ cons_name }}{{ signature }}
+   :classmethod:
 
-      {% for name, doc in parameters %}
-      :param {{ name }}: {{ doc | rstify | indent(9) }}
-      {% endfor %}
-      {% if return_doc %}
-      :return: {{ return_doc | rstify | indent(9) }}
-      {% endif %}
+   {% for name, doc in parameters %}
+   :param {{ name }}: {{ doc | rstify | indent(6) }}
+   {% endfor %}
+   {% if return_doc %}
+   :return: {{ return_doc | rstify | indent(6) }}
+   {% endif %}
 
-      {{ cons_doc | rstify | indent(6) }}
+   {{ cons_doc | rstify | indent(3) }}
 
 {% endfor %}
 
 {% if methods %}
-   Methods
-   -------
+Methods
+-------
 {% endif %}
 
 {% for method_name, signature, method_doc, parameters, return_doc, is_classmethod in methods %}
-   .. method:: {{ method_name }}{{ signature }}
-{% if is_classmethod %}      :classmethod:{% endif %}
+.. method:: {{ method_name }}{{ signature }}
+{% if is_classmethod %}   :classmethod:{% endif %}
 
-      {% for name, doc in parameters %}
-      :param {{ name }}: {{ doc | rstify | indent(9) }}
-      {% endfor %}
-      {% if return_doc %}
-      :return: {{ return_doc | rstify | indent(9) }}
-      {% endif %}
+   {% for name, doc in parameters %}
+   :param {{ name }}: {{ doc | rstify | indent(6) }}
+   {% endfor %}
+   {% if return_doc %}
+   :return: {{ return_doc | rstify | indent(6) }}
+   {% endif %}
 
-      {{ method_doc | rstify | indent(6) }}
+   {{ method_doc | rstify | indent(3) }}
 
 {% endfor %}
 
 {% if properties %}
-   Properties
-   ----------
+Properties
+----------
 {% endif %}
 
 {% for name, type, doc in properties %}
-   .. attribute:: {{ name }}
-      :type: {{ type }}
-      :canonical: gi.repository.{{ namespace }}.{{ class_name }}:{{ name }}
+.. attribute:: {{ name }}
+   :type: {{ type }}
+   :canonical: gi.repository.{{ namespace }}.{{ class_name }}:{{ name }}
 
-      {{ doc | rstify | indent(6) }}
+   {{ doc | rstify | indent(3) }}
 
 {% endfor %}
 
 {% if signals %}
-   Signals
-   -------
+Signals
+-------
 {% endif %}
 
 {% for signal_name, sig, signal_doc, parameters, return_doc in signals %}
-   .. method:: {{ signal_name }}{{ sig }}
-      :canonical: gi.repository.{{ namespace }}.{{ class_name }}::{{ signal_name }}
-      :noindex:
+.. method:: {{ signal_name }}{{ sig }}
+   :canonical: gi.repository.{{ namespace }}.{{ class_name }}::{{ signal_name }}
+   :no-index-entry:
 
-      {% for name, doc in parameters %}
-      :param {{ name }}: {{ doc | rstify | indent(9) }}
-      {% endfor %}
-      {% if return_doc %}
-      :return: {{ return_doc | rstify | indent(9) }}
-      {% endif %}
+   {% for name, doc in parameters %}
+   :param {{ name }}: {{ doc | rstify | indent(6) }}
+   {% endfor %}
+   {% if return_doc %}
+   :return: {{ return_doc | rstify | indent(6) }}
+   {% endif %}
 
-      {{ signal_doc | rstify | indent(6) }}
+   {{ signal_doc | rstify | indent(3) }}
 
 {% endfor %}
 
 {% if virtual_methods %}
-   Virtual Methods
-   ---------------
+Virtual Methods
+---------------
 {% endif %}
 
 {% for method_name, signature, method_doc, parameters, return_doc in virtual_methods %}
-   .. method:: {{ method_name }}{{ signature }}
-   
-      {% for name, doc in parameters %}
-      :param {{ name }}: {{ doc | rstify | indent(9) }}
-      {% endfor %}
-      {% if return_doc %}
-      :return: {{ return_doc | rstify | indent(9) }}
-      {% endif %}
+.. method:: {{ method_name }}{{ signature }}
 
-      {{ doc | rstify | indent(6) }}
+   {% for name, doc in parameters %}
+   :param {{ name }}: {{ doc | rstify | indent(6) }}
+   {% endfor %}
+   {% if return_doc %}
+   :return: {{ return_doc | rstify | indent(6) }}
+   {% endif %}
+
+   {{ doc | rstify | indent(3) }}
 
 {% endfor %}
 
 {% if fields %}
-   Fields
-   ------
+Fields
+------
 {% endif %}
    
 {% for name, doc in fields %}
-   .. attribute:: {{ name }}
+.. attribute:: {{ name }}
 
    {{ doc | rstify | indent(3)}}
 
