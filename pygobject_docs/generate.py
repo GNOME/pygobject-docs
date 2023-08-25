@@ -166,6 +166,12 @@ def generate_classes(namespace, version, out_path, category):
         class_deprecation = ("PyGObject-3.16.0", caught_warnings[0].message) if caught_warnings else None
         members = own_dir(klass)
 
+        def member_doc(member_type, member_name):
+            return gir.member_doc(member_type, class_name, member_name)  # noqa: B023
+
+        def member_return_doc(member_type, member_name):
+            return gir.member_return_doc(member_type, class_name, member_name)  # noqa: B023
+
         def parameter_docs(member_type, member_name, sig):
             for i, param in enumerate(sig.parameters):
                 if i == 0 and param == "self":
@@ -190,15 +196,15 @@ def generate_classes(namespace, version, out_path, category):
                     (
                         name,
                         sig := signature(getattr(klass, name), bound=True),
-                        gir.member_doc("constructor", class_name, name),
+                        member_doc("constructor", name),
                         parameter_docs("constructor", name, sig),
-                        gir.member_return_doc("constructor", class_name, name),
+                        member_return_doc("constructor", name),
                     )
                     for name in members
                     if determine_member_category(klass, name) == MemberCategory.Constructors
                 ],
                 fields=[
-                    (name, gir.member_doc("field", class_name, name))
+                    (name, member_doc("field", name))
                     for name in members
                     if determine_member_category(klass, name) == MemberCategory.Fields
                 ],
@@ -206,9 +212,9 @@ def generate_classes(namespace, version, out_path, category):
                     (
                         name,
                         sig := signature(getattr(klass, name), bound=True),
-                        gir.member_doc("method", class_name, name),
+                        member_doc("method", name),
                         parameter_docs("method", name, sig),
-                        gir.member_return_doc("method", class_name, name),
+                        member_return_doc("method", name),
                         is_classmethod(klass, name),
                     )
                     for name in members
@@ -218,7 +224,7 @@ def generate_classes(namespace, version, out_path, category):
                     (
                         name,
                         stringify_annotation(type, mode="smart"),
-                        gir.member_doc("property", class_name, name),
+                        member_doc("property", name),
                     )
                     for name, type in properties(klass)
                 ],
@@ -226,9 +232,9 @@ def generate_classes(namespace, version, out_path, category):
                     (
                         name := info.get_name(),
                         sig := signature(info),
-                        gir.member_doc("signal", class_name, name),
+                        member_doc("signal", name),
                         parameter_docs("signal", name, sig),
-                        gir.member_return_doc("signal", class_name, name),
+                        member_return_doc("signal", name),
                     )
                     for info in signals(klass)
                 ],
@@ -236,9 +242,9 @@ def generate_classes(namespace, version, out_path, category):
                     (
                         f"do_{info.get_name()}",
                         sig := signature(info),
-                        gir.member_doc("virtual-method", class_name, info.get_name()),
+                        member_doc("virtual-method", info.get_name()),
                         parameter_docs("virtual-method", info.get_name(), sig),
-                        gir.member_return_doc("virtual-method", class_name, info.get_name()),
+                        member_return_doc("virtual-method", info.get_name()),
                     )
                     for info in virtual_methods(klass)
                 ],
