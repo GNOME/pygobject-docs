@@ -54,6 +54,10 @@ def gi__gi_type_register(type) -> GObject.GType:
     ...
 
 
+def gi__gi_GObject___init__(**properties: Any):
+    ...
+
+
 def gi__gi_GObject_bind_property(
     source_property: str, target: GObject.Object, target_property: str, flags: GObject.BindingFlags | None
 ) -> GObject.Binding:

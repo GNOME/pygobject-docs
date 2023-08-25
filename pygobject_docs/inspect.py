@@ -60,16 +60,10 @@ def is_classmethod(klass: type, name: str) -> bool:
 def signature(subject: Callable, bound=False) -> Signature:
     if fun := getattr(overrides, _override_key(subject), None):
         return sphinx_signature(fun)
-    if subject is GObject.Object.__init__:
-        return sphinx_signature(gobject_init_placeholder)
     if isinstance(s := unwrap(subject), CallableInfo):
         return gi_signature(s)
 
     return sphinx_signature(subject, bound_method=bound)
-
-
-def gobject_init_placeholder(**properties: Any):
-    ...
 
 
 def _override_key(subject):
