@@ -34,8 +34,7 @@ Constructors
 {% endif %}
 
 {% for cons_name, signature, cons_doc, parameters, return_doc in constructors %}
-.. method:: {{ cons_name }}{{ signature }}
-   :classmethod:
+.. classmethod:: {{ cons_name }}{{ signature }}
 
    {% for name, doc in parameters %}
    :param {{ name }}: {{ doc | rstify | indent(6) }}
@@ -54,8 +53,7 @@ Methods
 {% endif %}
 
 {% for method_name, signature, method_doc, parameters, return_doc, is_classmethod in methods %}
-.. method:: {{ method_name }}{{ signature }}
-{% if is_classmethod %}   :classmethod:{% endif %}
+.. {% if is_classmethod %}class{% endif %}method:: {{ method_name }}{{ signature }}
 
    {% for name, doc in parameters %}
    :param {{ name }}: {{ doc | rstify | indent(6) }}
