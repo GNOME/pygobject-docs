@@ -37,13 +37,13 @@ Constructors
 .. classmethod:: {{ cons_name }}{{ signature }}
 
    {% for name, doc in parameters %}
-   :param {{ name }}: {{ doc | rstify | indent(6) }}
+   :param {{ name }}: {{ doc | indent(6) }}
    {% endfor %}
    {% if return_doc %}
-   :return: {{ return_doc | rstify | indent(6) }}
+   :return: {{ return_doc | indent(6) }}
    {% endif %}
 
-   {{ cons_doc | rstify | indent(3) }}
+   {{ cons_doc | indent(3) }}
 
 {% endfor %}
 
@@ -56,13 +56,13 @@ Methods
 .. {% if is_classmethod %}class{% endif %}method:: {{ method_name }}{{ signature }}
 
    {% for name, doc in parameters %}
-   :param {{ name }}: {{ doc | rstify | indent(6) }}
+   :param {{ name }}: {{ doc | indent(6) }}
    {% endfor %}
    {% if return_doc %}
-   :return: {{ return_doc | rstify | indent(6) }}
+   :return: {{ return_doc | indent(6) }}
    {% endif %}
 
-   {{ method_doc | rstify | indent(3) }}
+   {{ method_doc | indent(3) }}
 
 {% endfor %}
 
@@ -76,7 +76,7 @@ Properties
    :type: {{ type }}
    :canonical: gi.repository.{{ namespace }}.{{ class_name }}:{{ name }}
 
-   {{ doc | rstify | indent(3) }}
+   {{ doc | indent(3) }}
 
 {% endfor %}
 
@@ -91,13 +91,13 @@ Signals
    :no-index-entry:
 
    {% for name, doc in parameters %}
-   :param {{ name }}: {{ doc | rstify | indent(6) }}
+   :param {{ name }}: {{ doc | indent(6) }}
    {% endfor %}
    {% if return_doc %}
-   :return: {{ return_doc | rstify | indent(6) }}
+   :return: {{ return_doc | indent(6) }}
    {% endif %}
 
-   {{ signal_doc | rstify | indent(3) }}
+   {{ signal_doc | indent(3) }}
 
 {% endfor %}
 
@@ -110,13 +110,13 @@ Virtual Methods
 .. method:: {{ method_name }}{{ signature }}
 
    {% for name, doc in parameters %}
-   :param {{ name }}: {{ doc | rstify | indent(6) }}
+   :param {{ name }}: {{ doc | indent(6) }}
    {% endfor %}
    {% if return_doc %}
-   :return: {{ return_doc | rstify | indent(6) }}
+   :return: {{ return_doc | indent(6) }}
    {% endif %}
 
-   {{ doc | rstify | indent(3) }}
+   {{ doc | indent(3) }}
 
 {% endfor %}
 
@@ -128,7 +128,7 @@ Fields
 {% for name, doc in fields %}
 .. attribute:: {{ name }}
 
-   {{ doc | rstify | indent(3)}}
+   {{ doc | indent(3)}}
 
 {% endfor %}
 

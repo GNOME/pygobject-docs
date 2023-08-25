@@ -7,6 +7,7 @@ from typing import Any, Callable, Optional, Sequence
 from importlib import import_module
 from inspect import Signature, Parameter, unwrap
 from keyword import iskeyword
+from textwrap import dedent
 
 from gi._gi import CallbackInfo, CallableInfo, TypeInfo, TypeTag, Direction
 from gi.repository import GLib, GObject
@@ -55,6 +56,17 @@ def is_classmethod(klass: type, name: str) -> bool:
             obj = c.__dict__.get(name)
             return isinstance(obj, (classmethod, staticmethod))
     return False
+
+
+def custom_docstring(subject: Callable | None) -> str | None:
+    try:
+        key = _override_key(subject)
+    except AttributeError:
+        return None
+
+    if key and (fun := getattr(overrides, key, None)):
+        return fun.__doc__ and dedent(fun.__doc__)
+    return None
 
 
 def signature(subject: Callable, bound=False) -> Signature:

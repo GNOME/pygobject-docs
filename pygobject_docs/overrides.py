@@ -71,29 +71,74 @@ def gi__gi_GObject_chain(*params) -> object:
 def gi__gi_GObject_connect(  # type: ignore[empty-body]
     detailed_signal: str, handler: Callable[[GObject.Object, ...], Any], *args: Any  # type: ignore[misc]
 ) -> int:
-    ...
+    """
+    :param detailed_signal: A signal name.
+    :param handler: Callback to invoke if the signal is emitted. The callback signature needs to match the signature of the signal.
+    :param args: Additional arguments to pass to the callback.
+
+    The ``connect()`` method adds a function or method (handler) to the end of the list of signal handlers for the named ``detailed_signal`` but before the default class signal handler. An optional set of parameters may be specified after the handler parameter. These will all be passed to the signal handler when invoked.
+
+    For example if a function handler was connected to a signal using:
+
+    .. code:: python
+
+        handler_id = object.connect("signal_name", handler, arg1, arg2, arg3)
+
+    The handler should be defined as:
+
+    .. code:: python
+
+        def handler(object, arg1, arg2, arg3):
+
+    A method handler connected to a signal using:
+
+    .. code:: python
+
+        handler_id = object.connect("signal_name", self.handler, arg1, arg2)
+
+    requires an additional argument when defined:
+
+    .. code:: python
+
+        def handler(self, object, arg1, arg2)
+
+    A :ref:`TypeError` exception is raised if ``detailed_signal`` identifies a signal name that is not associated with the object.
+    """
 
 
 def gi__gi_GObject_connect_after(  # type: ignore[empty-body]
     detailed_signal: str, handler: Callable[[GObject.Object, ...], Any], *args: Any  # type: ignore[misc]
 ) -> int:
-    ...
+    """
+    :param detailed_signal: A signal name.
+    :param handler: Callback to invoke if the signal is emitted. The callback signature needs to match the signature of the signal.
+    :param args: Additional arguments to pass to the callback.
+
+    The ``connect_after()`` method is similar to the :meth:`~gi.repository.GObject.connect` method except that the handler is added to the signal handler list after the default class signal handler. Otherwise the details of handler definition and invocation are the same.
+    """
 
 
 def gi__gi_GObject_connect_object(  # type: ignore[empty-body]
     detailed_signal: str, handler: Callable[[GObject.Object, ...], Any], object: GObject.Object, *args: Any  # type: ignore[misc]
 ) -> int:
-    ...
+    """
+    The ``connect_after()`` method is similar to the :meth:`~gi.repository.GObject.connect` method except that it takes an additional object as argument. The object is weakly referenced and the signal is
+    automatically disconnected when the object is finalized.
+    """
 
 
 def gi__gi_GObject_connect_object_after(  # type: ignore[empty-body]
     detailed_signal: str, handler: Callable[[GObject.Object, Any], Any], object: GObject.Object, *args: Any
 ) -> int:
-    ...
+    """
+    The ``connect_object_after()`` method is similar to the :meth:`~gi.repository.GObject.connect_object` method except that the handler is added to the signal handler list after the default class signal handler. Otherwise the details of handler definition and invocation are the same.
+    """
 
 
 def gi__gi_GObject_disconnect_by_func(func: Callable[[GObject.Object, ...], Any]) -> None:  # type: ignore[misc]
-    ...
+    """
+    Disconnect a function (callable) from any signal.
+    """
 
 
 def gi__gi_GObject_emit(signal_name: str, *args) -> None:

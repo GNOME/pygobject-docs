@@ -20,7 +20,7 @@ from sphinx.util.inspect import stringify_annotation
 from pygobject_docs.category import Category, determine_category, determine_member_category, MemberCategory
 from pygobject_docs.doc import rstify
 from pygobject_docs.gir import load_gir_file
-from pygobject_docs.inspect import is_classmethod, signature, patch_gi_overrides
+from pygobject_docs.inspect import custom_docstring, is_classmethod, signature, patch_gi_overrides
 from pygobject_docs.members import own_dir, properties, signals, virtual_methods
 
 C_API_DOCS = {
@@ -167,16 +167,26 @@ def generate_classes(namespace, version, out_path, category):
         members = own_dir(klass)
 
         def member_doc(member_type, member_name):
-            return gir.member_doc(member_type, class_name, member_name)  # noqa: B023
+            if custom_doc := custom_docstring(getattr(klass, member_name, None)):  # noqa: B023
+                return custom_doc
+
+            return rstify(gir.member_doc(member_type, class_name, member_name))  # noqa: B023
 
         def member_return_doc(member_type, member_name):
-            return gir.member_return_doc(member_type, class_name, member_name)  # noqa: B023
+            mdoc = member_doc(member_type, member_name)
+            if ":return:" in mdoc:
+                return None
+
+            return rstify(gir.member_return_doc(member_type, class_name, member_name))  # noqa: B023
 
         def parameter_docs(member_type, member_name, sig):
+            mdoc = member_doc(member_type, member_name)
             for i, param in enumerate(sig.parameters):
-                if i == 0 and param == "self":
+                if (i == 0 and param == "self") or f":param {param}:" in mdoc:
                     continue
-                doc = gir.member_parameter_doc(member_type, class_name, member_name, param)  # noqa: B023
+                doc = rstify(
+                    gir.member_parameter_doc(member_type, class_name, member_name, param)  # noqa: B023
+                )
                 yield param, doc
 
         (out_path / f"{category.single}-{class_name}.rst").write_text(
