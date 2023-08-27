@@ -209,12 +209,19 @@ def generate_classes(namespace, version, out_path, category):
                         member_doc("constructor", name),
                         parameter_docs("constructor", name, sig),
                         member_return_doc("constructor", name),
+                        gir.member_deprecated("constructor", class_name, name),
+                        gir.member_since("constructor", class_name, name),
                     )
                     for name in members
                     if determine_member_category(klass, name) == MemberCategory.Constructors
                 ],
                 fields=[
-                    (name, member_doc("field", name))
+                    (
+                        name,
+                        member_doc("field", name),
+                        gir.member_deprecated("field", class_name, name),
+                        gir.member_since("field", class_name, name),
+                    )
                     for name in members
                     if determine_member_category(klass, name) == MemberCategory.Fields
                 ],
@@ -226,6 +233,8 @@ def generate_classes(namespace, version, out_path, category):
                         parameter_docs("method", name, sig),
                         member_return_doc("method", name),
                         is_classmethod(klass, name),
+                        gir.member_deprecated("method", class_name, name),
+                        gir.member_since("method", class_name, name),
                     )
                     for name in members
                     if determine_member_category(klass, name) == MemberCategory.Methods
@@ -235,6 +244,8 @@ def generate_classes(namespace, version, out_path, category):
                         name,
                         stringify_annotation(type, mode="smart"),
                         member_doc("property", name),
+                        gir.member_deprecated("property", class_name, name),
+                        gir.member_since("property", class_name, name),
                     )
                     for name, type in properties(klass)
                 ],
@@ -245,6 +256,8 @@ def generate_classes(namespace, version, out_path, category):
                         member_doc("signal", name),
                         parameter_docs("signal", name, sig),
                         member_return_doc("signal", name),
+                        gir.member_deprecated("signal", class_name, name),
+                        gir.member_since("signal", class_name, name),
                     )
                     for info in signals(klass)
                 ],
@@ -255,6 +268,8 @@ def generate_classes(namespace, version, out_path, category):
                         member_doc("virtual-method", info.get_name()),
                         parameter_docs("virtual-method", info.get_name(), sig),
                         member_return_doc("virtual-method", info.get_name()),
+                        gir.member_deprecated("virtual-method", class_name, info.get_name()),
+                        gir.member_since("virtual-method", class_name, info.get_name()),
                     )
                     for info in virtual_methods(klass)
                 ],

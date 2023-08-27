@@ -33,7 +33,7 @@ Constructors
 ------------
 {% endif %}
 
-{% for cons_name, signature, cons_doc, parameters, return_doc in constructors %}
+{% for cons_name, signature, cons_doc, parameters, return_doc, cons_depr, cons_since in constructors %}
 .. classmethod:: {{ cons_name }}{{ signature }}
 
    {% for name, doc in parameters %}
@@ -41,6 +41,17 @@ Constructors
    {% endfor %}
    {% if return_doc %}
    :return: {{ return_doc | indent(6) }}
+   {% endif %}
+
+   {% if cons_since %}
+   .. versionadded:: {{ cons_since }}
+   {% endif %}
+
+   {% if cons_depr %}
+   {% set version, doc_ = cons_depr %}
+   .. deprecated:: {{ version }}
+
+      {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
    {% endif %}
 
    {{ cons_doc | indent(3) }}
@@ -52,7 +63,7 @@ Methods
 -------
 {% endif %}
 
-{% for method_name, signature, method_doc, parameters, return_doc, is_classmethod in methods %}
+{% for method_name, signature, method_doc, parameters, return_doc, is_classmethod, method_depr, method_since in methods %}
 .. {% if is_classmethod %}class{% endif %}method:: {{ method_name }}{{ signature }}
 
    {% for name, doc in parameters %}
@@ -60,6 +71,17 @@ Methods
    {% endfor %}
    {% if return_doc %}
    :return: {{ return_doc | indent(6) }}
+   {% endif %}
+
+   {% if method_since %}
+   .. versionadded:: {{ method_since }}
+   {% endif %}
+
+   {% if method_depr %}
+   {% set version, doc_ = method_depr %}
+   .. deprecated:: {{ version }}
+
+      {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
    {% endif %}
 
    {{ method_doc | indent(3) }}
@@ -71,10 +93,21 @@ Properties
 ----------
 {% endif %}
 
-{% for name, type, doc in properties %}
+{% for name, type, doc, prop_depr, prop_since in properties %}
 .. attribute:: {{ name }}
    :type: {{ type }}
    :canonical: gi.repository.{{ namespace }}.{{ class_name }}:{{ name }}
+
+   {% if prop_since %}
+   .. versionadded:: {{ prop_since }}
+   {% endif %}
+
+   {% if prop_depr %}
+   {% set version, doc_ = prop_depr %}
+   .. deprecated:: {{ version }}
+
+      {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
+   {% endif %}
 
    {{ doc | indent(3) }}
 
@@ -85,7 +118,7 @@ Signals
 -------
 {% endif %}
 
-{% for signal_name, sig, signal_doc, parameters, return_doc in signals %}
+{% for signal_name, sig, signal_doc, parameters, return_doc, signal_depr, signal_since in signals %}
 .. method:: {{ signal_name }}{{ sig }}
    :canonical: gi.repository.{{ namespace }}.{{ class_name }}::{{ signal_name }}
    :no-index-entry:
@@ -97,6 +130,17 @@ Signals
    :return: {{ return_doc | indent(6) }}
    {% endif %}
 
+   {% if signal_since %}
+   .. versionadded:: {{ signal_since }}
+   {% endif %}
+
+   {% if signal_depr %}
+   {% set version, doc_ = signal_depr %}
+   .. deprecated:: {{ version }}
+
+      {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
+   {% endif %}
+
    {{ signal_doc | indent(3) }}
 
 {% endfor %}
@@ -106,7 +150,7 @@ Virtual Methods
 ---------------
 {% endif %}
 
-{% for method_name, signature, method_doc, parameters, return_doc in virtual_methods %}
+{% for method_name, signature, method_doc, parameters, return_doc, method_depr, method_since in virtual_methods %}
 .. method:: {{ method_name }}{{ signature }}
 
    {% for name, doc in parameters %}
@@ -114,6 +158,17 @@ Virtual Methods
    {% endfor %}
    {% if return_doc %}
    :return: {{ return_doc | indent(6) }}
+   {% endif %}
+
+   {% if method_since %}
+   .. versionadded:: {{ method_since }}
+   {% endif %}
+
+   {% if method_depr %}
+   {% set version, doc_ = method_depr %}
+   .. deprecated:: {{ version }}
+
+      {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
    {% endif %}
 
    {{ doc | indent(3) }}
@@ -125,8 +180,19 @@ Fields
 ------
 {% endif %}
    
-{% for name, doc in fields %}
+{% for name, doc, field_depr, field_since in fields %}
 .. attribute:: {{ name }}
+
+   {% if field_since %}
+   .. versionadded:: {{ field_since }}
+   {% endif %}
+
+   {% if field_depr %}
+   {% set version, doc_ = field_depr %}
+   .. deprecated:: {{ version }}
+
+      {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
+   {% endif %}
 
    {{ doc | indent(3)}}
 

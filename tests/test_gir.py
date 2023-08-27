@@ -101,3 +101,10 @@ def test_signal_docs(gobject):
     doc = gobject.member_doc("signal", "Object", "notify")
 
     assert doc
+
+
+def test_deprecated_method(gobject):
+    version, message = gobject.member_deprecated("method", "Binding", "get_target")
+
+    assert version == "2.68"
+    assert "Use g_binding_dup_target()" in message

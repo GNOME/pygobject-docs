@@ -135,6 +135,18 @@ class Gir:
 
         return ""
 
+    def member_deprecated(self, member_type, class_name, name) -> tuple[str, str] | None:
+        if member := self.member(member_type, class_name, name):
+            return member.deprecated_since
+
+        return None
+
+    def member_since(self, member_type, class_name, name) -> tuple[str, str] | None:
+        if member := self.member(member_type, class_name, name):
+            return member.available_since
+
+        return None
+
     def member_parameter_doc(self, member_type, klass_name, member_name, param_name):
         if not (member := self.member(member_type, klass_name, member_name)):
             return
