@@ -23,6 +23,10 @@
     margin-top: 6px;
 }
 
+.versionmodified {
+    color: #a40000;
+}
+
 footer hr {
     margin-bottom: 6px;
 }

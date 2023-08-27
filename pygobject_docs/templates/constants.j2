@@ -8,6 +8,8 @@ Constants
 .. data:: {{ name }}
    :value: {{ value }}
 
+   {{ doc | rstify | indent(3) }}
+
 {% if since %}
    .. versionadded:: {{ since }}
 {% endif %}
@@ -17,7 +19,5 @@ Constants
    .. deprecated:: {{ version }}
       {{ doc_ | rstify | indent(6) }}
 {% endif %}
-
-   {{ doc | rstify | indent(3) }}
 
 {% endfor %}

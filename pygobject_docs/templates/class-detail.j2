@@ -5,9 +5,6 @@
 
 .. currentmodule:: gi.repository.{{ namespace }}
 
-.. class:: {{ class_name }}{{ class_signature }}
-   :no-index:
-
 {% if since %}
 .. versionadded:: {{ since }}
 {% endif %}
@@ -18,6 +15,9 @@
 
    {{ doc_ | replace("\n", " ") | rstify | indent(3) }}
 {% endif %}
+
+.. class:: {{ class_name }}{{ class_signature }}
+   :no-index:
 
 {{ doc | rstify }}
 
@@ -43,6 +43,8 @@ Constructors
    :return: {{ return_doc | indent(6) }}
    {% endif %}
 
+   {{ cons_doc | indent(3) }}
+
    {% if cons_since %}
    .. versionadded:: {{ cons_since }}
    {% endif %}
@@ -53,8 +55,6 @@ Constructors
 
       {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
    {% endif %}
-
-   {{ cons_doc | indent(3) }}
 
 {% endfor %}
 
@@ -73,6 +73,8 @@ Methods
    :return: {{ return_doc | indent(6) }}
    {% endif %}
 
+   {{ method_doc | indent(3) }}
+
    {% if method_since %}
    .. versionadded:: {{ method_since }}
    {% endif %}
@@ -83,8 +85,6 @@ Methods
 
       {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
    {% endif %}
-
-   {{ method_doc | indent(3) }}
 
 {% endfor %}
 
@@ -98,6 +98,8 @@ Properties
    :type: {{ type }}
    :canonical: gi.repository.{{ namespace }}.{{ class_name }}:{{ name }}
 
+   {{ doc | indent(3) }}
+
    {% if prop_since %}
    .. versionadded:: {{ prop_since }}
    {% endif %}
@@ -108,8 +110,6 @@ Properties
 
       {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
    {% endif %}
-
-   {{ doc | indent(3) }}
 
 {% endfor %}
 
@@ -130,6 +130,8 @@ Signals
    :return: {{ return_doc | indent(6) }}
    {% endif %}
 
+   {{ signal_doc | indent(3) }}
+
    {% if signal_since %}
    .. versionadded:: {{ signal_since }}
    {% endif %}
@@ -140,8 +142,6 @@ Signals
 
       {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
    {% endif %}
-
-   {{ signal_doc | indent(3) }}
 
 {% endfor %}
 
@@ -160,6 +160,8 @@ Virtual Methods
    :return: {{ return_doc | indent(6) }}
    {% endif %}
 
+   {{ doc | indent(3) }}
+
    {% if method_since %}
    .. versionadded:: {{ method_since }}
    {% endif %}
@@ -171,8 +173,6 @@ Virtual Methods
       {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
    {% endif %}
 
-   {{ doc | indent(3) }}
-
 {% endfor %}
 
 {% if fields %}
@@ -182,6 +182,8 @@ Fields
    
 {% for name, doc, field_depr, field_since in fields %}
 .. attribute:: {{ name }}
+
+   {{ doc | indent(3)}}
 
    {% if field_since %}
    .. versionadded:: {{ field_since }}
@@ -193,8 +195,6 @@ Fields
 
       {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
    {% endif %}
-
-   {{ doc | indent(3)}}
 
 {% endfor %}
 

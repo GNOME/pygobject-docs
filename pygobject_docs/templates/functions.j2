@@ -14,6 +14,8 @@ Functions
    :return: {{ return_doc | rstify | indent(6) }}
    {% endif %}
 
+   {{ doc | rstify | indent(3) }}
+
 {% if since %}
    .. versionadded:: {{ since }}
 {% endif %}
@@ -23,8 +25,6 @@ Functions
    .. deprecated:: {{ version }}
       {{ doc_ | rstify | indent(6) }}
 {% endif %}
-
-   {{ doc | rstify | indent(3) }}
 
 
 {% endfor %}
