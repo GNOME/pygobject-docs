@@ -114,7 +114,7 @@ def gi__gi_GObject_connect_after(  # type: ignore[empty-body]
     :param handler: Callback to invoke if the signal is emitted. The callback signature needs to match the signature of the signal.
     :param args: Additional arguments to pass to the callback.
 
-    The ``connect_after()`` method is similar to the :meth:`~gi.repository.GObject.connect` method except that the handler is added to the signal handler list after the default class signal handler. Otherwise the details of handler definition and invocation are the same.
+    The ``connect_after()`` method is similar to the :meth:`~gi.repository.GObject.Object.connect` method except that the handler is added to the signal handler list after the default class signal handler. Otherwise the details of handler definition and invocation are the same.
     """
 
 
@@ -122,7 +122,7 @@ def gi__gi_GObject_connect_object(  # type: ignore[empty-body]
     detailed_signal: str, handler: Callable[[GObject.Object, ...], Any], object: GObject.Object, *args: Any  # type: ignore[misc]
 ) -> int:
     """
-    The ``connect_after()`` method is similar to the :meth:`~gi.repository.GObject.connect` method except that it takes an additional object as argument. The object is weakly referenced and the signal is
+    The ``connect_after()`` method is similar to the :meth:`~gi.repository.GObject.Object.connect` method except that it takes an additional object as argument. The object is weakly referenced and the signal is
     automatically disconnected when the object is finalized.
     """
 
@@ -131,7 +131,7 @@ def gi__gi_GObject_connect_object_after(  # type: ignore[empty-body]
     detailed_signal: str, handler: Callable[[GObject.Object, Any], Any], object: GObject.Object, *args: Any
 ) -> int:
     """
-    The ``connect_object_after()`` method is similar to the :meth:`~gi.repository.GObject.connect_object` method except that the handler is added to the signal handler list after the default class signal handler. Otherwise the details of handler definition and invocation are the same.
+    The ``connect_object_after()`` method is similar to the :meth:`~gi.repository.GObject.Object.connect_object` method except that the handler is added to the signal handler list after the default class signal handler. Otherwise the details of handler definition and invocation are the same.
     """
 
 

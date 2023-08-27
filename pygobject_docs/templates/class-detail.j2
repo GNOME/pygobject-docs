@@ -37,171 +37,203 @@ Implementations: {% for p in implementations %}{% if not loop.first %}, {% endif
 {% if constructors %}
 Constructors
 ------------
-{% endif %}
 
-{% for cons_name, signature, cons_doc, parameters, return_doc, cons_depr, cons_since in constructors %}
-.. classmethod:: {{ cons_name }}{{ signature }}
+.. rst-class:: interim-class
 
-   {% for name, doc in parameters %}
-   :param {{ name }}: {{ doc | indent(6) }}
+.. class:: {{ class_name }}
+   :no-index:
+
+   {% for cons_name, signature, cons_doc, parameters, return_doc, cons_depr, cons_since in constructors %}
+   .. classmethod:: {{ cons_name }}{{ signature }}
+
+      {% for name, doc in parameters %}
+      :param {{ name }}: {{ doc | indent(9) }}
+      {% endfor %}
+      {% if return_doc %}
+      :return: {{ return_doc | indent(9) }}
+      {% endif %}
+
+      {{ cons_doc | indent(6) }}
+
+      {% if cons_since %}
+      .. versionadded:: {{ cons_since }}
+      {% endif %}
+
+      {% if cons_depr %}
+      {% set version, doc_ = cons_depr %}
+      .. deprecated:: {{ version }}
+
+         {{ doc_ | replace("\n", " ") | rstify | indent(9) }}
+      {% endif %}
+
    {% endfor %}
-   {% if return_doc %}
-   :return: {{ return_doc | indent(6) }}
-   {% endif %}
 
-   {{ cons_doc | indent(3) }}
-
-   {% if cons_since %}
-   .. versionadded:: {{ cons_since }}
-   {% endif %}
-
-   {% if cons_depr %}
-   {% set version, doc_ = cons_depr %}
-   .. deprecated:: {{ version }}
-
-      {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
-   {% endif %}
-
-{% endfor %}
+{% endif %}
 
 {% if methods %}
 Methods
 -------
-{% endif %}
 
-{% for method_name, signature, method_doc, parameters, return_doc, is_classmethod, method_depr, method_since in methods %}
-.. {% if is_classmethod %}class{% endif %}method:: {{ method_name }}{{ signature }}
+.. rst-class:: interim-class
 
-   {% for name, doc in parameters %}
-   :param {{ name }}: {{ doc | indent(6) }}
+.. class:: {{ class_name }}
+   :no-index:
+
+   {% for method_name, signature, method_doc, parameters, return_doc, is_classmethod, method_depr, method_since in methods %}
+   .. {% if is_classmethod %}class{% endif %}method:: {{ method_name }}{{ signature }}
+
+      {% for name, doc in parameters %}
+      :param {{ name }}: {{ doc | indent(9) }}
+      {% endfor %}
+      {% if return_doc %}
+      :return: {{ return_doc | indent(9) }}
+      {% endif %}
+
+      {{ method_doc | indent(6) }}
+
+      {% if method_since %}
+      .. versionadded:: {{ method_since }}
+      {% endif %}
+
+      {% if method_depr %}
+      {% set version, doc_ = method_depr %}
+      .. deprecated:: {{ version }}
+
+         {{ doc_ | replace("\n", " ") | rstify | indent(9) }}
+      {% endif %}
+
    {% endfor %}
-   {% if return_doc %}
-   :return: {{ return_doc | indent(6) }}
-   {% endif %}
 
-   {{ method_doc | indent(3) }}
-
-   {% if method_since %}
-   .. versionadded:: {{ method_since }}
-   {% endif %}
-
-   {% if method_depr %}
-   {% set version, doc_ = method_depr %}
-   .. deprecated:: {{ version }}
-
-      {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
-   {% endif %}
-
-{% endfor %}
+{% endif %}
 
 {% if properties %}
 Properties
 ----------
+
+.. rst-class:: interim-class
+
+.. class:: {{ class_name }}
+   :no-index:
+   
+   {% for name, type, doc, prop_depr, prop_since in properties %}
+   .. attribute:: {{ name }}
+      :type: {{ type }}
+
+      {{ doc | indent(6) }}
+
+      {% if prop_since %}
+      .. versionadded:: {{ prop_since }}
+      {% endif %}
+
+      {% if prop_depr %}
+      {% set version, doc_ = prop_depr %}
+      .. deprecated:: {{ version }}
+
+         {{ doc_ | replace("\n", " ") | rstify | indent(9) }}
+      {% endif %}
+
+   {% endfor %}
+
 {% endif %}
-
-{% for name, type, doc, prop_depr, prop_since in properties %}
-.. attribute:: {{ name }}
-   :type: {{ type }}
-   :canonical: gi.repository.{{ namespace }}.{{ class_name }}:{{ name }}
-
-   {{ doc | indent(3) }}
-
-   {% if prop_since %}
-   .. versionadded:: {{ prop_since }}
-   {% endif %}
-
-   {% if prop_depr %}
-   {% set version, doc_ = prop_depr %}
-   .. deprecated:: {{ version }}
-
-      {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
-   {% endif %}
-
-{% endfor %}
 
 {% if signals %}
 Signals
 -------
-{% endif %}
 
-{% for signal_name, sig, signal_doc, parameters, return_doc, signal_depr, signal_since in signals %}
-.. method:: {{ signal_name }}{{ sig }}
-   :canonical: gi.repository.{{ namespace }}.{{ class_name }}::{{ signal_name }}
-   :no-index-entry:
+.. rst-class:: interim-class
 
-   {% for name, doc in parameters %}
-   :param {{ name }}: {{ doc | indent(6) }}
+.. class:: {{ class_name }}
+   :no-index:
+   
+   {% for signal_name, sig, signal_doc, parameters, return_doc, signal_depr, signal_since in signals %}
+   .. method:: {{ signal_name }}{{ sig }}
+
+      {% for name, doc in parameters %}
+      :param {{ name }}: {{ doc | indent(9) }}
+      {% endfor %}
+      {% if return_doc %}
+      :return: {{ return_doc | indent(9) }}
+      {% endif %}
+
+      {{ signal_doc | indent(6) }}
+
+      {% if signal_since %}
+      .. versionadded:: {{ signal_since }}
+      {% endif %}
+
+      {% if signal_depr %}
+      {% set version, doc_ = signal_depr %}
+      .. deprecated:: {{ version }}
+
+         {{ doc_ | replace("\n", " ") | rstify | indent(9) }}
+      {% endif %}
+
    {% endfor %}
-   {% if return_doc %}
-   :return: {{ return_doc | indent(6) }}
-   {% endif %}
 
-   {{ signal_doc | indent(3) }}
-
-   {% if signal_since %}
-   .. versionadded:: {{ signal_since }}
-   {% endif %}
-
-   {% if signal_depr %}
-   {% set version, doc_ = signal_depr %}
-   .. deprecated:: {{ version }}
-
-      {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
-   {% endif %}
-
-{% endfor %}
+{% endif %}
 
 {% if virtual_methods %}
 Virtual Methods
 ---------------
-{% endif %}
 
-{% for method_name, signature, method_doc, parameters, return_doc, method_depr, method_since in virtual_methods %}
-.. method:: {{ method_name }}{{ signature }}
+.. rst-class:: interim-class
 
-   {% for name, doc in parameters %}
-   :param {{ name }}: {{ doc | indent(6) }}
+.. class:: {{ class_name }}
+   :no-index:
+   
+   {% for method_name, signature, method_doc, parameters, return_doc, method_depr, method_since in virtual_methods %}
+   .. method:: {{ method_name }}{{ signature }}
+
+      {% for name, doc in parameters %}
+      :param {{ name }}: {{ doc | indent(9) }}
+      {% endfor %}
+      {% if return_doc %}
+      :return: {{ return_doc | indent(9) }}
+      {% endif %}
+
+      {{ doc | indent(6) }}
+
+      {% if method_since %}
+      .. versionadded:: {{ method_since }}
+      {% endif %}
+
+      {% if method_depr %}
+      {% set version, doc_ = method_depr %}
+      .. deprecated:: {{ version }}
+
+         {{ doc_ | replace("\n", " ") | rstify | indent(9) }}
+      {% endif %}
+
    {% endfor %}
-   {% if return_doc %}
-   :return: {{ return_doc | indent(6) }}
-   {% endif %}
 
-   {{ doc | indent(3) }}
-
-   {% if method_since %}
-   .. versionadded:: {{ method_since }}
-   {% endif %}
-
-   {% if method_depr %}
-   {% set version, doc_ = method_depr %}
-   .. deprecated:: {{ version }}
-
-      {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
-   {% endif %}
-
-{% endfor %}
+{% endif %}
 
 {% if fields %}
 Fields
 ------
-{% endif %}
+
+.. rst-class:: interim-class
+
+.. class:: {{ class_name }}
+   :no-index:
    
-{% for name, doc, field_depr, field_since in fields %}
-.. attribute:: {{ name }}
+   {% for name, doc, field_depr, field_since in fields %}
+   .. attribute:: {{ name }}
 
-   {{ doc | indent(3)}}
+      {{ doc | indent(6)}}
 
-   {% if field_since %}
-   .. versionadded:: {{ field_since }}
-   {% endif %}
+      {% if field_since %}
+      .. versionadded:: {{ field_since }}
+      {% endif %}
 
-   {% if field_depr %}
-   {% set version, doc_ = field_depr %}
-   .. deprecated:: {{ version }}
+      {% if field_depr %}
+      {% set version, doc_ = field_depr %}
+      .. deprecated:: {{ version }}
 
-      {{ doc_ | replace("\n", " ") | rstify | indent(6) }}
-   {% endif %}
+         {{ doc_ | replace("\n", " ") | rstify | indent(9) }}
+      {% endif %}
 
-{% endfor %}
+   {% endfor %}
 
+{% endif %}
 

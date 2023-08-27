@@ -23,6 +23,14 @@
     margin-top: 6px;
 }
 
+.rst-content .interim-class > dt {
+    display: none !important;
+}
+
+.rst-content .interim-class > dd {
+    margin: 0;
+}
+
 .versionmodified {
     color: #a40000;
 }
