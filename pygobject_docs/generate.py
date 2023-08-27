@@ -201,7 +201,9 @@ def generate_classes(namespace, version, out_path, category):
                 deprecated=gir.deprecated(class_name) or class_deprecation,
                 since=gir.since(class_name),
                 ancestors=gir.ancestors(class_name),
+                descendants=gir.descendants(class_name),
                 implements=gir.implements(class_name),
+                implementations=gir.implementations(class_name),
                 constructors=[
                     (
                         name,

@@ -7,7 +7,17 @@ from itertools import chain
 from pathlib import Path
 
 from gi.repository import GLib
-from gidocgen.gir import GirParser, Class, Constant, Enumeration, Function, FunctionMacro, Repository, Type
+from gidocgen.gir import (
+    GirParser,
+    Class,
+    Constant,
+    Enumeration,
+    Function,
+    FunctionMacro,
+    Interface,
+    Repository,
+    Type,
+)
 
 
 log = logging.getLogger(__name__)
@@ -62,11 +72,23 @@ class Gir:
 
         return [f"gi.repository.{anc.fqtn}" for anc in node.ancestors]
 
+    def descendants(self, name) -> Iterable[str]:
+        if not (node := self._node(name)) or not isinstance(node, Class):
+            return []
+
+        return [f"gi.repository.{anc.fqtn}" for anc in node.descendants]
+
     def implements(self, name) -> list[str]:
         if not (node := self._node(name)) or not isinstance(node, Class):
             return []
 
         return [f"gi.repository.{impl.fqtn}" for impl in node.implements]
+
+    def implementations(self, name) -> list[str]:
+        if not (node := self._node(name)) or not isinstance(node, Interface):
+            return []
+
+        return [f"gi.repository.{impl.fqtn}" for impl in node.implementations]
 
     def doc(self, name) -> str:
         if not (obj := self._node(name)) or not obj.doc:

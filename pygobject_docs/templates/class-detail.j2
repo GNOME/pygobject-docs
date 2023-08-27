@@ -17,16 +17,22 @@
 {% endif %}
 
 .. class:: {{ class_name }}{{ class_signature }}
-   :no-index:
-
-{{ doc | rstify }}
+   :no-contents-entry:
 
 {% if ancestors %}
-Ancestors: {% for p in ancestors %}{% if not loop.first %}, {% endif %}:class:`~{{p}}`{% endfor %}
+Superclasses: {% for p in ancestors %}{% if not loop.first %}, {% endif %}:class:`~{{p}}`{% endfor %}
+{% endif %}
+{% if descendants %}
+Subclasses: {% for p in descendants %}{% if not loop.first %}, {% endif %}:class:`~{{p}}`{% endfor %}
 {% endif %}
 {% if implements %}
-Implements: {% for p in implements %}{% if not loop.first %}, {% endif %}:class:`~{{p}}`{% endfor %}
+Implemented Interfaces: {% for p in implements %}{% if not loop.first %}, {% endif %}:class:`~{{p}}`{% endfor %}
 {% endif %}
+{% if implementations %}
+Implementations: {% for p in implementations %}{% if not loop.first %}, {% endif %}:class:`~{{p}}`{% endfor %}
+{% endif %}
+
+{{ doc | rstify }}
 
 {% if constructors %}
 Constructors
