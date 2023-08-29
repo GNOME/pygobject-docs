@@ -8,13 +8,13 @@ def test_function_signature():
     def func(arg: str, obj: GObject.Object) -> str | int:
         return 1
 
-    assert str(signature(func)) == "(arg: str, obj: ~gi.overrides.GObject.Object) -> str | int"
+    assert str(signature(func)) == "(arg: str, obj: ~gi.repository.GObject.Object) -> str | int"
 
 
 def test_builtin_function_signature():
     assert (
         str(signature(GObject.add_emission_hook))
-        == "(type: ~gi.overrides.GObject.Object, name: str, callback: ~typing.Callable[[...], None], *args: ~typing.Any) -> None"
+        == "(type: ~gi.repository.GObject.Object, name: str, callback: ~typing.Callable[[...], None], *args: ~typing.Any) -> None"
     )
 
 
@@ -31,7 +31,7 @@ def test_class_signature():
         def method(self, arg: int) -> GObject.Object:
             ...
 
-    assert str(signature(Foo.method)) == "(self, arg: int) -> ~gi.overrides.GObject.Object"
+    assert str(signature(Foo.method)) == "(self, arg: int) -> ~gi.repository.GObject.Object"
 
 
 def test_gi_function_signature():
@@ -41,14 +41,14 @@ def test_gi_function_signature():
     )
     assert (
         str(signature(GObject.signal_handler_unblock))
-        == "(instance: ~gi.overrides.GObject.Object, handler_id: int) -> None"
+        == "(instance: ~gi.repository.GObject.Object, handler_id: int) -> None"
     )
 
 
 def test_builtin_method():
     assert (
         str(signature(GObject.GObject.bind_property))
-        == "(source_property: str, target: ~gi.overrides.GObject.Object, target_property: str, flags: ~gi.repository.GObject.BindingFlags | None) -> ~gi.overrides.GObject.Binding"
+        == "(source_property: str, target: ~gi.repository.GObject.Object, target_property: str, flags: ~gi.repository.GObject.BindingFlags | None) -> ~gi.repository.GObject.Binding"
     )
 
 
