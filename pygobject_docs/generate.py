@@ -163,6 +163,9 @@ def generate_classes(namespace, version, out_path, category):
         with warnings.catch_warnings(record=True) as caught_warnings:
             klass = getattr(mod, class_name)
 
+        if klass is gi.PyGIDeprecationWarning:
+            continue
+
         class_deprecation = ("PyGObject-3.16.0", caught_warnings[0].message) if caught_warnings else None
         members = own_dir(klass)
 
