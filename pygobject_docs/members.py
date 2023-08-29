@@ -13,8 +13,8 @@ def own_dir(obj_type: type) -> list[str]:
     if obj_type.__module__ == "gi.overrides.GObject" and obj_type.__name__ == "Object":
         return dir(obj_type)
 
-    if hasattr(obj_type, "__overridden__"):
-        return sorted(chain(obj_type.__dict__.keys(), obj_type.__base__.__dict__.keys()))
+    if hasattr(obj_type, "__overridden__") or obj_type.__module__.startswith("gi.overrides"):
+        return sorted(set(chain(obj_type.__dict__.keys(), obj_type.__base__.__dict__.keys())))
 
     return sorted(obj_type.__dict__.keys())
 

@@ -40,3 +40,13 @@ def test_signals(gobject):
     sigs = signals(gobject.Object)
 
     assert sigs
+
+
+@pytest.mark.desktop
+def test_no_suplicate_methods():
+    from gi.repository import Gtk
+
+    members = own_dir(Gtk.RecentInfo)
+
+    assert "get_application_info" in members
+    assert len(list(m for m in members if m == "get_application_info")) == 1
