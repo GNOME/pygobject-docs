@@ -127,7 +127,9 @@ def test_member_constructor(gobject):
     assert category == MemberCategory.Constructors
 
 
-@pytest.mark.parametrize("name", ["connect", "connect_data", "find_property", "bind_property"])
+@pytest.mark.parametrize(
+    "name", ["connect", "connect_data", "find_property", "bind_property", "install_properties"]
+)
 def test_member_method(gobject, name):
     obj_type = gobject.Object
     category = determine_member_category(obj_type, name)

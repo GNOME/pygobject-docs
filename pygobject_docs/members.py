@@ -10,7 +10,10 @@ def own_dir(obj_type: type) -> list[str]:
     # and not of a parent or interface.
 
     # GObject.Object is our base type - show all members
-    if obj_type.__module__ == "gi.overrides.GObject" and obj_type.__name__ == "Object":
+    if (
+        obj_type.__module__ in ("gi.overrides.GObject", "gi.repository.GObject")
+        and obj_type.__name__ == "Object"
+    ):
         return dir(obj_type)
 
     if hasattr(obj_type, "__overridden__") or obj_type.__module__.startswith("gi.overrides"):

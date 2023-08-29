@@ -49,4 +49,4 @@ def test_no_suplicate_methods():
     members = own_dir(Gtk.RecentInfo)
 
     assert "get_application_info" in members
-    assert len(list(m for m in members if m == "get_application_info")) == 1
+    assert len([m for m in members if m == "get_application_info"]) == 1
