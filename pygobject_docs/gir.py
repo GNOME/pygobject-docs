@@ -15,6 +15,7 @@ from gidocgen.gir import (
     Function,
     FunctionMacro,
     Interface,
+    Record,
     Repository,
     Type,
 )
@@ -123,6 +124,12 @@ class Gir:
             return None
 
         return obj.available_since
+
+    def struct_for(self, name) -> str | None:
+        if not (obj := self._node(name)):
+            return None
+
+        return obj.struct_for if isinstance(obj, Record) else None
 
     def member(self, member_type, class_name, name):
         if "(" in name:

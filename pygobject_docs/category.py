@@ -12,6 +12,7 @@ class Category(StrEnum):
     Interfaces = auto()
     Classes = auto()
     Structures = auto()  # GI type: record
+    ClassStructures = auto()
     Unions = auto()
     Enums = auto()
     Constants = auto()
@@ -34,7 +35,7 @@ class MemberCategory(StrEnum):
     Ignored = auto()
 
 
-def determine_category(module, name) -> Category:
+def determine_category(module, name, gir=None) -> Category:
     """Determine the category to put the field in
 
     The category is based on the GI type info. For custom
@@ -61,6 +62,10 @@ def determine_category(module, name) -> Category:
     elif isinstance(info, EnumInfo):
         return Category.Enums
     elif isinstance(info, StructInfo) or isinstance(field, StructMeta):
+        if name.endswith("Private"):
+            return Category.Ignored
+        if gir and gir.struct_for(name):
+            return Category.ClassStructures
         return Category.Structures
     elif isinstance(info, InterfaceInfo) or (namespace, name) == ("GObject", "GInterface"):
         return Category.Interfaces

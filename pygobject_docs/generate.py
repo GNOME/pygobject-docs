@@ -143,7 +143,7 @@ def generate_constants(namespace, version, out_path):
         )
 
 
-def generate_classes(namespace, version, out_path, category):
+def generate_classes(namespace, version, out_path, category, title=None):
     mod = import_module(namespace, version)
     gir = load_gir_file(namespace, version)
     env = jinja_env(gir)
@@ -153,7 +153,7 @@ def generate_classes(namespace, version, out_path, category):
     class_names = [
         name
         for name in dir(mod)
-        if determine_category(mod, name) == category and (namespace, name) not in BLACKLIST
+        if determine_category(mod, name, gir) == category and (namespace, name) not in BLACKLIST
     ]
 
     if not class_names:
@@ -287,7 +287,7 @@ def generate_classes(namespace, version, out_path, category):
         template.render(
             namespace=namespace,
             version=version,
-            entity_type=category.title(),
+            entity_type=title or category.title(),
             prefix=category.single,
         )
     )
@@ -306,7 +306,7 @@ def generate_index(namespace, version, out_path):
     )
 
     def has(category):
-        return any(determine_category(mod, name) == category for name in dir(mod))
+        return any(determine_category(mod, name, gir) == category for name in dir(mod))
 
     (out_path / "index.rst").write_text(
         template.render(
@@ -322,6 +322,7 @@ def generate_index(namespace, version, out_path):
             enums=has(Category.Enums),
             functions=has(Category.Functions),
             constants=has(Category.Constants),
+            classstructures=has(Category.ClassStructures),
             init_function="init" in dir(mod),
         )
     )
@@ -342,6 +343,7 @@ def generate(namespace, version):
     generate_classes(namespace, version, out_path, Category.Classes)
     generate_classes(namespace, version, out_path, Category.Interfaces)
     generate_classes(namespace, version, out_path, Category.Structures)
+    generate_classes(namespace, version, out_path, Category.ClassStructures, title="Class Structures")
     generate_classes(namespace, version, out_path, Category.Unions)
     generate_classes(namespace, version, out_path, Category.Enums)
     generate_constants(namespace, version, out_path)

@@ -108,3 +108,9 @@ def test_deprecated_method(gobject):
 
     assert version == "2.68"
     assert "Use g_binding_dup_target()" in message
+
+
+def test_struct_for(gobject):
+    obj = gobject.struct_for("ObjectClass")
+
+    assert obj == "Object"
