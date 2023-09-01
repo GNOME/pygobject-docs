@@ -59,6 +59,10 @@ def is_classmethod(klass: type, name: str) -> bool:
     return False
 
 
+def is_ref_unref_copy_or_steal_function(name) -> bool:
+    return bool(match(r"^(\w*_)?(ref|unref|copy|steal)(_\w*)?$", name))
+
+
 def custom_docstring(subject: Callable | None) -> str | None:
     if subject.__doc__:
         doc = prepare_docstring(getdoc(subject))

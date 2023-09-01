@@ -20,7 +20,13 @@ from sphinx.util.inspect import stringify_annotation
 from pygobject_docs.category import Category, determine_category, determine_member_category, MemberCategory
 from pygobject_docs.doc import rstify
 from pygobject_docs.gir import load_gir_file
-from pygobject_docs.inspect import custom_docstring, is_classmethod, signature, patch_gi_overrides
+from pygobject_docs.inspect import (
+    custom_docstring,
+    is_classmethod,
+    signature,
+    patch_gi_overrides,
+    is_ref_unref_copy_or_steal_function,
+)
 from pygobject_docs.members import own_dir, properties, signals, virtual_methods
 
 C_API_DOCS = {
@@ -115,6 +121,7 @@ def generate_functions(namespace, version, out_path):
                     )
                     for name in dir(mod)
                     if determine_category(mod, name) == Category.Functions
+                    and not is_ref_unref_copy_or_steal_function(name)
                 ],
                 namespace=namespace,
                 version=version,
@@ -262,6 +269,7 @@ def generate_classes(namespace, version, out_path, category, title=None):
                     )
                     for name in members
                     if determine_member_category(klass, name) == MemberCategory.Methods
+                    and not is_ref_unref_copy_or_steal_function(name)
                 ],
                 properties=[
                     (

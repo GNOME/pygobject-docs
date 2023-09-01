@@ -1,7 +1,12 @@
 import pytest
 from gi.repository import GLib, GObject
 
-from pygobject_docs.inspect import custom_docstring, is_classmethod, signature
+from pygobject_docs.inspect import (
+    custom_docstring,
+    is_classmethod,
+    is_ref_unref_copy_or_steal_function,
+    signature,
+)
 
 
 def test_function_signature():
@@ -96,3 +101,17 @@ def test_custom_docstring_from_gi_overrides():
 def test_skip_signature_docstring_overrides():
     assert not custom_docstring(GLib.io_add_watch)
     assert not custom_docstring(GLib.child_watch_add)
+
+
+@pytest.mark.parametrize("fragment", ["ref", "unref", "copy", "steal"])
+def test_hide_ref_count_functions(fragment):
+    assert is_ref_unref_copy_or_steal_function(fragment)
+    assert is_ref_unref_copy_or_steal_function(f"{fragment}_me")
+    assert is_ref_unref_copy_or_steal_function(f"some_{fragment}")
+    assert is_ref_unref_copy_or_steal_function(f"some_{fragment}_embedded")
+
+
+def test_not_hide_ref_count_functions():
+    assert not is_ref_unref_copy_or_steal_function("dounref")
+    assert not is_ref_unref_copy_or_steal_function("somunref_function")
+    assert not is_ref_unref_copy_or_steal_function("stealler_embedded")
