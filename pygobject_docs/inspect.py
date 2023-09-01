@@ -7,11 +7,12 @@ from typing import Any, Callable, Optional, Sequence
 from importlib import import_module
 from inspect import Signature, Parameter, unwrap
 from keyword import iskeyword
-from textwrap import dedent
+from re import match
 
 from gi._gi import CallbackInfo, CallableInfo, TypeInfo, TypeTag, Direction
 from gi.repository import GLib, GObject
-from sphinx.util.inspect import signature as sphinx_signature, stringify_signature
+from sphinx.util.docstrings import prepare_docstring
+from sphinx.util.inspect import getdoc, signature as sphinx_signature, stringify_signature
 
 from pygobject_docs import overrides
 
@@ -59,13 +60,17 @@ def is_classmethod(klass: type, name: str) -> bool:
 
 
 def custom_docstring(subject: Callable | None) -> str | None:
+    if subject.__doc__:
+        doc = prepare_docstring(getdoc(subject))
+        return None if not doc or match(r"^\w+\(.*\)", doc[0]) else "\n".join(doc)
+
     try:
         key = _override_key(subject)
     except AttributeError:
         return None
 
-    if key and (fun := getattr(overrides, key, None)):
-        return fun.__doc__ and dedent(fun.__doc__)
+    if key and (fun := getattr(overrides, key, None)) and (doc := getdoc(fun)):
+        return "\n".join(prepare_docstring(doc))
     return None
 
 

@@ -73,10 +73,26 @@ def generate_functions(namespace, version, out_path):
 
     template = env.get_template("functions.j2")
 
+    def func_doc(name):
+        if custom_doc := custom_docstring(getattr(mod, name, None)):
+            return custom_doc
+        return rstify(gir.doc(name))
+
     def parameter_docs(name, sig):
+        fdoc = func_doc(name)
+        if ":param " in fdoc:
+            return
+
         for param in sig.parameters:
             doc = gir.parameter_doc(name, param)
-            yield param, doc
+            yield param, rstify(doc)
+
+    def return_doc(name):
+        fdoc = func_doc(name)
+        if ":returns:" in fdoc:
+            return ""
+
+        return rstify(gir.return_doc(name))
 
     with warnings.catch_warnings(record=True) as caught_warnings:
 
@@ -91,9 +107,9 @@ def generate_functions(namespace, version, out_path):
                     (
                         name,
                         sig := signature(getattr(mod, name)),
-                        gir.doc(name),
+                        func_doc(name),
                         parameter_docs(name, sig),
-                        gir.return_doc(name),
+                        return_doc(name),
                         gir.deprecated(name) or func_deprecation(),
                         gir.since(name),
                     )
@@ -184,8 +200,11 @@ def generate_classes(namespace, version, out_path, category, title=None):
 
         def parameter_docs(member_type, member_name, sig):
             mdoc = member_doc(member_type, member_name)
+            if ":param " in mdoc:
+                return
+
             for i, param in enumerate(sig.parameters):
-                if (i == 0 and param == "self") or f":param {param}:" in mdoc:
+                if i == 0 and param == "self":
                     continue
                 doc = rstify(
                     gir.member_parameter_doc(member_type, class_name, member_name, param)  # noqa: B023

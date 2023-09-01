@@ -1,7 +1,7 @@
 import pytest
-from gi.repository import GObject
+from gi.repository import GLib, GObject
 
-from pygobject_docs.inspect import is_classmethod, signature
+from pygobject_docs.inspect import custom_docstring, is_classmethod, signature
 
 
 def test_function_signature():
@@ -83,3 +83,16 @@ def test_method_with_length_parameter():
     sig = signature(GObject.type_children)
 
     assert str(sig) == "(type: type) -> list[type]"
+
+
+def test_custom_docstring_from_custom_overrides():
+    assert ":param detailed_signal:" in custom_docstring(GObject.Object.connect)
+
+
+def test_custom_docstring_from_gi_overrides():
+    assert ":returns:" in custom_docstring(GObject.Object.freeze_notify)
+
+
+def test_skip_signature_docstring_overrides():
+    assert not custom_docstring(GLib.io_add_watch)
+    assert not custom_docstring(GLib.child_watch_add)

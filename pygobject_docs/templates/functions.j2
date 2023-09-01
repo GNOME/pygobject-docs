@@ -11,10 +11,10 @@ Functions
    :param {{ pname }}: {{ pdoc | rstify | indent(6) }}
    {% endfor %}
    {% if return_doc %}
-   :return: {{ return_doc | rstify | indent(6) }}
+   :return: {{ return_doc | indent(6) }}
    {% endif %}
 
-   {{ doc | rstify | indent(3) }}
+   {{ doc | indent(3) }}
 
 {% if since %}
    .. versionadded:: {{ since }}
