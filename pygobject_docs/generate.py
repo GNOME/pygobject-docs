@@ -341,7 +341,6 @@ def generate_index(namespace, version, out_path):
             enums=has(Category.Enums),
             functions=has(Category.Functions),
             constants=has(Category.Constants),
-            classstructures=has(Category.ClassStructures),
             init_function="init" in dir(mod),
         )
     )
@@ -362,7 +361,6 @@ def generate(namespace, version):
     generate_classes(namespace, version, out_path, Category.Classes)
     generate_classes(namespace, version, out_path, Category.Interfaces)
     generate_classes(namespace, version, out_path, Category.Structures)
-    generate_classes(namespace, version, out_path, Category.ClassStructures, title="Class Structures")
     generate_classes(namespace, version, out_path, Category.Unions)
     generate_classes(namespace, version, out_path, Category.Enums)
     generate_constants(namespace, version, out_path)
