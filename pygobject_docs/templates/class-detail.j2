@@ -191,7 +191,7 @@ Virtual Methods
       :return: {{ return_doc | indent(9) }}
       {% endif %}
 
-      {{ doc | indent(6) }}
+      {{ method_doc | indent(6) }}
 
       {% if method_since %}
       .. versionadded:: {{ method_since }}
