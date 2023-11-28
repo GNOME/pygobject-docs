@@ -9,7 +9,6 @@ before_script:
   - pip --cache-dir /tmp/pipcache install -e '.[dev]'
 
 test:
-  stage: test
   script:
   - pip --cache-dir /tmp/pipcache install pre-commit
   - pre-commit run --all-files
