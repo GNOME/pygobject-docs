@@ -32,7 +32,7 @@ Implemented Interfaces: {% for p in implements %}{% if not loop.first %}, {% end
 Implementations: {% for p in implementations %}{% if not loop.first %}, {% endif %}:class:`~{{p}}`{% endfor %}
 {% endif %}
 
-{{ doc | rstify }}
+{{ doc }}
 
 {% if constructors %}
 Constructors

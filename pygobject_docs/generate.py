@@ -16,6 +16,7 @@ from pathlib import Path
 import gi
 from jinja2 import Environment, PackageLoader
 from sphinx.util.inspect import stringify_annotation
+from sphinx.util.docstrings import prepare_docstring
 
 from pygobject_docs.category import Category, determine_category, determine_member_category, MemberCategory
 from pygobject_docs.doc import rstify
@@ -226,7 +227,8 @@ def generate_classes(namespace, version, out_path, category, title=None):
                 version=version,
                 entity_type=category.single.title(),
                 signature=lambda k, m: signature(getattr(getattr(mod, k), m)),
-                doc=gir.doc(class_name),
+                doc=rstify(gir.doc(class_name))
+                or ("\n".join(prepare_docstring(klass.__doc__)) if klass.__doc__ else ""),
                 deprecated=gir.deprecated(class_name) or class_deprecation,
                 since=gir.since(class_name),
                 ancestors=gir.ancestors(class_name),
