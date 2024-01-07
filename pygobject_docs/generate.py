@@ -170,9 +170,6 @@ def generate_constants(namespace, version, out_path):
 def generate_classes(namespace, version, out_path, category, title=None):
     mod = import_module(namespace, version)
     gir = load_gir_file(namespace, version)
-    env = jinja_env(gir)
-
-    template = env.get_template("class-detail.j2")
 
     class_names = [
         name
@@ -190,127 +187,17 @@ def generate_classes(namespace, version, out_path, category, title=None):
         if klass is gi.PyGIDeprecationWarning:
             continue
 
-        class_deprecation = ("PyGObject-3.16.0", caught_warnings[0].message) if caught_warnings else None
-        members = own_dir(klass)
-
-        def member_doc(member_type, member_name):
-            if custom_doc := custom_docstring(getattr(klass, member_name, None)):  # noqa: B023
-                return custom_doc
-
-            return rstify(gir.member_doc(member_type, class_name, member_name))  # noqa: B023
-
-        def member_return_doc(member_type, member_name):
-            mdoc = member_doc(member_type, member_name)
-            if ":return:" in mdoc:
-                return None
-
-            return rstify(gir.member_return_doc(member_type, class_name, member_name))  # noqa: B023
-
-        def parameter_docs(member_type, member_name, sig):
-            mdoc = member_doc(member_type, member_name)
-            if ":param " in mdoc:
-                return
-
-            for i, param in enumerate(sig.parameters):
-                if i == 0 and param == "self":
-                    continue
-                doc = rstify(
-                    gir.member_parameter_doc(member_type, class_name, member_name, param)  # noqa: B023
-                )
-                yield param, doc
-
-        (out_path / f"{category.single}-{class_name}.rst").write_text(
-            template.render(
-                class_name=class_name,
-                class_signature="" if category == Category.Enums else signature(klass.__init__, bound=True),
-                namespace=namespace,
-                version=version,
-                entity_type=category.single.title(),
-                signature=lambda k, m: signature(getattr(getattr(mod, k), m)),
-                doc=rstify(gir.doc(class_name))
-                or ("\n".join(prepare_docstring(klass.__doc__)) if klass.__doc__ else ""),
-                deprecated=gir.deprecated(class_name) or class_deprecation,
-                since=gir.since(class_name),
-                ancestors=gir.ancestors(class_name),
-                descendants=gir.descendants(class_name),
-                implements=gir.implements(class_name),
-                implementations=gir.implementations(class_name),
-                constructors=[
-                    (
-                        name,
-                        sig := signature(getattr(klass, name), bound=True),
-                        member_doc("constructor", name),
-                        parameter_docs("constructor", name, sig),
-                        member_return_doc("constructor", name),
-                        gir.member_deprecated("constructor", class_name, name),
-                        gir.member_since("constructor", class_name, name),
-                    )
-                    for name in members
-                    if determine_member_category(klass, name) == MemberCategory.Constructors
-                ],
-                fields=[
-                    (
-                        name,
-                        member_doc("field", name),
-                        gir.member_deprecated("field", class_name, name),
-                        gir.member_since("field", class_name, name),
-                    )
-                    for name in members
-                    if determine_member_category(klass, name) == MemberCategory.Fields
-                ],
-                methods=[
-                    (
-                        name,
-                        sig := signature(getattr(klass, name), bound=True),
-                        member_doc("method", name),
-                        parameter_docs("method", name, sig),
-                        member_return_doc("method", name),
-                        is_classmethod(klass, name),
-                        gir.member_deprecated("method", class_name, name),
-                        gir.member_since("method", class_name, name),
-                    )
-                    for name in members
-                    if determine_member_category(klass, name) == MemberCategory.Methods
-                    and not is_ref_unref_copy_or_steal_function(name)
-                ],
-                properties=[
-                    (
-                        name,
-                        stringify_annotation(type, mode="smart"),
-                        member_doc("property", name),
-                        gir.member_deprecated("property", class_name, name),
-                        gir.member_since("property", class_name, name),
-                    )
-                    for name, type in properties(klass)
-                ],
-                signals=[
-                    (
-                        name := info.get_name(),
-                        sig := signature(info),
-                        member_doc("signal", name),
-                        parameter_docs("signal", name, sig),
-                        member_return_doc("signal", name),
-                        gir.member_deprecated("signal", class_name, name),
-                        gir.member_since("signal", class_name, name),
-                    )
-                    for info in signals(klass)
-                ],
-                virtual_methods=[
-                    (
-                        f"do_{info.get_name()}",
-                        sig := signature(info),
-                        member_doc("virtual-method", info.get_name()),
-                        parameter_docs("virtual-method", info.get_name(), sig),
-                        member_return_doc("virtual-method", info.get_name()),
-                        gir.member_deprecated("virtual-method", class_name, info.get_name()),
-                        gir.member_since("virtual-method", class_name, info.get_name()),
-                    )
-                    for info in virtual_methods(klass)
-                ],
-            )
+        generate_class(
+            gir=gir,
+            namespace=namespace,
+            class_name=class_name,
+            klass=klass,
+            out_path=out_path,
+            category=category,
+            caught_warnings=caught_warnings,
         )
 
-    template = env.get_template("classes.j2")
+    template = jinja_env(gir).get_template("classes.j2")
 
     (out_path / f"{category}.rst").write_text(
         template.render(
@@ -318,6 +205,127 @@ def generate_classes(namespace, version, out_path, category, title=None):
             version=version,
             entity_type=title or category.title(),
             prefix=category.single,
+        )
+    )
+
+
+def generate_class(gir, namespace, class_name, klass, out_path, category, caught_warnings):
+    template = jinja_env(gir).get_template("class-detail.j2")
+
+    class_deprecation = ("PyGObject-3.16.0", caught_warnings[0].message) if caught_warnings else None
+    members = own_dir(klass)
+
+    def member_doc(member_type, member_name):
+        if custom_doc := custom_docstring(getattr(klass, member_name, None)):  # noqa: B023
+            return custom_doc
+
+        return rstify(gir.member_doc(member_type, class_name, member_name))  # noqa: B023
+
+    def member_return_doc(member_type, member_name):
+        mdoc = member_doc(member_type, member_name)
+        if ":return:" in mdoc:
+            return None
+
+        return rstify(gir.member_return_doc(member_type, class_name, member_name))  # noqa: B023
+
+    def parameter_docs(member_type, member_name, sig):
+        mdoc = member_doc(member_type, member_name)
+        if ":param " in mdoc:
+            return
+
+        for i, param in enumerate(sig.parameters):
+            if i == 0 and param == "self":
+                continue
+            doc = rstify(gir.member_parameter_doc(member_type, class_name, member_name, param))  # noqa: B023
+            yield param, doc
+
+    (out_path / f"{category.single}-{class_name}.rst").write_text(
+        template.render(
+            class_name=class_name,
+            class_signature="" if category == Category.Enums else signature(klass.__init__, bound=True),
+            namespace=namespace,
+            version=version,
+            entity_type=category.single.title(),
+            doc=rstify(gir.doc(class_name))
+            or ("\n".join(prepare_docstring(klass.__doc__)) if klass.__doc__ else ""),
+            deprecated=gir.deprecated(class_name) or class_deprecation,
+            since=gir.since(class_name),
+            ancestors=gir.ancestors(class_name),
+            descendants=gir.descendants(class_name),
+            implements=gir.implements(class_name),
+            implementations=gir.implementations(class_name),
+            constructors=[
+                (
+                    name,
+                    sig := signature(getattr(klass, name), bound=True),
+                    member_doc("constructor", name),
+                    parameter_docs("constructor", name, sig),
+                    member_return_doc("constructor", name),
+                    gir.member_deprecated("constructor", class_name, name),
+                    gir.member_since("constructor", class_name, name),
+                )
+                for name in members
+                if determine_member_category(klass, name) == MemberCategory.Constructors
+            ],
+            fields=[
+                (
+                    name,
+                    member_doc("field", name),
+                    gir.member_deprecated("field", class_name, name),
+                    gir.member_since("field", class_name, name),
+                )
+                for name in members
+                if determine_member_category(klass, name) == MemberCategory.Fields
+            ],
+            methods=[
+                (
+                    name,
+                    sig := signature(getattr(klass, name), bound=True),
+                    member_doc("method", name),
+                    parameter_docs("method", name, sig),
+                    member_return_doc("method", name),
+                    is_classmethod(klass, name),
+                    gir.member_deprecated("method", class_name, name),
+                    gir.member_since("method", class_name, name),
+                )
+                for name in members
+                if determine_member_category(klass, name) == MemberCategory.Methods
+                and not is_ref_unref_copy_or_steal_function(name)
+            ],
+            properties=[
+                (
+                    name,
+                    stringify_annotation(type, mode="smart"),
+                    member_doc("property", name),
+                    gir.member_deprecated("property", class_name, name),
+                    gir.member_since("property", class_name, name),
+                )
+                for name, type in properties(klass)
+            ],
+            signals=[
+                (
+                    name := info.get_name(),
+                    sig := signature(info),
+                    member_doc("signal", name),
+                    parameter_docs("signal", name, sig),
+                    member_return_doc("signal", name),
+                    gir.member_deprecated("signal", class_name, name),
+                    gir.member_since("signal", class_name, name),
+                )
+                for info in signals(klass)
+            ],
+            virtual_methods=[
+                (
+                    f"do_{info.get_name()}",
+                    sig := signature(info),
+                    member_doc("virtual-method", info.get_name()),
+                    parameter_docs("virtual-method", info.get_name(), sig),
+                    member_return_doc("virtual-method", info.get_name()),
+                    gir.member_deprecated("virtual-method", class_name, info.get_name()),
+                    gir.member_since("virtual-method", class_name, info.get_name()),
+                )
+                for info in virtual_methods(klass)
+            ],
         )
     )
 
