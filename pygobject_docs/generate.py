@@ -215,6 +215,23 @@ def generate_class(gir, namespace, class_name, klass, out_path, category, caught
     class_deprecation = ("PyGObject-3.16.0", caught_warnings[0].message) if caught_warnings else None
     members = own_dir(klass)
 
+    for member in members:
+        if member.startswith("_"):
+            continue
+        field = getattr(klass, member, None)
+        if isinstance(field, type):
+            log.info("Creating nested class %s.%s => %s", klass, member, field)
+
+            generate_class(
+                gir=gir,
+                namespace=namespace,
+                class_name=f"{class_name}.{member}",
+                klass=field,
+                out_path=out_path,
+                category=category,
+                caught_warnings=[],
+            )
+
     def member_doc(member_type, member_name):
         if custom_doc := custom_docstring(getattr(klass, member_name, None)):  # noqa: B023
             return custom_doc

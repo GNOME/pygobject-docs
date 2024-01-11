@@ -59,3 +59,11 @@ def test_no_methods_from_parent_class():
     members = own_dir(Gtk.SingleSelection)
 
     assert "bind_property" not in members
+
+
+def test_builder_scope():
+    from gi.repository import Gtk
+
+    members = own_dir(Gtk.Builder)
+
+    assert "BuilderScope" in members
