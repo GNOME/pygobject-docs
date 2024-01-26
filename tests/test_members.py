@@ -43,10 +43,19 @@ def test_signals(gobject):
 
 
 @pytest.mark.desktop
-def test_no_suplicate_methods():
+def test_no_duplicate_methods():
     from gi.repository import Gtk
 
     members = own_dir(Gtk.RecentInfo)
 
     assert "get_application_info" in members
     assert len([m for m in members if m == "get_application_info"]) == 1
+
+
+@pytest.mark.desktop
+def test_no_methods_from_parent_class():
+    from gi.repository import Gtk
+
+    members = own_dir(Gtk.SingleSelection)
+
+    assert "bind_property" not in members

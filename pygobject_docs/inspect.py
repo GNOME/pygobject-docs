@@ -29,8 +29,9 @@ def patch_gi_overrides():
     def override(type_):
         namespace = type_.__module__.rsplit(".", 1)[-1]
         new_type = real_override(type_)
+        log.info("%s is overridden", new_type)
         new_type.__module__ = "gi.repository." + namespace
-        new_type.__overridden__ = True
+        new_type.__overridden__ = new_type
         return new_type
 
     gi.overrides.override = override
