@@ -190,6 +190,7 @@ def generate_classes(namespace, version, out_path, category, title=None):
         generate_class(
             gir=gir,
             namespace=namespace,
+            version=version,
             class_name=class_name,
             klass=klass,
             out_path=out_path,
@@ -209,7 +210,7 @@ def generate_classes(namespace, version, out_path, category, title=None):
     )
 
 
-def generate_class(gir, namespace, class_name, klass, out_path, category, caught_warnings):
+def generate_class(gir, namespace, version, class_name, klass, out_path, category, caught_warnings):
     template = jinja_env(gir).get_template("class-detail.j2")
 
     class_deprecation = ("PyGObject-3.16.0", caught_warnings[0].message) if caught_warnings else None
