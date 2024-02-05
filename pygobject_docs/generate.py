@@ -226,6 +226,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             generate_class(
                 gir=gir,
                 namespace=namespace,
+                version=version,
                 class_name=f"{class_name}.{member}",
                 klass=field,
                 out_path=out_path,
