@@ -21,8 +21,8 @@ from pygobject_docs.gir import load_gir_file
         ],
     ],
 )
-def test_markdown_inline_code(text, expected):
-    rst = rstify(text)
+def test_markdown_inline_code(glib, text, expected):
+    rst = rstify(text, gir=glib)
 
     assert rst == expected
 
@@ -35,17 +35,17 @@ def test_convert_constant(glib):
     assert rst == "Lorem :const:`True` ipsum :const:`False` :const:`None`."
 
 
-def test_convert_markdown_link():
+def test_convert_markdown_link(glib):
     text = """Lorem ipsum [link text 1](https://gitlab.gnome.org/some_url).
     More Lorem ipsum [second link](https://gitlab.gnome.org/second_url)."""
 
-    rst = rstify(text)
+    rst = rstify(text, gir=glib)
 
     assert "`link text 1 <https://gitlab.gnome.org/some_url>`" in rst
     assert "`second link <https://gitlab.gnome.org/second_url>`" in rst
 
 
-def test_convert_code_snippet():
+def test_convert_code_snippet(glib):
     text = dedent(
         """\
     Lorem ipsum
@@ -57,70 +57,70 @@ def test_convert_code_snippet():
     """
     )
 
-    rst = rstify(text)
+    rst = rstify(text, gir=glib)
 
     assert ".. code-block:: C" in rst
     assert "   char " in rst
     assert "]|" not in rst
 
 
-def test_class_link():
+def test_class_link(glib):
     text = "Lorem ipsum [class@Gtk.Builder] et amilet"
 
-    rst = rstify(text)
+    rst = rstify(text, gir=glib)
 
     assert ":obj:`~gi.repository.Gtk.Builder`" in rst
 
 
-def test_class_link_without_namespace():
+def test_class_link_without_namespace(glib):
     text = "Lorem ipsum [class@Builder] et amilet"
 
-    rst = rstify(text)
+    rst = rstify(text, gir=glib)
 
     assert ":obj:`Builder`" in rst
 
 
-def test_method_link():
+def test_method_link(glib):
     text = "Lorem ipsum [method@Gtk.Builder.foo] et amilet"
 
-    rst = rstify(text)
+    rst = rstify(text, gir=glib)
 
     assert ":obj:`~gi.repository.Gtk.Builder.foo`" in rst
 
 
-def test_parameters():
+def test_parameters(glib):
     text = "Lorem @ipsum et amilet"
 
-    rst = rstify(text)
+    rst = rstify(text, gir=glib)
 
     assert rst == "Lorem ``ipsum`` et amilet"
 
 
-def test_italic_text():
+def test_italic_text(glib):
     text = "This is a func_name and _italic text_."
 
-    rst = rstify(text)
+    rst = rstify(text, gir=glib)
 
     assert rst == "This is a func_name and *italic text*."
 
 
-def test_code_abbreviation():
+def test_code_abbreviation(glib):
     text = "This is a func_name_ and _italic text_."
 
-    rst = rstify(text)
+    rst = rstify(text, gir=glib)
 
     assert rst == "This is a ``func_name_`` and *italic text*."
 
 
-def test_code_abbreviation_with_ellipsis():
+def test_code_abbreviation_with_ellipsis(glib):
     text = "the g_convert_… functions"
 
-    rst = rstify(text)
+    rst = rstify(text, gir=glib)
 
     assert rst == "the ``g_convert_``… functions"
 
 
-def test_whitespace_before_lists():
+def test_whitespace_before_lists(glib):
     text = dedent(
         """\
         line of text.
@@ -128,7 +128,7 @@ def test_whitespace_before_lists():
         """
     )
 
-    rst = rstify(text)
+    rst = rstify(text, gir=glib)
 
     assert rst == dedent(
         """\
@@ -138,7 +138,7 @@ def test_whitespace_before_lists():
     )
 
 
-def test_simple_table():
+def test_simple_table(glib):
     text = dedent(
         """\
         | field 1 | field 2 |
@@ -147,7 +147,7 @@ def test_simple_table():
         """
     )
 
-    rst = rstify(text)
+    rst = rstify(text, gir=glib)
 
     assert rst == dedent(
         """\
@@ -161,7 +161,7 @@ def test_simple_table():
     )
 
 
-def test_table_with_header_row():
+def test_table_with_header_row(glib):
     text = dedent(
         """\
         | header 1 | header 2     |
@@ -172,7 +172,7 @@ def test_table_with_header_row():
         """
     )
 
-    rst = rstify(text)
+    rst = rstify(text, gir=glib)
 
     assert rst == dedent(
         """\
@@ -188,7 +188,7 @@ def test_table_with_header_row():
     )
 
 
-def test_table_with_multiline_content():
+def test_table_with_multiline_content(glib):
     text = dedent(
         """\
         | | | | |
@@ -199,7 +199,7 @@ def test_table_with_multiline_content():
         """
     )
 
-    rst = rstify(text, image_base_url="http://example.com")
+    rst = rstify(text, gir=glib, image_base_url="http://example.com")
 
     assert rst == dedent(
         """\
@@ -217,10 +217,10 @@ def test_table_with_multiline_content():
     )
 
 
-def test_remove_tags():
+def test_remove_tags(glib):
     text = "I/O Priority # {#io-priority}"
 
-    rst = rstify(text)
+    rst = rstify(text, gir=glib)
 
     assert rst == "I/O Priority"
 
@@ -245,13 +245,13 @@ def glib():
         [r"%G_SPAWN_ERROR_TOO_BIG", ":const:`~gi.repository.GLib.SpawnError.TOO_BIG`"],
     ],
 )
-def test_c_symbol_to_python(text, expected, glib):
+def test_c_symbol_to_python(glib, text, expected):
     rst = rstify(text, gir=glib)
 
     assert rst == expected
 
 
-def test_html_picture_tag():
+def test_html_picture_tag(glib):
     text = """
     Freeform text.
 
@@ -263,7 +263,7 @@ def test_html_picture_tag():
     More freeform text.
     """
 
-    rst = rstify(text, image_base_url="https://example.com")
+    rst = rstify(text, gir=glib, image_base_url="https://example.com")
 
     assert "Freeform text." in rst
     assert "More freeform text." in rst

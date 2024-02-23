@@ -16,7 +16,7 @@ from itertools import zip_longest
 import re
 
 
-def rstify(text, *, image_base_url="", gir=None):
+def rstify(text, gir, *, image_base_url=""):
     """Convert gtk-doc to rst."""
     if not text:
         return ""
@@ -76,7 +76,7 @@ def markdown_table(lines, image_url, gir):
     def as_table(table_lines):
         cells = [
             [
-                rstify(cell.strip(), image_base_url=image_url, gir=gir).strip()
+                rstify(cell.strip(), gir=gir, image_base_url=image_url).strip()
                 for cell in line[1:-1].split("|")
             ]
             for line in table_lines
@@ -229,7 +229,7 @@ def c_symbol(lines, gir):
         g = m.group(1)
         if s := gir.c_symbol(g):
             return f":func:`~gi.repository.{s}`"
-        return f"``{g}()``"
+        return f"{g}()"
 
     return (re.sub(r"(\w+)\(\)", repl, line) for line in lines)
 
