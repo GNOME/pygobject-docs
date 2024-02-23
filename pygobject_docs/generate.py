@@ -83,7 +83,7 @@ def generate_functions(namespace, version, out_path):
     def func_doc(name):
         if custom_doc := custom_docstring(getattr(mod, name, None)):
             return custom_doc
-        return rstify(gir.doc(name))
+        return rstify(gir.doc(name), gir=gir)
 
     def parameter_docs(name, sig):
         fdoc = func_doc(name)
@@ -92,14 +92,14 @@ def generate_functions(namespace, version, out_path):
 
         for param in sig.parameters:
             doc = gir.parameter_doc(name, param)
-            yield param, rstify(doc)
+            yield param, rstify(doc, gir=gir)
 
     def return_doc(name):
         fdoc = func_doc(name)
         if ":returns:" in fdoc:
             return ""
 
-        return rstify(gir.return_doc(name))
+        return rstify(gir.return_doc(name), gir=gir)
 
     with warnings.catch_warnings(record=True) as caught_warnings:
 
@@ -238,14 +238,14 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
         if custom_doc := custom_docstring(getattr(klass, member_name, None)):  # noqa: B023
             return custom_doc
 
-        return rstify(gir.member_doc(member_type, class_name, member_name))  # noqa: B023
+        return rstify(gir.member_doc(member_type, class_name, member_name), gir=gir)  # noqa: B023
 
     def member_return_doc(member_type, member_name):
         mdoc = member_doc(member_type, member_name)
         if ":return:" in mdoc:
             return None
 
-        return rstify(gir.member_return_doc(member_type, class_name, member_name))  # noqa: B023
+        return rstify(gir.member_return_doc(member_type, class_name, member_name), gir=gir)  # noqa: B023
 
     def parameter_docs(member_type, member_name, sig):
         mdoc = member_doc(member_type, member_name)
@@ -255,7 +255,9 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
         for i, param in enumerate(sig.parameters):
             if i == 0 and param == "self":
                 continue
-            doc = rstify(gir.member_parameter_doc(member_type, class_name, member_name, param))  # noqa: B023
+            doc = rstify(
+                gir.member_parameter_doc(member_type, class_name, member_name, param), gir=gir
+            )  # noqa: B023
             yield param, doc
 
     (out_path / f"{category.single}-{class_name}.rst").write_text(
@@ -265,7 +267,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             namespace=namespace,
             version=version,
             entity_type=category.single.title(),
-            doc=rstify(gir.doc(class_name))
+            doc=rstify(gir.doc(class_name), gir=gir)
             or ("\n".join(prepare_docstring(klass.__doc__)) if klass.__doc__ else ""),
             deprecated=gir.deprecated(class_name) or class_deprecation,
             since=gir.since(class_name),
