@@ -59,9 +59,40 @@ def gi__gi_GObject___init__(**properties: Any):
 
 
 def gi__gi_GObject_bind_property(
-    source_property: str, target: GObject.Object, target_property: str, flags: GObject.BindingFlags | None
+    source_property: str,
+    target: GObject.Object,
+    target_property: str,
+    flags: GObject.BindingFlags | None = 0,
+    transform_to: Callable[[GObject.Binding, Any, Any], Any] | None = None,
+    transform_from: Callable[[GObject.Binding, Any, Any], Any] | None = None,
+    user_data: Any = None,
 ) -> GObject.Binding:
-    ...
+    """Creates a binding between a property on the source object and
+    a property on the target object. This binding is uni-directional.
+
+    :param source_prop:
+        The property name on the source object
+    :param target:
+        The target object
+    :param target_prop:
+        The property name on the target
+    :param flags:
+        Optional flags to pass to the binding. Defaults to :ref:`GObject.BindingFlags.DEFAULT`
+    :param transform_to:
+        Optional transformation function from the source to the target.
+        The second argument of the callable is the source value.
+        The third argument is the user data.
+        This function should return the value to be set on the target, with the right type.
+    :param transform_from:
+        Optional transformation function from the target to the source
+        The second argument of the callable is the target value.
+        The third argument is the user data.
+        This function should return the value to be set on the source, with the right type.
+    :param user_data:
+        Optional user data, provided as third argument to the transformation functions.
+    :returns:
+        A new :obj:~gi.repository.GObject.Binding object, representing the binding.
+    """
 
 
 def gi__gi_GObject_chain(*params) -> object:
