@@ -73,11 +73,11 @@ def test_class_link(glib):
 
 
 def test_class_link_without_namespace(glib):
-    text = "Lorem ipsum [class@Builder] et amilet"
+    text = "Lorem ipsum [class@SomeClass] et amilet"
 
     rst = rstify(text, gir=glib)
 
-    assert ":obj:`Builder`" in rst
+    assert ":obj:`~gi.repository.GLib.SomeClass`" in rst
 
 
 def test_method_link(glib):

@@ -315,7 +315,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             ],
             properties=[
                 (
-                    name.replace("-", "_"),
+                    name,
                     stringify_annotation(type, mode="smart"),
                     member_doc("property", name),
                     gir.member_deprecated("property", class_name, name),
@@ -325,7 +325,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             ],
             signals=[
                 (
-                    (name := info.get_name()).replace("-", "_"),
+                    name := info.get_name(),
                     sig := signature(info),
                     member_doc("signal", name),
                     parameter_docs("signal", name, sig),

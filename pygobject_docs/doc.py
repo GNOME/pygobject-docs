@@ -33,7 +33,7 @@ def rstify(text, gir, *, image_base_url=""):
         whitespace_before_lists,
         partial(markdown_table, image_url=image_base_url, gir=gir),
         partial(markdown_images, image_url=image_base_url),
-        gtk_doc_link,
+        partial(gtk_doc_link, namespace=gir.namespace[0]),
         parameters,  # after gtk-doc links, since those also contain `@` symbols
         markdown_inline_code,
         markdown_links,
@@ -156,11 +156,13 @@ def tags(lines):
     return (re.sub(r" *# +\{#[\w-]+\}$", "", line) for line in lines)
 
 
-def gtk_doc_link(lines):
+def gtk_doc_link(lines, namespace):
     tmp = (
         re.sub(
             r"\[`*(?:ctor|class|const|enum|flags|func|id|iface|method|property|signal|struct|vfunc)@(.+?)`*\]",
-            lambda m: f":obj:`~gi.repository.{m.group(1)}`" if "." in m.group(1) else f":obj:`{m.group(1)}`",
+            lambda m: f":obj:`~gi.repository.{m.group(1)}`"
+            if "." in m.group(1)
+            else f":obj:`~gi.repository.{namespace}.{m.group(1)}`",
             line,
         )
         for line in lines
