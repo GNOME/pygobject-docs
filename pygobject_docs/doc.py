@@ -33,7 +33,7 @@ def rstify(text, gir, *, image_base_url=""):
         whitespace_before_lists,
         partial(markdown_table, image_url=image_base_url, gir=gir),
         partial(markdown_images, image_url=image_base_url),
-        gtk_doc_link,
+        partial(gtk_doc_link, namespace=gir.namespace[0]),
         parameters,  # after gtk-doc links, since those also contain `@` symbols
         markdown_inline_code,
         markdown_links,
@@ -156,23 +156,31 @@ def tags(lines):
     return (re.sub(r" *# +\{#[\w-]+\}$", "", line) for line in lines)
 
 
-def gtk_doc_link(lines):
-    tmp = (
-        re.sub(
-            r"\[`*(?:ctor|class|const|enum|flags|func|id|iface|method|property|signal|struct|vfunc)@(.+?)`*\]",
-            lambda m: f":obj:`~gi.repository.{m.group(1)}`" if "." in m.group(1) else f":obj:`{m.group(1)}`",
-            line,
+def gtk_doc_link(lines, namespace):
+    def matcher(m, section=None):
+        package = "gi.repository" if "." in m.group(1) else f"gi.repository.{namespace}"
+        return (
+            f":obj:`~{package}.{m.group(1)}.{section}.{m.group(2).replace('-', '_')}`"
+            if section
+            else f":obj:`~{package}.{m.group(1)}`"
         )
-        for line in lines
-    )
-    return (
-        re.sub(
-            r"\[`*(?:alias|callback|error|type)@(.+?)`*\]",
-            r"``\1``",
-            line,
-        )
-        for line in tmp
-    )
+
+    subs = [
+        (
+            re.compile(
+                r"\[(?:ctor|class|const|enum|error|flags|func|id|iface|method|struct|type|vfunc)@(.+?)\]"
+            ),
+            matcher,
+        ),
+        (re.compile(r"\[property@([^:]+?):(.+?)\]"), partial(matcher, section="props")),
+        (re.compile(r"\[signal@([^:]+?)::(.+?)\]"), partial(matcher, section="signals")),
+        (re.compile(r"\[`*(?:alias|callback)@(.+?)`*\]"), r"``\1``"),
+    ]
+
+    for line in lines:
+        for pat, repl in subs:
+            line = re.sub(pat, repl, line)
+        yield line
 
 
 def whitespace_before_lists(lines):
@@ -198,7 +206,7 @@ def html_picture(lines, image_url):
             picture = False
         elif picture and "<img " in line:
             path = re.sub(r'^.* src="([^"]+)".*$', r"\1", line)
-            yield f".. image:: {image_url}/{path}"
+            yield f".. image:: {image_url}/{path}" if image_url else ".. error:: No image URL not available. Please `raise an issue <https://gitlab.gnome.org/amolenaar/pygobject-docs/-/issues>`_."
         elif not picture:
             yield line
 

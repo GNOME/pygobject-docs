@@ -39,7 +39,7 @@ C_API_DOCS = {
     "Gtk": "https://docs.gtk.org/gtk4",
     "Pango": "https://docs.gtk.org/Pango",
     "GdkPixbuf": "https://docs.gtk.org/gdk-pixbuf",
-    "Adw": "https://gnome.pages.gitlab.gnome.org/libadwaita/doc/1.3",
+    "Adw": "https://gnome.pages.gitlab.gnome.org/libadwaita/doc/1-latest",
 }
 
 BLACKLIST = [("GObject", "GObject")]  # Should use GObject.Object instead
@@ -77,13 +77,14 @@ def generate_functions(namespace, version, out_path):
 
     gir = load_gir_file(namespace, version)
     env = jinja_env(gir)
+    image_base_url = C_API_DOCS.get(namespace, "")
 
     template = env.get_template("functions.j2")
 
     def func_doc(name):
         if custom_doc := custom_docstring(getattr(mod, name, None)):
             return custom_doc
-        return rstify(gir.doc(name), gir=gir)
+        return rstify(gir.doc(name), gir=gir, image_base_url=image_base_url)
 
     def parameter_docs(name, sig):
         fdoc = func_doc(name)
@@ -92,14 +93,14 @@ def generate_functions(namespace, version, out_path):
 
         for param in sig.parameters:
             doc = gir.parameter_doc(name, param)
-            yield param, rstify(doc, gir=gir)
+            yield param, rstify(doc, gir=gir, image_base_url=image_base_url)
 
     def return_doc(name):
         fdoc = func_doc(name)
         if ":returns:" in fdoc:
             return ""
 
-        return rstify(gir.return_doc(name), gir=gir)
+        return rstify(gir.return_doc(name), gir=gir, image_base_url=image_base_url)
 
     with warnings.catch_warnings(record=True) as caught_warnings:
 
@@ -211,6 +212,7 @@ def generate_classes(namespace, version, out_path, category, title=None):
 
 
 def generate_class(gir, namespace, version, class_name, klass, out_path, category, caught_warnings):
+    image_base_url = C_API_DOCS.get(namespace, "")
     template = jinja_env(gir).get_template("class-detail.j2")
 
     class_deprecation = ("PyGObject-3.16.0", caught_warnings[0].message) if caught_warnings else None
@@ -238,14 +240,20 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
         if custom_doc := custom_docstring(getattr(klass, member_name, None)):  # noqa: B023
             return custom_doc
 
-        return rstify(gir.member_doc(member_type, class_name, member_name), gir=gir)  # noqa: B023
+        return rstify(
+            gir.member_doc(member_type, class_name, member_name), gir=gir, image_base_url=image_base_url
+        )  # noqa: B023
 
     def member_return_doc(member_type, member_name):
         mdoc = member_doc(member_type, member_name)
         if ":return:" in mdoc:
             return None
 
-        return rstify(gir.member_return_doc(member_type, class_name, member_name), gir=gir)  # noqa: B023
+        return rstify(
+            gir.member_return_doc(member_type, class_name, member_name),
+            gir=gir,
+            image_base_url=image_base_url,
+        )  # noqa: B023
 
     def parameter_docs(member_type, member_name, sig):
         mdoc = member_doc(member_type, member_name)
@@ -256,7 +264,9 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             if i == 0 and param == "self":
                 continue
             doc = rstify(
-                gir.member_parameter_doc(member_type, class_name, member_name, param), gir=gir
+                gir.member_parameter_doc(member_type, class_name, member_name, param),
+                gir=gir,
+                image_base_url=image_base_url,
             )  # noqa: B023
             yield param, doc
 
@@ -267,7 +277,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             namespace=namespace,
             version=version,
             entity_type=category.single.title(),
-            doc=rstify(gir.doc(class_name), gir=gir)
+            doc=rstify(gir.doc(class_name), gir=gir, image_base_url=image_base_url)
             or ("\n".join(prepare_docstring(klass.__doc__)) if klass.__doc__ else ""),
             deprecated=gir.deprecated(class_name) or class_deprecation,
             since=gir.since(class_name),
@@ -315,7 +325,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             ],
             properties=[
                 (
-                    name.replace("-", "_"),
+                    name,
                     stringify_annotation(type, mode="smart"),
                     member_doc("property", name),
                     gir.member_deprecated("property", class_name, name),
@@ -325,7 +335,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             ],
             signals=[
                 (
-                    (name := info.get_name()).replace("-", "_"),
+                    name := info.get_name(),
                     sig := signature(info),
                     member_doc("signal", name),
                     parameter_docs("signal", name, sig),

@@ -73,11 +73,11 @@ def test_class_link(glib):
 
 
 def test_class_link_without_namespace(glib):
-    text = "Lorem ipsum [class@Builder] et amilet"
+    text = "Lorem ipsum [class@SomeClass] et amilet"
 
     rst = rstify(text, gir=glib)
 
-    assert ":obj:`Builder`" in rst
+    assert ":obj:`~gi.repository.GLib.SomeClass`" in rst
 
 
 def test_method_link(glib):
@@ -86,6 +86,47 @@ def test_method_link(glib):
     rst = rstify(text, gir=glib)
 
     assert ":obj:`~gi.repository.Gtk.Builder.foo`" in rst
+
+
+def test_property_link(glib):
+    text = "Lorem ipsum [property@Foo.TestClass:property-name] et amilet"
+
+    rst = rstify(text, gir=glib)
+
+    assert ":obj:`~gi.repository.Foo.TestClass.props.property_name`" in rst
+
+
+def test_multiple_property_link(glib):
+    text = "Lorem ipsum [property@TestClass:property-name] et [property@Foo.SomeClass:second-name]"
+
+    rst = rstify(text, gir=glib)
+
+    assert ":obj:`~gi.repository.GLib.TestClass.props.property_name`" in rst
+    assert ":obj:`~gi.repository.Foo.SomeClass.props.second_name`" in rst
+
+
+def test_property_link_without_namespace(glib):
+    text = "Lorem ipsum [property@TestClass:property-name] et amilet"
+
+    rst = rstify(text, gir=glib)
+
+    assert ":obj:`~gi.repository.GLib.TestClass.props.property_name`" in rst
+
+
+def test_signal_link(glib):
+    text = "Lorem ipsum [signal@Foo.TestClass::signal-name] et amilet"
+
+    rst = rstify(text, gir=glib)
+
+    assert ":obj:`~gi.repository.Foo.TestClass.signals.signal_name`" in rst
+
+
+def test_signal_link_without_namespace(glib):
+    text = "Lorem ipsum [signal@TestClass::signal-name] et amilet"
+
+    rst = rstify(text, gir=glib)
+
+    assert ":obj:`~gi.repository.GLib.TestClass.signals.signal_name`" in rst
 
 
 def test_parameters(glib):
