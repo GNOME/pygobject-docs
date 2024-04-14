@@ -41,10 +41,10 @@ def test_gir_function_doc(glib):
 
 
 def test_gir_class_doc(gobject):
-    doc = gobject.doc("Binding")
+    doc = gobject.doc("Object")
 
     assert doc
-    assert doc.startswith("#GBinding ")
+    assert doc.startswith("The base object type.")
 
 
 def test_gir_function_parameter_docs(gobject):

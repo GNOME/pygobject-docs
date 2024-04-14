@@ -53,7 +53,7 @@ def test_gi_function_signature():
 def test_builtin_method():
     assert (
         str(signature(GObject.GObject.bind_property))
-        == "(source_property: str, target: ~gi.repository.GObject.Object, target_property: str, flags: ~gi.repository.GObject.BindingFlags | None) -> ~gi.repository.GObject.Binding"
+        == "(source_property: str, target: ~gi.repository.GObject.Object, target_property: str, flags: ~gi.repository.GObject.BindingFlags | None = 0, transform_to: ~typing.Callable[[~gi.repository.GObject.Binding, ~typing.Any, ~typing.Any], ~typing.Any] | None = None, transform_from: ~typing.Callable[[~gi.repository.GObject.Binding, ~typing.Any, ~typing.Any], ~typing.Any] | None = None, user_data: ~typing.Any = None) -> ~gi.repository.GObject.Binding"
     )
 
 
