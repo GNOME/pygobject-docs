@@ -60,6 +60,7 @@ def jinja_env(gir):
     namespace, _version = gir.namespace if gir else ("", "")
     env = Environment(loader=PackageLoader("pygobject_docs"), lstrip_blocks=True)
     env.filters["rstify"] = partial(rstify, image_base_url=C_API_DOCS.get(namespace, ""), gir=gir)
+    env.filters["capfirst"] = lambda text: f"{text[0].upper()}{text[1:]}" if text else ""
     return env
 
 
@@ -301,9 +302,9 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             fields=[
                 (
                     name,
-                    member_doc("field", name),
-                    gir.member_deprecated("field", class_name, name),
-                    gir.member_since("field", class_name, name),
+                    member_doc("field", field_name := name.lower()),
+                    gir.member_deprecated("field", class_name, field_name),
+                    gir.member_since("field", class_name, field_name),
                 )
                 for name in members
                 if determine_member_category(klass, name) == MemberCategory.Fields

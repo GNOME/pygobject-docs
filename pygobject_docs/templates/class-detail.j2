@@ -220,7 +220,7 @@ Fields
    {% for name, doc, field_depr, field_since in fields %}
    .. attribute:: {{ name }}
 
-      {{ doc | indent(6)}}
+      {{ doc | replace("\n", " ") | capfirst | indent(6)}}
 
       {% if field_since %}
       .. versionadded:: {{ field_since }}

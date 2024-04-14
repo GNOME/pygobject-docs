@@ -114,3 +114,9 @@ def test_struct_for(gobject):
     obj = gobject.struct_for("ObjectClass")
 
     assert obj == "Object"
+
+
+def test_enum_field(glib):
+    doc = glib.member_doc("field", "IOFlags", "APPEND")
+
+    assert doc
