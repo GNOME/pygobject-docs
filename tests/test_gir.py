@@ -117,6 +117,6 @@ def test_struct_for(gobject):
 
 
 def test_enum_field(glib):
-    doc = glib.member_doc("field", "IOFlags", "APPEND")
+    doc = glib.member_doc("field", "IOFlags", "APPEND".lower())
 
     assert doc
