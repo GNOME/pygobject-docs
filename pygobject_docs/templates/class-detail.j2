@@ -116,7 +116,7 @@ Properties
    :no-index:
    
    {% for name, type, doc, prop_depr, prop_since in properties %}
-   .. attribute:: {{ name }}
+   .. attribute:: props.{{ name | replace("-", "_") }}
       :type: {{ type }}
 
       {{ doc | indent(6) }}
