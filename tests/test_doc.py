@@ -93,7 +93,7 @@ def test_property_link(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert ":attr:`~gi.repository.Foo.TestClass.props.property_name`" in rst
+    assert ":obj:`~gi.repository.Foo.TestClass.props.property_name`" in rst
 
 
 def test_multiple_property_link(glib):
@@ -101,8 +101,8 @@ def test_multiple_property_link(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert ":attr:`~gi.repository.GLib.TestClass.props.property_name`" in rst
-    assert ":attr:`~gi.repository.Foo.SomeClass.props.second_name`" in rst
+    assert ":obj:`~gi.repository.GLib.TestClass.props.property_name`" in rst
+    assert ":obj:`~gi.repository.Foo.SomeClass.props.second_name`" in rst
 
 
 def test_property_link_without_namespace(glib):
@@ -110,7 +110,7 @@ def test_property_link_without_namespace(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert ":attr:`~gi.repository.GLib.TestClass.props.property_name`" in rst
+    assert ":obj:`~gi.repository.GLib.TestClass.props.property_name`" in rst
 
 
 def test_signal_link(glib):

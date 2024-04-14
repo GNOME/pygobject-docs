@@ -157,44 +157,30 @@ def tags(lines):
 
 
 def gtk_doc_link(lines, namespace):
-    tmp = (
-        re.sub(
-            r"\[(?:ctor|class|const|enum|error|flags|func|id|iface|method|struct|type|vfunc)@(.+?)\]",
-            lambda m: f":obj:`~gi.repository.{m.group(1)}`"
-            if "." in m.group(1)
-            else f":obj:`~gi.repository.{namespace}.{m.group(1)}`",
-            line,
+    def matcher(m, section=None):
+        package = "gi.repository" if "." in m.group(1) else f"gi.repository.{namespace}"
+        return (
+            f":obj:`~{package}.{m.group(1)}.{section}.{m.group(2).replace('-', '_')}`"
+            if section
+            else f":obj:`~{package}.{m.group(1)}`"
         )
-        for line in lines
-    )
-    tmp = (
-        re.sub(
-            r"\[property@([^:]+?):(.+?)\]",
-            lambda m: f":attr:`~gi.repository.{m.group(1)}.props.{m.group(2).replace('-', '_')}`"
-            if "." in m.group(1)
-            else f":attr:`~gi.repository.{namespace}.{m.group(1)}.props.{m.group(2).replace('-', '_')}`",
-            line,
-        )
-        for line in tmp
-    )
-    tmp = (
-        re.sub(
-            r"\[signal@([^:]+?)::(.+?)\]",
-            lambda m: f":obj:`~gi.repository.{m.group(1)}.signals.{m.group(2).replace('-', '_')}`"
-            if "." in m.group(1)
-            else f":obj:`~gi.repository.{namespace}.{m.group(1)}.signals.{m.group(2).replace('-', '_')}`",
-            line,
-        )
-        for line in tmp
-    )
-    return (
-        re.sub(
-            r"\[`*(?:alias|callback)@(.+?)`*\]",
-            r"``\1``",
-            line,
-        )
-        for line in tmp
-    )
+
+    subs = [
+        (
+            re.compile(
+                r"\[(?:ctor|class|const|enum|error|flags|func|id|iface|method|struct|type|vfunc)@(.+?)\]"
+            ),
+            matcher,
+        ),
+        (re.compile(r"\[property@([^:]+?):(.+?)\]"), partial(matcher, section="props")),
+        (re.compile(r"\[signal@([^:]+?)::(.+?)\]"), partial(matcher, section="signals")),
+        (re.compile(r"\[`*(?:alias|callback)@(.+?)`*\]"), r"``\1``"),
+    ]
+
+    for line in lines:
+        for pat, repl in subs:
+            line = re.sub(pat, repl, line)
+        yield line
 
 
 def whitespace_before_lists(lines):
