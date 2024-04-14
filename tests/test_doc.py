@@ -88,6 +88,31 @@ def test_method_link(glib):
     assert ":obj:`~gi.repository.Gtk.Builder.foo`" in rst
 
 
+def test_property_link(glib):
+    text = "Lorem ipsum [property@Foo.TestClass:property-name] et amilet"
+
+    rst = rstify(text, gir=glib)
+
+    assert ":attr:`~gi.repository.Foo.TestClass.props.property_name`" in rst
+
+
+def test_multiple_property_link(glib):
+    text = "Lorem ipsum [property@TestClass:property-name] et [property@Foo.SomeClass:second-name]"
+
+    rst = rstify(text, gir=glib)
+
+    assert ":attr:`~gi.repository.GLib.TestClass.props.property_name`" in rst
+    assert ":attr:`~gi.repository.Foo.SomeClass.props.second_name`" in rst
+
+
+def test_property_link_without_namespace(glib):
+    text = "Lorem ipsum [property@TestClass:property-name] et amilet"
+
+    rst = rstify(text, gir=glib)
+
+    assert ":attr:`~gi.repository.GLib.TestClass.props.property_name`" in rst
+
+
 def test_parameters(glib):
     text = "Lorem @ipsum et amilet"
 
