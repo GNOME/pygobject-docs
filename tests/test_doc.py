@@ -158,6 +158,33 @@ def test_keyboard_shortcut(glib):
     assert ":kbd:`Escape`" in rst
 
 
+def test_combined_keyboard_shortcut(glib):
+    text = "by pressing <kbd>Alt</kbd>+<kbd>w</kbd> or"
+
+    rst = rstify(text, gir=glib)
+
+    assert ":kbd:`Alt`" in rst
+    assert ":kbd:`w`" in rst
+
+
+def test_combined_keyboard_shortcut_with_space(glib):
+    text = "by pressing <kbd>Alt</kbd>+<kbd>Page Down</kbd> or"
+
+    rst = rstify(text, gir=glib)
+
+    assert ":kbd:`Alt`" in rst
+    assert ":kbd:`Page Down`" in rst
+
+
+def test_combined_keyboard_shortcut_with_unicode_arrow(glib):
+    text = "by pressing <kbd>Alt</kbd>+<kbd>↓</kbd> or"
+
+    rst = rstify(text, gir=glib)
+
+    assert ":kbd:`Alt`" in rst
+    assert ":kbd:`↓`" in rst
+
+
 def test_code_abbreviation(glib):
     text = "This is a func_name_ and _italic text_."
 

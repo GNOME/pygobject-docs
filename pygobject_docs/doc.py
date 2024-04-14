@@ -285,4 +285,4 @@ def c_constants(lines, gir):
 
 
 def html_keyboard_shortcut(lines):
-    return (re.sub(r"<kbd>(\w+?)</kbd>", r":kbd:`\1`", line) for line in lines)
+    return (re.sub(r"<kbd>([\w ]+|[↑→↓←]?)</kbd>", r":kbd:`\1`", line, flags=re.UNICODE) for line in lines)
