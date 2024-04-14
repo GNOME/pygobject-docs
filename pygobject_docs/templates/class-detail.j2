@@ -142,11 +142,11 @@ Signals
 
 .. rst-class:: interim-class
 
-.. class:: {{ class_name }}
+.. class:: {{ class_name }}.signals
    :no-index:
    
    {% for signal_name, sig, signal_doc, parameters, return_doc, signal_depr, signal_since in signals %}
-   .. method:: signals.{{ signal_name | replace("-", "_") }}{{ sig }}
+   .. method:: {{ signal_name | replace("-", "_") }}{{ sig }}
 
       {% for name, doc in parameters %}
       :param {{ name }}: {{ doc | indent(9) }}
