@@ -206,7 +206,7 @@ def html_picture(lines, image_url):
             picture = False
         elif picture and "<img " in line:
             path = re.sub(r'^.* src="([^"]+)".*$', r"\1", line)
-            yield f".. image:: {image_url}/{path}"
+            yield f".. image:: {image_url}/{path}" if image_url else ".. error:: No image URL not available. Please `raise an issue <https://gitlab.gnome.org/amolenaar/pygobject-docs/-/issues>`_."
         elif not picture:
             yield line
 
