@@ -113,6 +113,22 @@ def test_property_link_without_namespace(glib):
     assert ":attr:`~gi.repository.GLib.TestClass.props.property_name`" in rst
 
 
+def test_signal_link(glib):
+    text = "Lorem ipsum [signal@Foo.TestClass::signal-name] et amilet"
+
+    rst = rstify(text, gir=glib)
+
+    assert ":obj:`~gi.repository.Foo.TestClass.signals.signal_name`" in rst
+
+
+def test_signal_link_without_namespace(glib):
+    text = "Lorem ipsum [signal@TestClass::signal-name] et amilet"
+
+    rst = rstify(text, gir=glib)
+
+    assert ":obj:`~gi.repository.GLib.TestClass.signals.signal_name`" in rst
+
+
 def test_parameters(glib):
     text = "Lorem @ipsum et amilet"
 

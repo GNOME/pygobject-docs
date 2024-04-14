@@ -159,7 +159,7 @@ def tags(lines):
 def gtk_doc_link(lines, namespace):
     tmp = (
         re.sub(
-            r"\[`*(?:ctor|class|const|enum|error|flags|func|id|iface|method|signal|struct|type|vfunc)@(.+)`*\]",
+            r"\[(?:ctor|class|const|enum|error|flags|func|id|iface|method|struct|type|vfunc)@(.+?)\]",
             lambda m: f":obj:`~gi.repository.{m.group(1)}`"
             if "." in m.group(1)
             else f":obj:`~gi.repository.{namespace}.{m.group(1)}`",
@@ -173,6 +173,16 @@ def gtk_doc_link(lines, namespace):
             lambda m: f":attr:`~gi.repository.{m.group(1)}.props.{m.group(2).replace('-', '_')}`"
             if "." in m.group(1)
             else f":attr:`~gi.repository.{namespace}.{m.group(1)}.props.{m.group(2).replace('-', '_')}`",
+            line,
+        )
+        for line in tmp
+    )
+    tmp = (
+        re.sub(
+            r"\[signal@([^:]+?)::(.+?)\]",
+            lambda m: f":obj:`~gi.repository.{m.group(1)}.signals.{m.group(2).replace('-', '_')}`"
+            if "." in m.group(1)
+            else f":obj:`~gi.repository.{namespace}.{m.group(1)}.signals.{m.group(2).replace('-', '_')}`",
             line,
         )
         for line in tmp
