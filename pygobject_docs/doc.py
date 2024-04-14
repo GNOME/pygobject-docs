@@ -42,6 +42,7 @@ def rstify(text, gir, *, image_base_url=""):
         partial(c_type, gir=gir),
         partial(c_symbol, gir=gir),
         partial(html_picture, image_url=image_base_url),
+        html_keyboard_shortcut,
         "\n".join,
     )
 
@@ -281,3 +282,7 @@ def c_constants(lines, gir):
         return f"``%{g}``"
 
     return (re.sub(r"%(\w+)", repl, line) for line in lines)
+
+
+def html_keyboard_shortcut(lines):
+    return (re.sub(r"<kbd>(\w+?)</kbd>", r":kbd:`\1`", line) for line in lines)

@@ -6,6 +6,11 @@ from pygobject_docs.doc import rstify
 from pygobject_docs.gir import load_gir_file
 
 
+@pytest.fixture
+def glib():
+    return load_gir_file("GLib", "2.0")
+
+
 @pytest.mark.parametrize(
     "text, expected",
     [
@@ -145,6 +150,14 @@ def test_italic_text(glib):
     assert rst == "This is a func_name and *italic text*."
 
 
+def test_keyboard_shortcut(glib):
+    text = "by pressing <kbd>Escape</kbd> or"
+
+    rst = rstify(text, gir=glib)
+
+    assert ":kbd:`Escape`" in rst
+
+
 def test_code_abbreviation(glib):
     text = "This is a func_name_ and _italic text_."
 
@@ -264,11 +277,6 @@ def test_remove_tags(glib):
     rst = rstify(text, gir=glib)
 
     assert rst == "I/O Priority"
-
-
-@pytest.fixture
-def glib():
-    return load_gir_file("GLib", "2.0")
 
 
 @pytest.mark.parametrize(
