@@ -42,8 +42,10 @@ C_API_DOCS = {
     "Adw": "https://gnome.pages.gitlab.gnome.org/libadwaita/doc/1-latest",
 }
 
-BLACKLIST = [("GObject", "GObject")]  # Should use GObject.Object instead
-
+BLACKLIST = [
+    ("GObject", "GObject"),  # Should use GObject.Object instead
+    ("GObject", "Object", "newv"),  # Use normal __init__ instead
+]
 
 log = logging.getLogger(__name__)
 
@@ -217,7 +219,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
     template = jinja_env(gir).get_template("class-detail.j2")
 
     class_deprecation = ("PyGObject-3.16.0", caught_warnings[0].message) if caught_warnings else None
-    members = own_dir(klass)
+    members = [m for m in own_dir(klass) if (namespace, klass.__name__, m) not in BLACKLIST]
 
     for member in members:
         if member.startswith("_"):
