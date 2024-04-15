@@ -68,7 +68,7 @@ def gi__gi_GObject_bind_property(
     user_data: Any = None,
 ) -> GObject.Binding:
     """Creates a binding between a property on the source object and
-    a property on the target object. This binding is uni-directional.
+    a property on the target object.
 
     :param source_prop:
         The property name on the source object
@@ -91,7 +91,7 @@ def gi__gi_GObject_bind_property(
     :param user_data:
         Optional user data, provided as third argument to the transformation functions.
     :returns:
-        A new :obj:~gi.repository.GObject.Binding object, representing the binding.
+        A new :obj:`~gi.repository.GObject.Binding` object, representing the binding.
     """
 
 
