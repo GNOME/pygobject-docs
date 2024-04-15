@@ -218,7 +218,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
     image_base_url = C_API_DOCS.get(namespace, "")
     template = jinja_env(gir).get_template("class-detail.j2")
 
-    class_deprecation = ("PyGObject-3.16.0", caught_warnings[0].message) if caught_warnings else None
+    class_deprecation = ("PyGObject-3.16.0", str(caught_warnings[0].message)) if caught_warnings else None
     members = [m for m in own_dir(klass) if (namespace, klass.__name__, m) not in BLACKLIST]
 
     for member in members:
