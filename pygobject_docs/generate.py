@@ -45,6 +45,8 @@ C_API_DOCS = {
 BLACKLIST = [
     ("GObject", "GObject"),  # Should use GObject.Object instead
     ("GObject", "Object", "newv"),  # Use normal __init__ instead
+    ("GObject", "Object", "do_constructed"),
+    ("GObject", "Object", "do_finalize"),
 ]
 
 log = logging.getLogger(__name__)
@@ -359,6 +361,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
                     gir.member_since("virtual-method", class_name, info.get_name()),
                 )
                 for info in virtual_methods(klass)
+                if (namespace, klass.__name__, f"do_{info.get_name()}") not in BLACKLIST
             ],
         )
     )
