@@ -15,13 +15,15 @@ from functools import partial
 from itertools import zip_longest
 import re
 
+from sphinx.util.docstrings import prepare_docstring
+
 
 def rstify(text, gir, *, image_base_url=""):
     """Convert gtk-doc to rst."""
     if not text:
         return ""
 
-    lines = text.splitlines(keepends=False)
+    lines = prepare_docstring(text)
 
     return pipe(
         lines,

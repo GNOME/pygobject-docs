@@ -13,7 +13,7 @@
 {% set version, doc_ = deprecated %}
 .. deprecated:: {{ version }}
 
-   {{ doc_ | replace("\n", " ") | rstify | indent(3) }}
+   {{ doc_ | rstify | indent(3) }}
 {% endif %}
 
 .. class:: {{ class_name }}{{ class_signature }}
@@ -56,7 +56,7 @@ Constructors
       {% set version, doc_ = cons_depr %}
       .. deprecated:: {{ version }}
 
-         {{ doc_ | replace("\n", " ") | rstify | indent(9) }}
+         {{ doc_ | rstify | indent(9) }}
       {% endif %}
 
       {% for name, doc in parameters %}
@@ -92,7 +92,7 @@ Methods
       {% set version, doc_ = method_depr %}
       .. deprecated:: {{ version }}
 
-         {{ doc_ | replace("\n", " ") | rstify | indent(9) }}
+         {{ doc_ | rstify | indent(9) }}
       {% endif %}
 
       {% for name, doc in parameters %}
@@ -129,7 +129,7 @@ Properties
       {% set version, doc_ = prop_depr %}
       .. deprecated:: {{ version }}
 
-         {{ doc_ | replace("\n", " ") | rstify | indent(9) }}
+         {{ doc_ | rstify | indent(9) }}
       {% endif %}
 
    {% endfor %}
@@ -158,7 +158,7 @@ Signals
       {% set version, doc_ = signal_depr %}
       .. deprecated:: {{ version }}
 
-         {{ doc_ | replace("\n", " ") | rstify | indent(9) }}
+         {{ doc_ | rstify | indent(9) }}
       {% endif %}
 
       {% for name, doc in parameters %}
@@ -194,7 +194,7 @@ Virtual Methods
       {% set version, doc_ = method_depr %}
       .. deprecated:: {{ version }}
 
-         {{ doc_ | replace("\n", " ") | rstify | indent(9) }}
+         {{ doc_ | rstify | indent(9) }}
       {% endif %}
 
       {% for name, doc in parameters %}
@@ -220,7 +220,7 @@ Fields
    {% for name, doc, field_depr, field_since in fields %}
    .. attribute:: {{ name }}
 
-      {{ doc | replace("\n", " ") | capfirst | indent(6)}}
+      {{ doc | capfirst | indent(6)}}
 
       {% if field_since %}
       .. versionadded:: {{ field_since }}
@@ -230,7 +230,7 @@ Fields
       {% set version, doc_ = field_depr %}
       .. deprecated:: {{ version }}
 
-         {{ doc_ | replace("\n", " ") | rstify | indent(9) }}
+         {{ doc_ | rstify | indent(9) }}
       {% endif %}
 
    {% endfor %}
