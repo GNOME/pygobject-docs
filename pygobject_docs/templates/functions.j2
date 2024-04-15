@@ -7,13 +7,6 @@ Functions
 
 .. function:: {{ name }}{{ sig }}
 
-   {% for pname, pdoc in parameters %}
-   :param {{ pname }}: {{ pdoc | rstify | indent(6) }}
-   {% endfor %}
-   {% if return_doc %}
-   :return: {{ return_doc | indent(6) }}
-   {% endif %}
-
    {{ doc | indent(3) }}
 
 {% if since %}
@@ -26,5 +19,11 @@ Functions
       {{ doc_ | rstify | indent(6) }}
 {% endif %}
 
+   {% for pname, pdoc in parameters %}
+   :param {{ pname }}: {{ pdoc | rstify | indent(6) }}
+   {% endfor %}
+   {% if return_doc %}
+   :return: {{ return_doc | indent(6) }}
+   {% endif %}
 
 {% endfor %}

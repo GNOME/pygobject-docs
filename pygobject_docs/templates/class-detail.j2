@@ -46,13 +46,6 @@ Constructors
    {% for cons_name, signature, cons_doc, parameters, return_doc, cons_depr, cons_since in constructors %}
    .. classmethod:: {{ cons_name }}{{ signature }}
 
-      {% for name, doc in parameters %}
-      :param {{ name }}: {{ doc | indent(9) }}
-      {% endfor %}
-      {% if return_doc %}
-      :return: {{ return_doc | indent(9) }}
-      {% endif %}
-
       {{ cons_doc | indent(6) }}
 
       {% if cons_since %}
@@ -64,6 +57,13 @@ Constructors
       .. deprecated:: {{ version }}
 
          {{ doc_ | replace("\n", " ") | rstify | indent(9) }}
+      {% endif %}
+
+      {% for name, doc in parameters %}
+      :param {{ name }}: {{ doc | indent(9) }}
+      {% endfor %}
+      {% if return_doc %}
+      :return: {{ return_doc | indent(9) }}
       {% endif %}
 
    {% endfor %}
@@ -82,13 +82,6 @@ Methods
    {% for method_name, signature, method_doc, parameters, return_doc, is_classmethod, method_depr, method_since in methods %}
    .. {% if is_classmethod %}class{% endif %}method:: {{ method_name }}{{ signature }}
 
-      {% for name, doc in parameters %}
-      :param {{ name }}: {{ doc | indent(9) }}
-      {% endfor %}
-      {% if return_doc %}
-      :return: {{ return_doc | indent(9) }}
-      {% endif %}
-
       {{ method_doc | indent(6) }}
 
       {% if method_since %}
@@ -100,6 +93,13 @@ Methods
       .. deprecated:: {{ version }}
 
          {{ doc_ | replace("\n", " ") | rstify | indent(9) }}
+      {% endif %}
+
+      {% for name, doc in parameters %}
+      :param {{ name }}: {{ doc | indent(9) }}
+      {% endfor %}
+      {% if return_doc %}
+      :return: {{ return_doc | indent(9) }}
       {% endif %}
 
    {% endfor %}
@@ -148,13 +148,6 @@ Signals
    {% for signal_name, sig, signal_doc, parameters, return_doc, signal_depr, signal_since in signals %}
    .. method:: {{ signal_name | replace("-", "_") }}{{ sig }}
 
-      {% for name, doc in parameters %}
-      :param {{ name }}: {{ doc | indent(9) }}
-      {% endfor %}
-      {% if return_doc %}
-      :return: {{ return_doc | indent(9) }}
-      {% endif %}
-
       {{ signal_doc | indent(6) }}
 
       {% if signal_since %}
@@ -166,6 +159,13 @@ Signals
       .. deprecated:: {{ version }}
 
          {{ doc_ | replace("\n", " ") | rstify | indent(9) }}
+      {% endif %}
+
+      {% for name, doc in parameters %}
+      :param {{ name }}: {{ doc | indent(9) }}
+      {% endfor %}
+      {% if return_doc %}
+      :return: {{ return_doc | indent(9) }}
       {% endif %}
 
    {% endfor %}
@@ -184,13 +184,6 @@ Virtual Methods
    {% for method_name, signature, method_doc, parameters, return_doc, method_depr, method_since in virtual_methods %}
    .. method:: {{ method_name }}{{ signature }}
 
-      {% for name, doc in parameters %}
-      :param {{ name }}: {{ doc | indent(9) }}
-      {% endfor %}
-      {% if return_doc %}
-      :return: {{ return_doc | indent(9) }}
-      {% endif %}
-
       {{ method_doc | indent(6) }}
 
       {% if method_since %}
@@ -202,6 +195,13 @@ Virtual Methods
       .. deprecated:: {{ version }}
 
          {{ doc_ | replace("\n", " ") | rstify | indent(9) }}
+      {% endif %}
+
+      {% for name, doc in parameters %}
+      :param {{ name }}: {{ doc | indent(9) }}
+      {% endfor %}
+      {% if return_doc %}
+      :return: {{ return_doc | indent(9) }}
       {% endif %}
 
    {% endfor %}

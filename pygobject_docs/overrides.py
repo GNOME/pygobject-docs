@@ -67,7 +67,8 @@ def gi__gi_GObject_bind_property(
     transform_from: Callable[[GObject.Binding, Any, Any], Any] | None = None,
     user_data: Any = None,
 ) -> GObject.Binding:
-    """Creates a binding between a property on the source object and
+    """
+    Creates a binding between a property on the source object and
     a property on the target object.
 
     :param source_prop:
@@ -95,18 +96,21 @@ def gi__gi_GObject_bind_property(
     """
 
 
-def gi__gi_GObject_chain(*params) -> object:
-    ...
+def gi__gi_GObject_chain(*params) -> object | None:
+    """
+    Calls the original class closure of a signal.
+
+    This function should only be called from an overridden class closure.
+
+    :param params: The argument list of the signal emission.
+    :returns: Return value of the signal handler.
+    """
 
 
 def gi__gi_GObject_connect(  # type: ignore[empty-body]
     detailed_signal: str, handler: Callable[[GObject.Object, ...], Any], *args: Any  # type: ignore[misc]
 ) -> int:
     """
-    :param detailed_signal: A signal name.
-    :param handler: Callback to invoke if the signal is emitted. The callback signature needs to match the signature of the signal.
-    :param args: Additional arguments to pass to the callback.
-
     The ``connect()`` method adds a function or method (handler) to the end of the list of signal handlers for the named ``detailed_signal`` but before the default class signal handler. An optional set of parameters may be specified after the handler parameter. These will all be passed to the signal handler when invoked.
 
     For example if a function handler was connected to a signal using:
@@ -134,6 +138,10 @@ def gi__gi_GObject_connect(  # type: ignore[empty-body]
         def handler(self, object, arg1, arg2)
 
     A :ref:`TypeError` exception is raised if ``detailed_signal`` identifies a signal name that is not associated with the object.
+
+    :param detailed_signal: A signal name.
+    :param handler: Callback to invoke if the signal is emitted. The callback signature needs to match the signature of the signal.
+    :param args: Additional arguments to pass to the callback.
     """
 
 
@@ -141,11 +149,11 @@ def gi__gi_GObject_connect_after(  # type: ignore[empty-body]
     detailed_signal: str, handler: Callable[[GObject.Object, ...], Any], *args: Any  # type: ignore[misc]
 ) -> int:
     """
+    The ``connect_after()`` method is similar to the :meth:`~gi.repository.GObject.Object.connect` method except that the handler is added to the signal handler list after the default class signal handler. Otherwise the details of handler definition and invocation are the same.
+
     :param detailed_signal: A signal name.
     :param handler: Callback to invoke if the signal is emitted. The callback signature needs to match the signature of the signal.
     :param args: Additional arguments to pass to the callback.
-
-    The ``connect_after()`` method is similar to the :meth:`~gi.repository.GObject.Object.connect` method except that the handler is added to the signal handler list after the default class signal handler. Otherwise the details of handler definition and invocation are the same.
     """
 
 
