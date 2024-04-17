@@ -120,3 +120,9 @@ def test_not_hide_ref_count_functions():
     assert not is_ref_unref_copy_or_steal_function("dounref")
     assert not is_ref_unref_copy_or_steal_function("somunref_function")
     assert not is_ref_unref_copy_or_steal_function("stealler_embedded")
+
+
+def test_function_with_closure():
+    sig = signature(GObject.signal_handler_find)
+
+    assert sig

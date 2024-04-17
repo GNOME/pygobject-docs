@@ -99,41 +99,34 @@ def _override_key(subject):
 
 def gi_signature(subject: GI.CallableInfo) -> Signature:
     parameters = []
-    return_annotations = []
-    array_length_indices = {arg.get_type().get_array_length() for arg in subject.get_arguments()}
-    array_length_indices.add(subject.get_return_type().get_array_length())
 
-    for i, arg in enumerate(subject.get_arguments()):
-        if arg.get_name().startswith("dummy"):
-            continue
-        if i in array_length_indices:
+    (names, args, return_args) = _callable_get_arguments(subject, True)
+
+    for name, arg in zip(names, args):
+        if name.startswith("dummy"):
             continue
 
-        if arg.get_direction() in (GI.Direction.OUT, GI.Direction.INOUT):
-            return_annotations.append(_type_to_python(arg.get_type(), out_arg=True))
-        elif (t := _type_to_python(arg.get_type())) is not None:
-            annotation, default = t if isinstance(t, AnnotationAndDefault) else (t, Parameter.empty)
-            parameters.append(
-                Parameter(
-                    f"{arg.get_name()}_" if iskeyword(arg.get_name()) else arg.get_name(),
-                    Parameter.POSITIONAL_OR_KEYWORD,
-                    annotation=annotation,
-                    default=default,
-                )
+        if name.startswith("*"):
+            kind = Parameter.VAR_POSITIONAL
+            name = name[1:]
+        else:
+            kind = Parameter.POSITIONAL_OR_KEYWORD  # type: ignore[assignment]
+
+        annotation, default = arg if isinstance(arg, AnnotationAndDefault) else (arg, Parameter.empty)
+        parameters.append(
+            Parameter(
+                f"{name}_" if iskeyword(name) else name,
+                kind,
+                annotation=annotation,
+                default=default,
             )
-
-    return_type = _type_to_python(subject.get_return_type(), out_arg=True)
-    if subject.may_return_null() and return_type is not None:
-        return_type = Optional[return_type]
-
-    if return_type is not None or len(return_annotations) == 0:
-        return_annotations.insert(0, return_type)
+        )
 
     return Signature(
         parameters,
-        return_annotation=return_annotations[0]
-        if len(return_annotations) == 1
-        else tuple[*return_annotations],  # type: ignore[misc]
+        return_annotation=return_args[0]
+        if len(return_args) == 1
+        else tuple[*return_args],  # type: ignore[misc]
     )
 
 
@@ -269,11 +262,19 @@ def _callable_get_arguments(
         if i in skip:
             continue
 
-        if arg.get_closure() >= 0:
+        # Special case, GObject.signal_handler_find(), has user data, but the closure has no reference to the data.
+        if arg.get_closure() >= i:
             accept_optional_args = True
             optional_args_name = function_args[arg.get_closure()].get_name()
             skip.append(arg.get_closure())
             skip.append(arg.get_destroy())
+        elif arg.get_closure() >= 0:
+            log.warning(
+                "Cannot define optional args for already processed argument for function %s: %s <- %s",
+                type_info.get_name(),
+                function_args[arg.get_closure()].get_name(),
+                arg.get_name(),
+            )
 
         # Filter out array length args
         arg_type = arg.get_type()
