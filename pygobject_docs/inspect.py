@@ -131,7 +131,7 @@ def gi_signature(subject: GI.CallableInfo) -> Signature:
 
 
 class AnnotationAndDefault(NamedTuple):
-    annotation: type
+    annotation: object
     default: object | None
 
 
@@ -146,7 +146,7 @@ def gi_type_to_python(type_info: GI.TypeInfo) -> object:
 
 def _type_to_python(  # noqa: C901
     type_info: GI.TypeInfo, out_arg: bool = False, varargs: bool = False
-) -> object | type:
+) -> object:
     tag = type_info.get_tag()
     tags = GI.TypeTag
 
@@ -308,7 +308,7 @@ def _callable_get_arguments(
 
         if arg.may_be_null() and t is not None:
             if can_default:
-                str_args.append(Optional[t])  # TODO: default to None
+                str_args.append(AnnotationAndDefault(Optional[t], None))
             else:
                 str_args.append(Optional[t])
         else:
