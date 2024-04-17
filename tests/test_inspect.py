@@ -57,6 +57,11 @@ def test_builtin_method():
     )
 
 
+@pytest.mark.xfail(reason="default argument values not implemented")
+def test_function_with_default_value():
+    assert str(signature(GLib.base64_encode)) == "(data: ~typing.Sequence[str] = None) -> str"
+
+
 @pytest.mark.desktop
 def test_method_with_multiple_return_values():
     from gi.repository import Gtk
