@@ -57,6 +57,11 @@ def test_builtin_method():
     )
 
 
+@pytest.mark.xfail(reason="default argument values not implemented")
+def test_function_with_default_value():
+    assert str(signature(GLib.base64_encode)) == "(data: ~typing.Sequence[str] = None) -> str"
+
+
 @pytest.mark.desktop
 def test_method_with_multiple_return_values():
     from gi.repository import Gtk
@@ -115,3 +120,9 @@ def test_not_hide_ref_count_functions():
     assert not is_ref_unref_copy_or_steal_function("dounref")
     assert not is_ref_unref_copy_or_steal_function("somunref_function")
     assert not is_ref_unref_copy_or_steal_function("stealler_embedded")
+
+
+def test_function_with_closure():
+    sig = signature(GObject.signal_handler_find)
+
+    assert sig
