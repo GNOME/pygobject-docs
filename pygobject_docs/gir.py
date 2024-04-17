@@ -220,12 +220,12 @@ class Gir:
         if name.endswith("s") and (maybe_type := find(name[:-1])):
             return maybe_type
 
-        log.warning("C type %s not found", name)
+        log.info("C type %s not found", name)
         return None
 
     def c_symbol(self, name: str) -> str | None:
         if not (symbol := self.repo.find_symbol(name)):
-            log.warning("C symbol %s not found", name)
+            log.info("C symbol %s not found", name)
             return None
 
         ns, s = symbol
@@ -250,7 +250,7 @@ class Gir:
 
     def c_const(self, name: str) -> str | None:
         if not (symbol := self._constants.get(name)):
-            log.warning("C constant %s not found", name)
+            log.info("C constant %s not found", name)
             return None
 
         ns, t, m = symbol
