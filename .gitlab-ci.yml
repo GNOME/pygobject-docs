@@ -12,7 +12,7 @@ test:
   script:
   - pip --cache-dir /tmp/pipcache install pre-commit
   - pre-commit run --all-files
-  - pytest --cov=pygobject_docs
+  - pytest --cov
   cache:
     key: "$CI_COMMIT_REF_SLUG"
     paths:

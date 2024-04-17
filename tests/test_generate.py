@@ -3,6 +3,7 @@ import gi
 from pygobject_docs.category import Category
 from pygobject_docs.generate import (
     import_module,
+    generate,
     generate_classes,
     generate_functions,
 )
@@ -27,6 +28,22 @@ def test_generate_classes(tmp_path):
 
     assert (tmp_path / "classes.rst").exists()
     assert (tmp_path / "class-GError.rst").exists()
+
+
+def test_generate_gobject(tmp_path):
+    generate("GObject", "2.0", tmp_path)
+
+    result_path = tmp_path / "GObject-2.0"
+    assert (result_path / "functions.rst").exists()
+    assert (result_path / "classes.rst").exists()
+    assert (result_path / "constants.rst").exists()
+    assert (result_path / "enums.rst").exists()
+    assert (result_path / "functions.rst").exists()
+    assert (result_path / "index.rst").exists()
+    assert (result_path / "interfaces.rst").exists()
+    assert (result_path / "structures.rst").exists()
+    assert (result_path / "unions.rst").exists()
+    assert (result_path / "class-Object.rst").exists()
 
 
 def test_gi_method_type():

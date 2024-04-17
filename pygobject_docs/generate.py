@@ -408,8 +408,7 @@ def generate_top_index(out_path):
     (out_path / "index.rst").write_text(template.render())
 
 
-def generate(namespace, version):
-    base_path = Path("build/source")
+def generate(namespace, version, base_path):
     out_path = output_path(base_path, namespace, version)
 
     generate_functions(namespace, version, out_path)
@@ -433,4 +432,5 @@ if __name__ == "__main__":
     for arg in sys.argv[1:]:
         namespace, version = arg.split("-")
         log.info("Generating pages for %s", namespace)
-        generate(namespace, version)
+        base_path = Path("build/source")
+        generate(namespace, version, base_path)
