@@ -269,6 +269,12 @@ _python_consts = {
     "G_TYPE_FLAGS": "``Flags``",
     "G_TYPE_GTYPE": "``GType``",
     "G_TYPE_INVALID": "``Invalid``",
+    "gboolean": ":obj:`bool`",
+    "gchar*": ":obj:`str`",
+    "gchar**": ":obj:`list[str]`",
+    "gdouble": ":obj:`float`",
+    "gint": ":obj:`int`",
+    "guint": "unsigned :obj:`int`",
 }
 
 
@@ -284,7 +290,7 @@ def c_constants(lines, gir):
             return f":const:`~gi.repository.{s}`"
         return f"``%{g}``"
 
-    return (re.sub(r"%(\w+)", repl, line) for line in lines)
+    return (re.sub(r"%([\w\*]+)", repl, line) for line in lines)
 
 
 def html_keyboard_shortcut(lines):
