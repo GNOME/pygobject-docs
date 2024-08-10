@@ -43,6 +43,7 @@ C_API_DOCS = {
 }
 
 BLACKLIST = [
+    ("GLib", "GError"),  # Should use GLib.Error instead
     ("GObject", "GObject"),  # Should use GObject.Object instead
     ("GObject", "Object", "newv"),  # Use normal __init__ instead
     ("GObject", "Object", "do_constructed"),

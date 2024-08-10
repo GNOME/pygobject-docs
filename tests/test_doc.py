@@ -345,3 +345,12 @@ def test_html_picture_tag(glib):
     assert "Freeform text." in rst
     assert "More freeform text." in rst
     assert ".. image:: https://example.com/application-window.png" in rst
+
+
+def test_docbook_note(glib):
+    text = "<note>This is a it</note>"
+
+    rst = rstify(text, gir=glib)
+
+    assert "This is a it" in rst
+    assert "note" not in rst
