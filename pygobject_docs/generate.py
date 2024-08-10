@@ -150,10 +150,15 @@ def generate_constants(namespace, version, out_path):
 
     with warnings.catch_warnings(record=True) as caught_warnings:
 
-        def const_deprecation():
-            depr = ("PyGObject-3.16.0", str(caught_warnings[0].message)) if caught_warnings else None
-            caught_warnings.clear()
-            return depr
+        def deprecated(name):
+            if depr := gir.deprecated(name):
+                version, message = depr
+                return version, rstify(message, gir=gir)
+            if caught_warnings:
+                message = str(caught_warnings[0].message)
+                caught_warnings.clear()
+                return "PyGObject-3.16.0", rstify(message, gir=gir)
+            return None
 
         (out_path / "constants.rst").write_text(
             template.render(
@@ -161,8 +166,8 @@ def generate_constants(namespace, version, out_path):
                     (
                         name,
                         getattr(mod, name),
-                        gir.doc(name),
-                        gir.deprecated(name) or const_deprecation(),
+                        rstify(gir.doc(name), gir=gir),
+                        deprecated(name),
                         gir.since(name),
                     )
                     for name in dir(mod)
