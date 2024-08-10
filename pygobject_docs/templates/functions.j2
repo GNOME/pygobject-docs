@@ -16,11 +16,11 @@ Functions
 {% if deprecated %}
 {% set version, doc_ = deprecated %}
    .. deprecated:: {{ version }}
-      {{ doc_ | rstify | indent(6) }}
+      {{ doc_ | indent(6) }}
 {% endif %}
 
    {% for pname, pdoc in parameters %}
-   :param {{ pname }}: {{ pdoc | rstify | indent(6) }}
+   :param {{ pname }}: {{ pdoc | indent(6) }}
    {% endfor %}
    {% if return_doc %}
    :return: {{ return_doc | indent(6) }}
