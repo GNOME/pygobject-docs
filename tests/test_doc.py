@@ -33,11 +33,19 @@ def test_markdown_inline_code(glib, text, expected):
 
 
 def test_convert_constant(glib):
-    text = r"""Lorem %TRUE ipsum %FALSE %NULL."""
+    text = "Lorem %TRUE ipsum %FALSE %NULL."
 
     rst = rstify(text, gir=glib)
 
     assert rst == "Lorem :const:`True` ipsum :const:`False` :const:`None`.\n"
+
+
+def test_convert_c_constant(glib):
+    text = "Splits a %G_SEARCHPATH_SEPARATOR-separated list of files."
+
+    rst = rstify(text, gir=glib)
+
+    assert ":const:`~gi.repository.GLib.SEARCHPATH_SEPARATOR`" in rst
 
 
 def test_convert_markdown_link(glib):
