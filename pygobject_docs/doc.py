@@ -137,18 +137,19 @@ def code_snippets(lines):
     """Deal with markdown and gtk-doc style code blocks."""
     in_code = False
     for line in lines:
-        if not in_code and line.startswith("```"):
-            yield "\n.. code-block::\n   :dedent:\n"
-            in_code = True
+        if not in_code and line.lstrip().startswith("```"):
+            lang = line.lstrip()[3:]
+            yield f"\n.. code-block:: {lang}\n   :dedent:\n"
+            in_code = "md"
         elif not in_code and re.search(r"^ *\|\[", line):
             yield re.sub(
                 r' *\|\[ *(<!-- *language="(\w+)" *-->)?', r"\n.. code-block:: \2\n   :dedent:\n", line
             )
-            in_code = True
-        elif in_code and line == "```":
+            in_code = "gtk-doc"
+        elif in_code == "md" and line.lstrip() == "```":
             yield ""
             in_code = False
-        elif in_code and re.search(r"^ *\]\|", line):
+        elif in_code == "gtk-doc" and re.search(r"^ *\]\|", line):
             yield ""
             in_code = False
         elif in_code:

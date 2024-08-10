@@ -58,7 +58,7 @@ def test_convert_markdown_link(glib):
     assert "`second link <https://gitlab.gnome.org/second_url>`" in rst
 
 
-def test_convert_code_snippet(glib):
+def test_convert_gtk_doc_code_snippet(glib):
     text = dedent(
         """\
     Lorem ipsum
@@ -75,6 +75,25 @@ def test_convert_code_snippet(glib):
     assert ".. code-block:: C" in rst
     assert "   char " in rst
     assert "]|" not in rst
+
+
+def test_convert_markdown_code_snippet(glib):
+    text = dedent(
+        """\
+    Lorem ipsum
+    ```c
+      char buf[G_ASCII_DTOSTR_BUF_SIZE];
+
+      fprintf (out, "value=%s\n", g_ascii_dtostr (buf, sizeof (buf), value));
+    ```
+    """
+    )
+
+    rst = rstify(text, gir=glib)
+
+    assert ".. code-block:: c" in rst
+    assert "   char " in rst
+    assert "```" not in rst
 
 
 def test_class_link(glib):
