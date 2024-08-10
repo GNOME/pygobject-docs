@@ -231,7 +231,14 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
     image_base_url = C_API_DOCS.get(namespace, "")
     template = jinja_env(gir).get_template("class-detail.j2")
 
-    class_deprecation = ("PyGObject-3.16.0", str(caught_warnings[0].message)) if caught_warnings else None
+    def deprecated(class_name):
+        if depr := gir.deprecated(class_name):
+            version, message = depr
+            return version, rstify(message, gir=gir)
+        if caught_warnings:
+            return "PyGObject-3.16.0", rstify(str(caught_warnings[0].message), gir=gir)
+        return None
+
     members = [m for m in own_dir(klass) if (namespace, klass.__name__, m) not in BLACKLIST]
 
     for member in members:
@@ -286,6 +293,12 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             )  # noqa: B023
             yield param, doc
 
+    def member_deprecated(member_type, class_name, name) -> tuple[str, str] | None:
+        if depr := gir.member_deprecated(member_type, class_name, name):
+            version, message = depr
+            return version, rstify(message, gir=gir)
+        return depr
+
     (out_path / f"{category.single}-{class_name}.rst").write_text(
         template.render(
             class_name=class_name,
@@ -295,7 +308,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             entity_type=category.single.title(),
             doc=rstify(gir.doc(class_name), gir=gir, image_base_url=image_base_url)
             or ("\n".join(prepare_docstring(klass.__doc__)) if klass.__doc__ else ""),
-            deprecated=gir.deprecated(class_name) or class_deprecation,
+            deprecated=deprecated(class_name),
             since=gir.since(class_name),
             ancestors=gir.ancestors(class_name),
             descendants=gir.descendants(class_name),
@@ -308,7 +321,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
                     member_doc("constructor", name),
                     parameter_docs("constructor", name, sig),
                     member_return_doc("constructor", name),
-                    gir.member_deprecated("constructor", class_name, name),
+                    member_deprecated("constructor", class_name, name),
                     gir.member_since("constructor", class_name, name),
                 )
                 for name in members
@@ -318,7 +331,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
                 (
                     name,
                     member_doc("field", field_name := name.lower()),
-                    gir.member_deprecated("field", class_name, field_name),
+                    member_deprecated("field", class_name, field_name),
                     gir.member_since("field", class_name, field_name),
                 )
                 for name in members
@@ -332,7 +345,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
                     parameter_docs("method", name, sig),
                     member_return_doc("method", name),
                     is_classmethod(klass, name),
-                    gir.member_deprecated("method", class_name, name),
+                    member_deprecated("method", class_name, name),
                     gir.member_since("method", class_name, name),
                 )
                 for name in members
@@ -344,7 +357,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
                     name,
                     stringify_annotation(type, mode="smart"),
                     member_doc("property", name),
-                    gir.member_deprecated("property", class_name, name),
+                    member_deprecated("property", class_name, name),
                     gir.member_since("property", class_name, name),
                 )
                 for name, type in properties(klass)
@@ -356,7 +369,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
                     member_doc("signal", name),
                     parameter_docs("signal", name, sig),
                     member_return_doc("signal", name),
-                    gir.member_deprecated("signal", class_name, name),
+                    member_deprecated("signal", class_name, name),
                     gir.member_since("signal", class_name, name),
                 )
                 for info in signals(klass)
@@ -368,7 +381,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
                     member_doc("virtual-method", info.get_name()),
                     parameter_docs("virtual-method", info.get_name(), sig),
                     member_return_doc("virtual-method", info.get_name()),
-                    gir.member_deprecated("virtual-method", class_name, info.get_name()),
+                    member_deprecated("virtual-method", class_name, info.get_name()),
                     gir.member_since("virtual-method", class_name, info.get_name()),
                 )
                 for info in virtual_methods(klass)
