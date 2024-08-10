@@ -354,3 +354,12 @@ def test_docbook_note(glib):
 
     assert "This is a it" in rst
     assert "note" not in rst
+
+
+def test_docbook_literal(glib):
+    text = "The regex will be compiled using <literal>PCRE2_UTF</literal>."
+
+    rst = rstify(text, gir=glib)
+
+    assert "``PCRE2_UTF``." in rst
+    assert "literal" not in rst

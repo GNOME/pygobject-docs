@@ -45,6 +45,7 @@ def rstify(text, gir, *, image_base_url=""):
         partial(c_symbol, gir=gir),
         partial(html_picture, image_url=image_base_url),
         html_keyboard_shortcut,
+        docbook_literal,
         docbook_note,
         "\n".join,
     )
@@ -299,3 +300,7 @@ def html_keyboard_shortcut(lines):
 
 def docbook_note(lines):
     return (re.sub(r"</?note>", r"", line, flags=re.UNICODE) for line in lines)
+
+
+def docbook_literal(lines):
+    return (re.sub(r"<literal>([\w ]+)</literal>", r"``\1``", line, flags=re.UNICODE) for line in lines)
