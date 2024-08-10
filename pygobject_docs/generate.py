@@ -10,7 +10,7 @@ import logging
 import sys
 import warnings
 
-from functools import lru_cache, partial
+from functools import lru_cache
 from pathlib import Path
 
 import gi
@@ -61,10 +61,8 @@ def import_module(namespace, version):
 
 
 @lru_cache(maxsize=0)
-def jinja_env(gir):
-    namespace, _version = gir.namespace if gir else ("", "")
+def jinja_env():
     env = Environment(loader=PackageLoader("pygobject_docs"), lstrip_blocks=True)
-    env.filters["rstify"] = partial(rstify, image_base_url=C_API_DOCS.get(namespace, ""), gir=gir)
     env.filters["capfirst"] = lambda text: f"{text[0].upper()}{text[1:]}" if text else ""
     return env
 
@@ -82,7 +80,7 @@ def generate_functions(namespace, version, out_path):
         return
 
     gir = load_gir_file(namespace, version)
-    env = jinja_env(gir)
+    env = jinja_env()
     image_base_url = C_API_DOCS.get(namespace, "")
 
     template = env.get_template("functions.j2")
@@ -149,7 +147,7 @@ def generate_constants(namespace, version, out_path):
         return
 
     gir = load_gir_file(namespace, version)
-    env = jinja_env(gir)
+    env = jinja_env()
 
     template = env.get_template("constants.j2")
 
@@ -215,7 +213,7 @@ def generate_classes(namespace, version, out_path, category, title=None):
             caught_warnings=caught_warnings,
         )
 
-    template = jinja_env(gir).get_template("classes.j2")
+    template = jinja_env().get_template("classes.j2")
 
     (out_path / f"{category}.rst").write_text(
         template.render(
@@ -229,7 +227,7 @@ def generate_classes(namespace, version, out_path, category, title=None):
 
 def generate_class(gir, namespace, version, class_name, klass, out_path, category, caught_warnings):
     image_base_url = C_API_DOCS.get(namespace, "")
-    template = jinja_env(gir).get_template("class-detail.j2")
+    template = jinja_env().get_template("class-detail.j2")
 
     def deprecated(class_name):
         if depr := gir.deprecated(class_name):
@@ -394,7 +392,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
 def generate_index(namespace, version, out_path):
     mod = import_module(namespace, version)
     gir = load_gir_file(namespace, version)
-    env = jinja_env(gir)
+    env = jinja_env()
     template = env.get_template("index.j2")
 
     library_version = (
@@ -426,7 +424,7 @@ def generate_index(namespace, version, out_path):
 
 
 def generate_top_index(out_path):
-    env = jinja_env(None)
+    env = jinja_env()
     template = env.get_template("top-index.j2")
 
     (out_path / "index.rst").write_text(template.render())
