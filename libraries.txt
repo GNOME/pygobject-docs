@@ -1,6 +1,7 @@
 Adw-1
 DBus-1.0
 DBusGLib-1.0
+Flatpak-1.0
 GLib-2.0
 GModule-2.0
 GObject-2.0
