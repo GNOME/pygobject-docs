@@ -103,6 +103,13 @@ def test_custom_docstring_from_gi_overrides():
     assert ":returns:" in custom_docstring(GObject.Object.freeze_notify)
 
 
+def test_custom_docstring_from_class():
+    doc = custom_docstring(GLib.Error)
+
+    assert doc
+    assert "attribute::" in doc
+
+
 def test_skip_signature_docstring_overrides():
     assert not custom_docstring(GLib.io_add_watch)
     assert not custom_docstring(GLib.child_watch_add)

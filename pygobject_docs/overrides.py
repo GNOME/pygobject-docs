@@ -308,3 +308,32 @@ def gobject_GType_is_value_abstract() -> bool:  # type: ignore[empty-body]
 
 def gobject_GType_is_value_type() -> bool:  # type: ignore[empty-body]
     ...
+
+
+# gi.repository.GLib
+
+
+class gi_repository_GLib_Error:
+    """The ``Error`` structure contains information about an error that has occurred.
+
+    Attributes
+    ----------
+
+    .. rst-class:: interim-class
+
+    .. class:: Error
+        :no-index:
+
+        .. attribute:: domain
+
+            The error domain, usually a string that you can convert to a
+            GLib quark with :func:`~gi.repository.GLib.quark_from_string`.
+
+        .. attribute:: code
+
+            A numeric code that identifies a specific error within the domain.
+
+        .. attribute:: message
+
+            A human-readable description of the error.
+    """
