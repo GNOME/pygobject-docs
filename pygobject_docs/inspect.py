@@ -144,9 +144,7 @@ def gi_type_to_python(type_info: GI.TypeInfo) -> object:
 # https://github.com/pygobject/pygobject-stubs/commit/96586a1ac0f6f7f84512afa89366b29b841cd61b
 
 
-def _type_to_python(  # noqa: C901
-    type_info: GI.TypeInfo, out_arg: bool = False, varargs: bool = False
-) -> object:
+def _type_to_python(type_info: GI.TypeInfo, out_arg: bool = False, varargs: bool = False) -> object:
     tag = type_info.get_tag()
     tags = GI.TypeTag
 
