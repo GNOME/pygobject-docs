@@ -229,6 +229,16 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
     image_base_url = C_API_DOCS.get(namespace, "")
     template = jinja_env().get_template("class-detail.j2")
 
+    def doc():
+        if doc := custom_docstring(klass):
+            return doc
+        elif doc := gir.doc(class_name):
+            return rstify(doc, gir=gir, image_base_url=image_base_url)
+        elif klass.__doc__:
+            return "\n".join(prepare_docstring(klass.__doc__))
+        else:
+            return ""
+
     def deprecated(class_name):
         if depr := gir.deprecated(class_name):
             version, message = depr
@@ -258,12 +268,12 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             )
 
     def member_doc(member_type, member_name):
-        if custom_doc := custom_docstring(getattr(klass, member_name, None)):  # noqa: B023
+        if custom_doc := custom_docstring(getattr(klass, member_name, None)):
             return custom_doc
 
         return rstify(
             gir.member_doc(member_type, class_name, member_name), gir=gir, image_base_url=image_base_url
-        )  # noqa: B023
+        )
 
     def member_return_doc(member_type, member_name):
         mdoc = member_doc(member_type, member_name)
@@ -274,7 +284,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             gir.member_return_doc(member_type, class_name, member_name),
             gir=gir,
             image_base_url=image_base_url,
-        )  # noqa: B023
+        )
 
     def parameter_docs(member_type, member_name, sig):
         mdoc = member_doc(member_type, member_name)
@@ -288,7 +298,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
                 gir.member_parameter_doc(member_type, class_name, member_name, param),
                 gir=gir,
                 image_base_url=image_base_url,
-            )  # noqa: B023
+            )
             yield param, doc
 
     def member_deprecated(member_type, class_name, name) -> tuple[str, str] | None:
@@ -304,8 +314,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             namespace=namespace,
             version=version,
             entity_type=category.single.title(),
-            doc=rstify(gir.doc(class_name), gir=gir, image_base_url=image_base_url)
-            or ("\n".join(prepare_docstring(klass.__doc__)) if klass.__doc__ else ""),
+            doc=doc(),
             deprecated=deprecated(class_name),
             since=gir.since(class_name),
             ancestors=gir.ancestors(class_name),

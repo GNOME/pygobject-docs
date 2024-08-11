@@ -52,7 +52,7 @@ exclude = [
     "dist",
     "__init__.py",
 ]
-ignore = ["E501", "B905", "B019"]
+ignore = ["E501", "B905", "B019", "C901"]
 line-length = 88
 select = [
     "B",
