@@ -405,7 +405,7 @@ def generate_index(namespace, version, out_path):
     template = env.get_template("index.j2")
 
     library_version = (
-        ".".join(map(str, [mod.MAJOR_VERSION, mod.MINOR_VERSION, mod.MICRO_VERSION]))
+        ".".join(map(str, [mod.MAJOR_VERSION, mod.MINOR_VERSION, getattr(mod, "MICRO_VERSION", 0)]))
         if hasattr(mod, "MAJOR_VERSION")
         else "-"
     )
