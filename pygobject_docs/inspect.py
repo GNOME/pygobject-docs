@@ -67,7 +67,9 @@ def is_ref_unref_copy_or_steal_function(name) -> bool:
 def custom_docstring(subject: Callable | None) -> str | None:
     if subject.__doc__:
         doc = prepare_docstring(getdoc(subject))
-        return None if not doc or match(r"^\w+\(.*\)", doc[0]) else "\n".join(doc)
+        return (
+            None if not doc or doc[0] == ":Constructors:" or match(r"^\w+\(.*\)", doc[0]) else "\n".join(doc)
+        )
 
     try:
         key = _override_key(subject)
