@@ -432,12 +432,13 @@ def generate_index(namespace, version, out_path):
     )
 
 
-def generate_top_index(out_path: Path):
+def generate_top_index(libraries: list[str], out_path: Path):
     env = jinja_env()
     template = env.get_template("top-index.j2")
 
-    (out_path / "index.rst").write_text(template.render())
+    (out_path / "index.rst").write_text(template.render(libraries=libraries))
 
+    # Copy templates
     (out_path / "_templates").mkdir(exist_ok=True)
     (out_path / "_templates" / "genindex.html").write_text(
         (Path(__file__).parent / "sphinx" / "genindex.html").read_text()
@@ -456,7 +457,15 @@ def generate(namespace, version, base_path):
     generate_constants(namespace, version, out_path)
     generate_index(namespace, version, out_path)
 
-    generate_top_index(base_path)
+
+def generate_all(libraries: list[str]):
+    for lib in libraries:
+        namespace, version = lib.split("-")
+        log.info("Generating pages for %s", namespace)
+        base_path = Path("build/source")
+        generate(namespace, version, base_path)
+
+    generate_top_index(libraries, base_path)
 
 
 if __name__ == "__main__":
@@ -465,8 +474,4 @@ if __name__ == "__main__":
     )
 
     patch_gi_overrides()
-    for arg in sys.argv[1:]:
-        namespace, version = arg.split("-")
-        log.info("Generating pages for %s", namespace)
-        base_path = Path("build/source")
-        generate(namespace, version, base_path)
+    generate_all(sys.argv[1:])
