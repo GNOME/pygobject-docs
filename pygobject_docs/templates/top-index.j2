@@ -20,7 +20,9 @@ If you find an inconsistency in the API docs, please `create an issue <https://g
    :glob:
    :caption: Libraries
 
-   */index
+{% for lib in libraries %}
+   {{ lib }}/index
+{% endfor %}
    pycairo <https://pycairo.readthedocs.io/>
 
 .. toctree::
