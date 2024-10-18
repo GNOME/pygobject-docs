@@ -432,11 +432,16 @@ def generate_index(namespace, version, out_path):
     )
 
 
-def generate_top_index(out_path):
+def generate_top_index(out_path: Path):
     env = jinja_env()
     template = env.get_template("top-index.j2")
 
     (out_path / "index.rst").write_text(template.render())
+
+    (out_path / "_templates").mkdir(exist_ok=True)
+    (out_path / "_templates" / "genindex.html").write_text(
+        (Path(__file__).parent / "sphinx" / "genindex.html").read_text()
+    )
 
 
 def generate(namespace, version, base_path):

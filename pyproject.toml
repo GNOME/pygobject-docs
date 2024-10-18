@@ -17,7 +17,7 @@ dependencies = [
     "jinja2",
     "sphinx",
     "gi-docgen",
-    "sphinx-rtd-theme",
+    "pydata-sphinx-theme",
 ]
 dynamic = ["version"]
 

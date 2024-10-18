@@ -32,20 +32,21 @@ add_module_names = False
 
 # html_theme = "alabaster"
 pygments_style = "tango"
-html_theme = "sphinx_rtd_theme"
+html_theme = "pydata_sphinx_theme"
 html_show_copyright = False
 html_title = project
 
 html_theme_options = {
-    "display_version": False,
     "globaltoc_maxdepth": 2,
     "navigation_depth": 3,
-    "prev_next_buttons_location": None,
+    "footer_center": ["genindex"],
+    "show_prev_next": False,
+    "content_footer_items": ["copyright", "last-updated"],
 }
 
 html_static_path = ["static"]
 
-html_css_files = ["custom.css"]
+# html_css_files = ["custom.css"]
 
 # -- Intersphinx
 
