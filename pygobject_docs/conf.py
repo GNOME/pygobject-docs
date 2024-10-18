@@ -42,6 +42,7 @@ html_theme_options = {
     "footer_center": ["genindex"],
     "show_prev_next": False,
     "content_footer_items": ["copyright", "last-updated"],
+    "header_links_before_dropdown": 6,
 }
 
 html_static_path = ["static"]

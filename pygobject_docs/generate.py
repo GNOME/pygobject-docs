@@ -432,11 +432,23 @@ def generate_index(namespace, version, out_path):
     )
 
 
+def order(libraries: list[str], top: list[str]):
+    def index(name):
+        try:
+            return top.index(name)
+        except ValueError:
+            return len(top)
+
+    return [lib for _, lib in sorted((index(lib.split("-", 1)[0]), lib) for lib in libraries)]
+
+
 def generate_top_index(libraries: list[str], out_path: Path):
     env = jinja_env()
     template = env.get_template("top-index.j2")
 
-    (out_path / "index.rst").write_text(template.render(libraries=libraries))
+    (out_path / "index.rst").write_text(
+        template.render(libraries=order(libraries, top=["GLib", "Gio", "GObject", "Gtk", "Gdk", "Adw"]))
+    )
 
     # Copy templates
     (out_path / "_templates").mkdir(exist_ok=True)
