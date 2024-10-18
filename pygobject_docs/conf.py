@@ -46,7 +46,7 @@ html_theme_options = {
 
 html_static_path = ["static"]
 
-# html_css_files = ["custom.css"]
+html_css_files = ["custom.css"]
 
 # -- Intersphinx
 
