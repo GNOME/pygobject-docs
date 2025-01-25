@@ -6,6 +6,7 @@ before_script:
     gtk4-devel gtksourceview5-devel libadwaita-devel gcr-devel gstreamer1-devel
     libshumate-devel libsoup3-devel vte291-gtk4-devel
     libportal-devel libportal-gtk4-devel webkitgtk6.0-devel
+    libical
   - pip --cache-dir /tmp/pipcache install -e '.[dev]'
 
 test:
