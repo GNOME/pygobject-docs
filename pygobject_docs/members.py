@@ -1,8 +1,7 @@
 from itertools import chain
 
 from gi._gi import SignalInfo, VFuncInfo
-
-from pygobject_docs.inspect import gi_type_to_python
+from gi._signature import get_pytype
 
 
 def own_dir(obj_type: type) -> list[str]:
@@ -30,7 +29,7 @@ def properties(obj_type: type) -> list[tuple[str, object | type]]:
     except AttributeError:
         return []
 
-    return sorted((p.get_name(), gi_type_to_python(p.get_type_info())) for p in props)
+    return sorted((p.get_name(), get_pytype(p.get_type_info())) for p in props)
 
 
 def virtual_methods(obj_type: type) -> list[VFuncInfo]:
