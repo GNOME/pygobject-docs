@@ -13,7 +13,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "PyGObject",
+    "PyGObject @ git+https://gitlab.gnome.org/GNOME/pygobject.git@main",
     "jinja2",
     "sphinx",
     "gi-docgen",

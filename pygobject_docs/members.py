@@ -30,7 +30,7 @@ def properties(obj_type: type) -> list[tuple[str, object | type]]:
     except AttributeError:
         return []
 
-    return sorted((p.get_name(), gi_type_to_python(p.get_type())) for p in props)
+    return sorted((p.get_name(), gi_type_to_python(p.get_type_info())) for p in props)
 
 
 def virtual_methods(obj_type: type) -> list[VFuncInfo]:

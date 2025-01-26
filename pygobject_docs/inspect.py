@@ -5,8 +5,7 @@ methods, as well as gi objects.
 import logging
 from typing import Any, Callable, NamedTuple, Optional, Sequence
 from importlib import import_module
-from inspect import Signature, Parameter, unwrap
-from keyword import iskeyword
+from inspect import Signature
 from re import match
 
 import gi._gi as GI
@@ -84,8 +83,6 @@ def custom_docstring(subject: Callable | None) -> str | None:
 def signature(subject: Callable, bound=False) -> Signature:
     if fun := getattr(overrides, _override_key(subject), None):
         return sphinx_signature(fun)
-    if isinstance(s := unwrap(subject), GI.CallableInfo):
-        return gi_signature(s)
 
     return sphinx_signature(subject, bound_method=bound)
 
@@ -97,39 +94,6 @@ def _override_key(subject):
         return f"{ocls.__module__}_{ocls.__name__}_{subject.__name__}".replace(".", "_")
 
     return None
-
-
-def gi_signature(subject: GI.CallableInfo) -> Signature:
-    parameters = []
-
-    (names, args, return_args) = _callable_get_arguments(subject, True)
-
-    for name, arg in zip(names, args):
-        if name.startswith("dummy"):
-            continue
-
-        if name.startswith("*"):
-            kind = Parameter.VAR_POSITIONAL
-            name = name[1:]
-        else:
-            kind = Parameter.POSITIONAL_OR_KEYWORD  # type: ignore[assignment]
-
-        annotation, default = arg if isinstance(arg, AnnotationAndDefault) else (arg, Parameter.empty)
-        parameters.append(
-            Parameter(
-                f"{name}_" if iskeyword(name) else name,
-                kind,
-                annotation=annotation,
-                default=default,
-            )
-        )
-
-    return Signature(
-        parameters,
-        return_annotation=return_args[0]
-        if len(return_args) == 1
-        else tuple[*return_args],  # type: ignore[misc]
-    )
 
 
 class AnnotationAndDefault(NamedTuple):
@@ -255,8 +219,8 @@ def _callable_get_arguments(
 
     # Filter out array length arguments for return type
     ret_type = type_info.get_return_type()
-    if ret_type.get_array_length() >= 0:
-        skip.append(ret_type.get_array_length())
+    if ret_type.get_array_length_index() >= 0:
+        skip.append(ret_type.get_array_length_index())
 
     for i, arg in enumerate(function_args):
         if i in skip:

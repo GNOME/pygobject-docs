@@ -42,7 +42,7 @@ def test_class_signature():
 def test_gi_function_signature():
     assert (
         str(signature(GObject.flags_complete_type_info))
-        == "(g_flags_type: type, const_values: ~gi.repository.GObject.FlagsValue) -> ~gi.repository.GObject.TypeInfo"
+        == "(g_flags_type: ~gobject.GType, const_values: ~gi.repository.GObject.FlagsValue) -> ~gi.repository.GObject.TypeInfo"
     )
     assert (
         str(signature(GObject.signal_handler_unblock))
@@ -66,7 +66,10 @@ def test_function_with_default_value():
 def test_method_with_multiple_return_values():
     from gi.repository import Gtk
 
-    assert str(signature(Gtk.Scrollable.get_border)) == "() -> tuple[bool, ~gi.repository.Gtk.Border]"
+    assert (
+        str(signature(Gtk.Scrollable.get_border))
+        == "(self) -> ~typing.Tuple[bool, ~gi.repository.Gtk.Border]"
+    )
 
 
 def test_python_method_is_classmethod():
@@ -92,7 +95,7 @@ def test_method_with_length_parameter():
     # C signature is like: GArray* (..., int *length)
     sig = signature(GObject.type_children)
 
-    assert str(sig) == "(type: type) -> list[type]"
+    assert str(sig) == "(type: ~gobject.GType) -> list[~gobject.GType]"
 
 
 def test_custom_docstring_from_custom_overrides():

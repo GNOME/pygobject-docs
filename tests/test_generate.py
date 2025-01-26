@@ -1,4 +1,5 @@
-import gi
+from types import MethodType
+
 
 from pygobject_docs.category import Category
 from pygobject_docs.generate import (
@@ -51,4 +52,4 @@ def test_gi_method_type():
 
     assert not callable(gobject.ParamSpecBoxed.name)
     assert callable(gobject.ParamSpecBoxed.do_values_cmp)
-    assert type(gobject.ParamSpecBoxed.do_values_cmp) is gi._gi.VFuncInfo
+    assert type(gobject.ParamSpecBoxed.do_values_cmp) is MethodType

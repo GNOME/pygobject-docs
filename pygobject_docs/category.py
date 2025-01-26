@@ -1,10 +1,14 @@
+import logging
 import types
-from enum import StrEnum, auto
+from enum import IntEnum, IntFlag, StrEnum, auto
 
 from gi.module import repository
 from gi._gi import EnumInfo, FunctionInfo, GType, InterfaceInfo, ObjectInfo, StructInfo, UnionInfo, VFuncInfo
 from gi.types import GObjectMeta, StructMeta
 from gi.repository import GObject
+
+
+log = logging.getLogger(__name__)
 
 
 class Category(StrEnum):
@@ -41,7 +45,11 @@ def determine_category(module, name, gir=None) -> Category:
     The category is based on the GI type info. For custom
     and overridden fields some extra checks are done.
     """
-    field = getattr(module, name)
+    try:
+        field = getattr(module, name)
+    except RuntimeError:
+        log.warning("Failed to get field %s.%s. Ignoring it for now.", module, name)
+        return Category.Ignored
 
     namespace = module.__name__.split(".")[-1]
     info = repository.find_by_name(namespace, name)
@@ -87,7 +95,7 @@ def determine_member_category(obj_type, name) -> MemberCategory:
         or isinstance(field, type)
     ):
         return MemberCategory.Ignored
-    elif isinstance(field, FunctionInfo):
+    elif isinstance(field, (FunctionInfo, types.MethodType)) and hasattr(field, "is_constructor"):
         return MemberCategory.Constructors if field.is_constructor() else MemberCategory.Methods
     elif isinstance(
         field,
@@ -106,7 +114,18 @@ def determine_member_category(obj_type, name) -> MemberCategory:
         and name[3:] in (v.get_name() for v in obj_type.__info__.get_vfuncs())
     ):
         return MemberCategory.VirtualMethods
-    elif isinstance(field, (GObject.GEnum, GObject.GFlags, property, types.GetSetDescriptorType)):
+    elif isinstance(
+        field,
+        (
+            GObject.GEnum,
+            GObject.GFlags,
+            GObject.Property,
+            property,
+            IntEnum,
+            IntFlag,
+            types.GetSetDescriptorType,
+        ),
+    ):
         return MemberCategory.Fields
 
     raise TypeError(f"Member type not recognized for {obj_type.__name__}.{name} ({getattr(obj_type, name)})")
