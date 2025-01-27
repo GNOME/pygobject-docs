@@ -23,12 +23,18 @@ def _to_rst(element: etree.Element):
     for n in range(0, len(element)):
         el = element[n]
 
-        print("el", el.tag, el.text, el.tail)
         match el.tag:
+            case "br":
+                yield "\n\n"
             case "div":
                 yield from _to_rst(el)
             case "param":
                 yield f"``{el.attrib['name']}``"
+            case "h1" | "h2" | "h3":
+                yield el.text
+                yield "\n"
+                yield "-" * 20
+                yield "\n"
             case "p":
                 if el.text:
                     yield el.text
@@ -40,6 +46,10 @@ def _to_rst(element: etree.Element):
                     yield el.text
                 yield from _to_rst(el)
                 yield f" <{el.attrib['href']}>`_"
+            case "img":
+                pass  # FixMe
+            case "blockquote":
+                pass  # FixMe
             case "code":
                 yield "``"
                 yield el.text
@@ -48,6 +58,10 @@ def _to_rst(element: etree.Element):
                 yield "*"
                 yield el.text
                 yield "*"
+            case "strong":
+                yield "**"
+                yield el.text
+                yield "**"
             case "li":
                 yield "* "
                 yield el.text
@@ -58,6 +72,9 @@ def _to_rst(element: etree.Element):
                 if el.text:
                     yield el.text
                 yield from _to_rst(el)
+            case "ol":
+                yield from _to_rst(el)
+                yield "\n"
             case "ul":
                 yield from _to_rst(el)
                 yield "\n"
@@ -79,8 +96,14 @@ def _to_rst(element: etree.Element):
             yield el.tail
 
 
+def strip_none(iterable):
+    for i in iterable:
+        if i is not None:
+            yield i
+
+
 def to_rst(element):
-    return "".join(_to_rst(element))
+    return "".join(strip_none(_to_rst(element)))
 
 
 class GtkDocMarkdown(markdown.Markdown):
@@ -269,14 +292,12 @@ class CConstantProcessor(markdown.inlinepatterns.InlineProcessor):
         el = etree.Element(self.TAG)
         g = m.group(1)
         if g in _python_consts:
-            print("subst", g, _python_consts[g])
             el.attrib["raw"] = _python_consts[g]
         elif s := self.gir.c_const(g):
             el.attrib["const"] = f"gi.repository.{s}"
         else:
             el.attrib["raw"] = f"``{g}``"
 
-        print("const:", el.text)
         return el, m.start(0), m.end(0)
 
 
@@ -311,7 +332,6 @@ class CTypeProcessor(markdown.inlinepatterns.InlineProcessor):
         self.gir = gir
 
     def handleMatch(self, m, data):
-        print("ctype", m.group(1), "--", data)
         el = etree.Element(self.TAG)
         g = m.group(1)
         if g.startswith("gint") or g.startswith("guint"):
