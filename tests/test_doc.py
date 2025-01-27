@@ -14,15 +14,15 @@ def glib():
 @pytest.mark.parametrize(
     "text, expected",
     [
-        ["`class`", "``class``\n"],
-        ["`char*[]`", "``char*[]``\n"],
-        ["`func()`", "``func()``\n"],
-        ["`cls::prop`", "``cls::prop``\n"],
-        ["`interface`s", "``interface``'s\n"],
-        ["test `Class` and `Interface`s.", "test ``Class`` and ``Interface``'s.\n"],
+        ["`class`", "``class``"],
+        ["`char*[]`", "``char*[]``"],
+        ["`func()`", "``func()``"],
+        ["`cls::prop`", "``cls::prop``"],
+        ["`interface`s", "``interface``s"],
+        ["test `Class` and `Interface`s.", "test ``Class`` and ``Interface``s."],
         [
             "[`DBusActivatable` interface](https://some-url#dbus)",
-            "```DBusActivatable`` interface <https://some-url#dbus>`_\n",
+            "```DBusActivatable`` interface <https://some-url#dbus>`_",
         ],
     ],
 )
@@ -37,7 +37,7 @@ def test_convert_constant(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert rst == "Lorem :const:`True` ipsum :const:`False` :const:`None`.\n"
+    assert rst == "Lorem :const:`True` ipsum :const:`False` :const:`None`."
 
 
 def test_convert_c_constant(glib):
@@ -161,12 +161,20 @@ def test_signal_link_without_namespace(glib):
     assert ":obj:`~gi.repository.GLib.TestClass.signals.signal_name`" in rst
 
 
+def test_paragraph(glib):
+    text = "Lorem ipsum\n\net amilet"
+
+    rst = rstify(text, gir=glib)
+
+    assert rst == "Lorem ipsum\n\net amilet"
+
+
 def test_parameters(glib):
     text = "Lorem @ipsum et amilet"
 
     rst = rstify(text, gir=glib)
 
-    assert rst == "Lorem ``ipsum`` et amilet\n"
+    assert rst == "Lorem ``ipsum`` et amilet"
 
 
 def test_italic_text(glib):
@@ -174,7 +182,7 @@ def test_italic_text(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert rst == "This is a func_name and *italic text*.\n"
+    assert rst == "This is a func_name and *italic text*."
 
 
 def test_keyboard_shortcut(glib):
@@ -217,7 +225,7 @@ def test_code_abbreviation(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert rst == "This is a ``func_name_`` and *italic text*.\n"
+    assert rst == "This is a ``func_name_`` and *italic text*."
 
 
 def test_code_abbreviation_with_ellipsis(glib):
@@ -225,13 +233,14 @@ def test_code_abbreviation_with_ellipsis(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert rst == "the ``g_convert_``… functions\n"
+    assert rst == "the ``g_convert_``… functions"
 
 
 def test_whitespace_before_lists(glib):
     text = dedent(
         """\
         line of text.
+
         - list item.
         """
     )
@@ -242,8 +251,7 @@ def test_whitespace_before_lists(glib):
         """\
         line of text.
 
-        - list item.
-        """
+        * list item."""
     )
 
 
@@ -331,22 +339,25 @@ def test_remove_tags(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert rst == "I/O Priority\n"
+    assert rst == "I/O Priority"
 
 
 @pytest.mark.parametrize(
     "text, expected",
     [
-        ["This is a #GQueue", "This is a :obj:`~gi.repository.GLib.Queue`\n"],
-        ["a #gint32 value", "a :obj:`int` value\n"],
-        ["#gint32 value", ":obj:`int` value\n"],
-        ["In a url http://example.com#section-123", "In a url http://example.com#section-123\n"],
+        ["This is a #GQueue", "This is a :obj:`~gi.repository.GLib.Queue`"],
+        ["a #gint32 value", "a :obj:`int` value"],
+        ["#gint32 value", ":obj:`int` value"],
+        [
+            "In a url http://example.com#section-123",
+            "In a url `http://example.com#section-123 <http://example.com#section-123>`_",
+        ],
         [
             "If we were to use g_variant_get_child_value()",
-            "If we were to use :func:`~gi.repository.GLib.Variant.get_child_value`\n",
+            "If we were to use :func:`~gi.repository.GLib.Variant.get_child_value`",
         ],
-        ["Good old function g_access()", "Good old function :func:`~gi.repository.GLib.access`\n"],
-        [r"%G_SPAWN_ERROR_TOO_BIG", ":const:`~gi.repository.GLib.SpawnError.TOO_BIG`\n"],
+        ["Good old function g_access()", "Good old function :func:`~gi.repository.GLib.access`"],
+        [r"%G_SPAWN_ERROR_TOO_BIG", ":const:`~gi.repository.GLib.SpawnError.TOO_BIG`"],
     ],
 )
 def test_c_symbol_to_python(glib, text, expected):

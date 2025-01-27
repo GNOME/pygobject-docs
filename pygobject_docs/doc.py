@@ -11,11 +11,361 @@ See also https://gitlab.gnome.org/GNOME/gi-docgen/-/blob/main/gidocgen/utils.py
 
 """
 
-from functools import partial
-from itertools import zip_longest
 import re
+import xml.etree.ElementTree as etree
 
-from sphinx.util.docstrings import prepare_docstring
+import markdown
+import markdown.blockprocessors
+import markdown.inlinepatterns
+
+
+def _to_rst(element: etree.Element):
+    for n in range(0, len(element)):
+        el = element[n]
+
+        print("el", el.tag, el.text, el.tail)
+        match el.tag:
+            case "div":
+                yield from _to_rst(el)
+            case "param":
+                yield f"``{el.attrib['name']}``"
+            case "p":
+                if el.text:
+                    yield el.text
+                yield from _to_rst(el)
+                yield "\n"
+            case "a":
+                yield "`"
+                if el.text:
+                    yield el.text
+                yield from _to_rst(el)
+                yield f" <{el.attrib['href']}>`_"
+            case "code":
+                yield "``"
+                yield el.text
+                yield "``"
+            case "em":
+                yield "*"
+                yield el.text
+                yield "*"
+            case "li":
+                yield "* "
+                yield el.text
+                yield from _to_rst(el)
+            case "pre":
+                yield f"``{el.text}``"
+            case "span":
+                if el.text:
+                    yield el.text
+                yield from _to_rst(el)
+            case "ul":
+                yield from _to_rst(el)
+                yield "\n"
+            case "const" | "func" | "ctype":
+                if el.tag in el.attrib:
+                    yield f":{el.tag}:`~{el.attrib[el.tag]}`"
+                elif "raw" in el.attrib:
+                    yield el.attrib["raw"]
+                else:
+                    yield el.text
+            case "kbd":
+                yield f":kbd:`{el.text}`"
+            case "ref":
+                yield f":obj:`~{el.attrib['type']}`"
+            case _:
+                raise ValueError(f"Unknown tag {etree.tostring(el).decode('utf-8')}")
+
+        if el.tail:
+            yield el.tail
+
+
+def to_rst(element):
+    return "".join(_to_rst(element))
+
+
+class GtkDocMarkdown(markdown.Markdown):
+    markdown.Markdown.output_formats["rst"] = to_rst  # type: ignore[index]
+
+    def __init__(self, *extensions, output_format="rst"):
+        super().__init__(extensions=extensions, output_format=output_format)
+        self.stripTopLevelTags = False
+
+        self.inlinePatterns.deregister("html")
+        self.postprocessors.deregister("amp_substitute")
+        self.postprocessors.deregister("raw_html")
+
+
+class GtkDocExtension(markdown.Extension):
+    def __init__(self, gir, image_base_url):
+        super().__init__()
+        self.gir = gir
+        self.image_base_url = image_base_url
+
+    def extendMarkdown(self, md):
+        # We want a space after the hash, so we can distinguish between a C type and a header
+        markdown.blockprocessors.HashHeaderProcessor.RE = re.compile(
+            r"(?:^|\n)(?P<level>#{1,6}) (?P<header>(?:\\.|[^\\])*?)#*(?:\n|$)"
+        )
+
+        LINK_RE = r"((?:[Ff]|[Hh][Tt])[Tt][Pp][Ss]?://[\w+\.\?=#-]*)"  # link (`http://www.example.com`)
+        md.inlinePatterns.register(
+            markdown.inlinepatterns.AutolinkInlineProcessor(LINK_RE, md), "autolink2", 110
+        )
+
+        md.inlinePatterns.register(
+            ReferenceProcessor(ReferenceProcessor.PATTERN, md, self.gir), ReferenceProcessor.TAG, 250
+        )
+        md.inlinePatterns.register(
+            SignalOrPropertyProcessor(SignalOrPropertyProcessor.PROP_PATTERN, md, self.gir, "props"),
+            SignalOrPropertyProcessor.PROP_TAG,
+            250,
+        )
+        md.inlinePatterns.register(
+            SignalOrPropertyProcessor(SignalOrPropertyProcessor.SIG_PATTERN, md, self.gir, "signals"),
+            SignalOrPropertyProcessor.SIG_TAG,
+            250,
+        )
+        md.inlinePatterns.register(KbdProcessor(KbdProcessor.PATTERN, md), KbdProcessor.TAG, 250)
+        md.inlinePatterns.register(
+            CConstantProcessor(CConstantProcessor.PATTERN, md, self.gir), CConstantProcessor.TAG, 250
+        )
+        md.inlinePatterns.register(
+            DockbookNoteProcessor(DockbookNoteProcessor.PATTERN, md), DockbookNoteProcessor.TAG, 250
+        )
+        md.inlinePatterns.register(
+            DockbookLiteralProcessor(DockbookLiteralProcessor.PATTERN, md), DockbookLiteralProcessor.TAG, 250
+        )
+        md.inlinePatterns.register(
+            RemoveMarkdownTagsProcessor(RemoveMarkdownTagsProcessor.PATTERN, md),
+            RemoveMarkdownTagsProcessor.TAG,
+            250,
+        )
+
+        # Low prio parsers
+        md.inlinePatterns.register(
+            CSymbolProcessor(CSymbolProcessor.PATTERN, md, self.gir), CSymbolProcessor.TAG, 40
+        )
+        md.inlinePatterns.register(
+            CTypeProcessor(CTypeProcessor.PATTERN, md, self.gir), CTypeProcessor.TAG, 40
+        )
+        md.inlinePatterns.register(
+            ParameterProcessor(ParameterProcessor.PATTERN, md), ParameterProcessor.TAG, 40
+        )
+        md.inlinePatterns.register(
+            CodeAbbreviationProcessor(CodeAbbreviationProcessor.PATTERN, md),
+            CodeAbbreviationProcessor.TAG,
+            40,
+        )
+
+
+class ReferenceProcessor(markdown.inlinepatterns.InlineProcessor):
+    """[class@Widget.Foo] -> :class:`Widget.Foo`"""
+
+    PATTERN = r"\[(?:ctor|class|const|enum|error|flags|func|id|iface|method|struct|type|vfunc)@(.+)\]"
+    TAG = "ref"
+
+    def __init__(self, pattern, md, gir):
+        super().__init__(pattern, md)
+        self.namespace = gir.namespace[0]
+
+    def handleMatch(self, m, data):
+        el = etree.Element(self.TAG)
+        package = "gi.repository" if "." in m.group(1) else f"gi.repository.{self.namespace}"
+        el.attrib["type"] = f"{package}.{m.group(1)}"
+
+        return el, m.start(0), m.end(0)
+
+
+class SignalOrPropertyProcessor(markdown.inlinepatterns.InlineProcessor):
+    """[signal@Widget::sig] -> :obj:`Widget.signals.sig`"""
+
+    PROP_PATTERN = r"\[property@([^:]+?):(.+?)\]"
+    SIG_PATTERN = r"\[signal@([^:]+?)::(.+?)\]"
+    PROP_TAG = "propref"
+    SIG_TAG = "sigref"
+
+    def __init__(self, pattern, md, gir, section):
+        super().__init__(pattern, md)
+        self.namespace = gir.namespace[0]
+        self.section = section
+
+    def handleMatch(self, m, data):
+        el = etree.Element("ref")
+        package = "gi.repository" if "." in m.group(1) else f"gi.repository.{self.namespace}"
+        el.attrib["type"] = f"{package}.{m.group(1)}.{self.section}.{m.group(2).replace('-', '_')}"
+
+        return el, m.start(0), m.end(0)
+
+
+# (re.compile(r"\[`*(?:alias|callback)@(.+?)`*\]"), r"``\1``"),
+
+
+class ParameterProcessor(markdown.inlinepatterns.InlineProcessor):
+    """@parameter -> ``parameter``"""
+
+    PATTERN = r"@(\w+)"
+    TAG = "param"
+
+    def handleMatch(self, m, data):
+        el = etree.Element(self.TAG, {"name": m.group(1)})
+        return el, m.start(0), m.end(0)
+
+
+class KbdProcessor(markdown.inlinepatterns.InlineProcessor):
+    """<kbd>F1</kbd> -> :kbd:`F1`"""
+
+    PATTERN = r"<kbd>([\w ]+|[↑→↓←]?)</kbd>"
+    TAG = "kbd"
+
+    def handleMatch(self, m, data):
+        el = etree.Element(self.TAG)
+        el.text = m.group(1)
+        return el, m.start(0), m.end(0)
+
+
+_python_consts = {
+    "TRUE": ":const:`True`",
+    "FALSE": ":const:`False`",
+    "NULL": ":const:`None`",
+    "G_TYPE_CHAR": ":obj:`int`",
+    "G_TYPE_INT": ":obj:`int`",
+    "G_TYPE_INT64": ":obj:`int`",
+    "G_TYPE_LONG": ":obj:`int`",
+    "G_TYPE_UCHAR": "unsigned :obj:`int`",
+    "G_TYPE_UINT": "unsigned :obj:`int`",
+    "G_TYPE_UINT64": "unsigned :obj:`int`",
+    "G_TYPE_ULONG": "unsigned :obj:`int`",
+    "G_TYPE_OBJECT": ":obj:`object`",
+    "G_TYPE_PARAM": ":obj:`~gi.repository.GObject.ParamSpec`",
+    "G_TYPE_BOXED": "``Boxed``",
+    "G_TYPE_STRING": ":obj:`str`",
+    "G_TYPE_FLOAT": ":obj:`float`",
+    "G_TYPE_BOOLEAN": ":obj:`bool`",
+    "G_TYPE_DOUBLE": ":obj:`float`",
+    "G_TYPE_ENUM": "``Enum``",
+    "G_TYPE_FLAGS": "``Flags``",
+    "G_TYPE_GTYPE": "``GType``",
+    "G_TYPE_INVALID": "``Invalid``",
+    "gboolean": ":obj:`bool`",
+    "gchar*": ":obj:`str`",
+    "gchar**": ":obj:`list[str]`",
+    "gdouble": ":obj:`float`",
+    "gint": ":obj:`int`",
+    "guint": "unsigned :obj:`int`",
+}
+
+
+class CConstantProcessor(markdown.inlinepatterns.InlineProcessor):
+    """%TRUE -> :const:`True`"""
+
+    PATTERN = r"%([\w\*]+)"
+    TAG = "const"
+
+    def __init__(self, pattern, md, gir):
+        super().__init__(pattern, md)
+        self.gir = gir
+
+    def handleMatch(self, m, data):
+        el = etree.Element(self.TAG)
+        g = m.group(1)
+        if g in _python_consts:
+            print("subst", g, _python_consts[g])
+            el.attrib["raw"] = _python_consts[g]
+        elif s := self.gir.c_const(g):
+            el.attrib["const"] = f"gi.repository.{s}"
+        else:
+            el.attrib["raw"] = f"``{g}``"
+
+        print("const:", el.text)
+        return el, m.start(0), m.end(0)
+
+
+class CSymbolProcessor(markdown.inlinepatterns.InlineProcessor):
+    """func_name() -> :func:`namespace.func_name`"""
+
+    PATTERN = r"(\w+)\(\)"
+    TAG = "func"
+
+    def __init__(self, pattern, md, gir):
+        super().__init__(pattern, md)
+        self.gir = gir
+
+    def handleMatch(self, m, data):
+        el = etree.Element(self.TAG)
+        g = m.group(1)
+        el.text = f"{g}()"
+        if s := self.gir.c_symbol(g):
+            el.attrib["func"] = f"gi.repository.{s}"
+
+        return el, m.start(0), m.end(0)
+
+
+class CTypeProcessor(markdown.inlinepatterns.InlineProcessor):
+    """#guint -> :obj:`int`"""
+
+    PATTERN = r"#(\w+)"
+    TAG = "ctype"
+
+    def __init__(self, pattern, md, gir):
+        super().__init__(pattern, md)
+        self.gir = gir
+
+    def handleMatch(self, m, data):
+        print("ctype", m.group(1), "--", data)
+        el = etree.Element(self.TAG)
+        g = m.group(1)
+        if g.startswith("gint") or g.startswith("guint"):
+            el.text = ":obj:`int`"
+        elif g == "gdouble":
+            el.text = ":obj:`float`"
+        elif t := self.gir.c_type(g):
+            el = etree.Element("ref", {"type": f"gi.repository.{t}"})
+        else:
+            el.text = f"``{g}``"
+
+        return el, m.start(0), m.end(0)
+
+
+class CodeAbbreviationProcessor(markdown.inlinepatterns.InlineProcessor):
+    """func_name_ -> ``func_name_``"""
+
+    PATTERN = r"(?:(?<!\w)|^)(\w+_[\.]*)(?!\w)"
+    TAG = "codeabbr"
+
+    def handleMatch(self, m, data):
+        el = etree.Element("pre")
+        el.text = m.group(1)
+        return el, m.start(0), m.end(0)
+
+
+class DockbookNoteProcessor(markdown.inlinepatterns.InlineProcessor):
+    PATTERN = r"<note>([\w ]+)</note>"
+    TAG = "note"
+
+    def handleMatch(self, m, data):
+        el = etree.Element("span")
+        el.text = m.group(1)
+        return el, m.start(0), m.end(0)
+
+
+class DockbookLiteralProcessor(markdown.inlinepatterns.InlineProcessor):
+    PATTERN = r"<literal>([\w ]+)</literal>"
+    TAG = "literal"
+
+    def handleMatch(self, m, data):
+        el = etree.Element("pre")
+        el.text = m.group(1)
+        return el, m.start(0), m.end(0)
+
+
+class RemoveMarkdownTagsProcessor(markdown.inlinepatterns.InlineProcessor):
+    PATTERN = r" *# +\{#[\w-]+\}$"
+    TAG = "md_tags"
+
+    def handleMatch(self, m, data):
+        el = etree.Element("span")
+        el.text = ""
+        return el, m.start(0), m.end(0)
 
 
 def rstify(text, gir, *, image_base_url=""):
@@ -23,32 +373,7 @@ def rstify(text, gir, *, image_base_url=""):
     if not text:
         return ""
 
-    lines = prepare_docstring(text)
-
-    return pipe(
-        lines,
-        code_snippets,
-        tags,
-        markdown_italic,
-        code_abbreviations,
-        partial(c_constants, gir=gir),
-        whitespace_before_lists,
-        partial(markdown_table, image_url=image_base_url, gir=gir),
-        partial(markdown_images, image_url=image_base_url),
-        partial(gtk_doc_link, namespace=gir.namespace[0]),
-        parameters,  # after gtk-doc links, since those also contain `@` symbols
-        markdown_inline_code,
-        markdown_links,
-        s_after_inline_code,
-        markdown_heading,
-        partial(c_type, gir=gir),
-        partial(c_symbol, gir=gir),
-        partial(html_picture, image_url=image_base_url),
-        html_keyboard_shortcut,
-        docbook_literal,
-        docbook_note,
-        "\n".join,
-    )
+    return GtkDocMarkdown(GtkDocExtension(gir, image_base_url)).convert(text)
 
 
 def pipe(obj, *filters):
@@ -57,70 +382,12 @@ def pipe(obj, *filters):
     return obj
 
 
-def markdown_italic(lines):
-    return (re.sub(r"(?:(?<!\w)|^)_([^_]+?)_((?!\w)|$)", r"*\1*", line) for line in lines)
-
-
-def markdown_inline_code(lines):
-    return (re.sub(r"(?:(?<![:`])|^)`([^` ]+?)`(?=[^`]|$)", r"``\1``", line) for line in lines)
-
-
-def code_abbreviations(lines):
-    return (re.sub(r"(?:(?<!\w)|^)(\w+_[\.]*)(?!\w)", r"``\1``", line) for line in lines)
-
-
 def s_after_inline_code(lines):
     return (re.sub(r"(?<=`)s(?=\W|$)", r"'s", line) for line in lines)
 
 
-def parameters(lines):
-    return (re.sub(r"@(\w+)", r"``\1``", line) for line in lines)
-
-
-def markdown_table(lines, image_url, gir):
-    def as_table(table_lines):
-        cells = [
-            [
-                rstify(cell.strip(), gir=gir, image_base_url=image_url).strip()
-                for cell in line[1:-1].split("|")
-            ]
-            for line in table_lines
-        ]
-        lens = [max(max(len(line) for line in cell.split("\n")) for cell in col) for col in zip(*cells)]
-        sep = "-"
-        for row in cells:
-            if "---" in row:
-                sep = "="
-            else:
-                yield "+" + "+".join(sep * (len + 2) for len in lens) + "+"
-                for line in zip_longest(*(cell.split("\n") for cell in row), fillvalue=""):
-                    yield "| " + " | ".join(
-                        cell.lstrip().ljust(length) for cell, length in zip(line, lens)
-                    ) + " |"
-                sep = "-"
-        yield "+" + "+".join("-" * (len + 2) for len in lens) + "+"
-        yield ""
-
-    table_lines = []
-    for line in lines:
-        if line.startswith("| ") and line.endswith("|"):
-            table_lines.append(line)
-        else:
-            if table_lines:
-                yield from as_table(table_lines)
-                del table_lines[:]
-            yield line
-
-    if table_lines:
-        yield from as_table(table_lines)
-
-
 def markdown_images(lines, image_url):
     return (re.sub(r" *!\[.*?\]\((.+?)\)", f"\n.. image:: {image_url}/\\1\n", line) for line in lines)
-
-
-def markdown_links(lines):
-    return (re.sub(r"\[(.+?)\]\((.+?)\)", r"`\1 <\2>`_", line) for line in lines)
 
 
 def markdown_heading(lines):
@@ -158,51 +425,6 @@ def code_snippets(lines):
             yield line
 
 
-def tags(lines):
-    return (re.sub(r" *# +\{#[\w-]+\}$", "", line) for line in lines)
-
-
-def gtk_doc_link(lines, namespace):
-    def matcher(m, section=None):
-        package = "gi.repository" if "." in m.group(1) else f"gi.repository.{namespace}"
-        return (
-            f":obj:`~{package}.{m.group(1)}.{section}.{m.group(2).replace('-', '_')}`"
-            if section
-            else f":obj:`~{package}.{m.group(1)}`"
-        )
-
-    subs = [
-        (
-            re.compile(
-                r"\[(?:ctor|class|const|enum|error|flags|func|id|iface|method|struct|type|vfunc)@(.+?)\]"
-            ),
-            matcher,
-        ),
-        (re.compile(r"\[property@([^:]+?):(.+?)\]"), partial(matcher, section="props")),
-        (re.compile(r"\[signal@([^:]+?)::(.+?)\]"), partial(matcher, section="signals")),
-        (re.compile(r"\[`*(?:alias|callback)@(.+?)`*\]"), r"``\1``"),
-    ]
-
-    for line in lines:
-        for pat, repl in subs:
-            line = re.sub(pat, repl, line)
-        yield line
-
-
-def whitespace_before_lists(lines):
-    paragraph = True
-    for line in lines:
-        if paragraph and line.startswith("-"):
-            yield ""
-            yield line
-            paragraph = False
-        elif not paragraph and line and line[0] not in (" ", "-"):
-            yield line
-            paragraph = True
-        else:
-            yield line
-
-
 def html_picture(lines, image_url):
     picture = False
     for line in lines:
@@ -215,93 +437,3 @@ def html_picture(lines, image_url):
             yield f".. image:: {image_url}/{path}" if image_url else ".. error:: No image URL not available. Please `raise an issue <https://gitlab.gnome.org/amolenaar/pygobject-docs/-/issues>`_."
         elif not picture:
             yield line
-
-
-def c_type(lines, gir):
-    if not gir:
-        return lines
-
-    def repl(m: re.Match[str]) -> str:
-        p = m.group(1)
-        g = m.group(2)
-        if g.startswith("gint") or g.startswith("gunit"):
-            return f"{p}:obj:`int`"
-        if g == "gdouble":
-            return f"{p}:obj:`float`"
-        if t := gir.c_type(g):
-            return f"{p}:obj:`~gi.repository.{t}`"
-        return f"{p}``{g}``"
-
-    return (re.sub(r"(\W|\A)#(\w+)", repl, line) for line in lines)
-
-
-def c_symbol(lines, gir):
-    if not gir:
-        return lines
-
-    def repl(m: re.Match[str]) -> str:
-        g = m.group(1)
-        if s := gir.c_symbol(g):
-            return f":func:`~gi.repository.{s}`"
-        return f"{g}()"
-
-    return (re.sub(r"(\w+)\(\)", repl, line) for line in lines)
-
-
-_python_consts = {
-    "TRUE": ":const:`True`",
-    "FALSE": ":const:`False`",
-    "NULL": ":const:`None`",
-    "G_TYPE_CHAR": ":obj:`int`",
-    "G_TYPE_INT": ":obj:`int`",
-    "G_TYPE_INT64": ":obj:`int`",
-    "G_TYPE_LONG": ":obj:`int`",
-    "G_TYPE_UCHAR": "unsigned :obj:`int`",
-    "G_TYPE_UINT": "unsigned :obj:`int`",
-    "G_TYPE_UINT64": "unsigned :obj:`int`",
-    "G_TYPE_ULONG": "unsigned :obj:`int`",
-    "G_TYPE_OBJECT": ":obj:`object`",
-    "G_TYPE_PARAM": ":obj:`~gi.repository.GObject.ParamSpec`",
-    "G_TYPE_BOXED": "``Boxed``",
-    "G_TYPE_STRING": ":obj:`str`",
-    "G_TYPE_FLOAT": ":obj:`float`",
-    "G_TYPE_BOOLEAN": ":obj:`bool`",
-    "G_TYPE_DOUBLE": ":obj:`float`",
-    "G_TYPE_ENUM": "``Enum``",
-    "G_TYPE_FLAGS": "``Flags``",
-    "G_TYPE_GTYPE": "``GType``",
-    "G_TYPE_INVALID": "``Invalid``",
-    "gboolean": ":obj:`bool`",
-    "gchar*": ":obj:`str`",
-    "gchar**": ":obj:`list[str]`",
-    "gdouble": ":obj:`float`",
-    "gint": ":obj:`int`",
-    "guint": "unsigned :obj:`int`",
-}
-
-
-def c_constants(lines, gir):
-    if not gir:
-        return lines
-
-    def repl(m: re.Match[str]) -> str:
-        g = m.group(1)
-        if g in _python_consts:
-            return _python_consts[g]
-        if s := gir.c_const(g):
-            return f":const:`~gi.repository.{s}`"
-        return f"``%{g}``"
-
-    return (re.sub(r"%([\w\*]+)", repl, line) for line in lines)
-
-
-def html_keyboard_shortcut(lines):
-    return (re.sub(r"<kbd>([\w ]+|[↑→↓←]?)</kbd>", r":kbd:`\1`", line, flags=re.UNICODE) for line in lines)
-
-
-def docbook_note(lines):
-    return (re.sub(r"</?note>", r"", line, flags=re.UNICODE) for line in lines)
-
-
-def docbook_literal(lines):
-    return (re.sub(r"<literal>([\w ]+)</literal>", r"``\1``", line, flags=re.UNICODE) for line in lines)
