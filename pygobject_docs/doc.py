@@ -12,11 +12,20 @@ See also https://gitlab.gnome.org/GNOME/gi-docgen/-/blob/main/gidocgen/utils.py
 """
 
 import re
+import textwrap
 import xml.etree.ElementTree as etree
 
 import markdown
 import markdown.blockprocessors
 import markdown.inlinepatterns
+
+
+def rstify(text, gir, *, image_base_url=""):
+    """Convert gtk-doc to rst."""
+    if not text:
+        return ""
+
+    return GtkDocMarkdown(GtkDocExtension(gir, image_base_url), "fenced_code").convert(text)
 
 
 def _to_rst(element: etree.Element):
@@ -47,9 +56,13 @@ def _to_rst(element: etree.Element):
                 yield from _to_rst(el)
                 yield f" <{el.attrib['href']}>`_"
             case "img":
-                pass  # FixMe
+                # yield f".. image:: {image_base_url}/{el.attrib['src']}"
+                yield f".. image:: {el.attrib['src']}\n"
             case "blockquote":
-                pass  # FixMe
+                yield textwrap.indent(to_rst(el), "    ")
+            case "pre":
+                yield "\n.. code-block::\n    :dedent:\n"
+                yield textwrap.indent(to_rst(el), "    ")
             case "code":
                 yield "``"
                 yield el.text
@@ -66,7 +79,7 @@ def _to_rst(element: etree.Element):
                 yield "* "
                 yield el.text
                 yield from _to_rst(el)
-            case "pre":
+            case "codeabbr" | "literal":
                 yield f"``{el.text}``"
             case "span":
                 if el.text:
@@ -353,7 +366,7 @@ class CodeAbbreviationProcessor(markdown.inlinepatterns.InlineProcessor):
     TAG = "codeabbr"
 
     def handleMatch(self, m, data):
-        el = etree.Element("pre")
+        el = etree.Element(self.TAG)
         el.text = m.group(1)
         return el, m.start(0), m.end(0)
 
@@ -373,7 +386,7 @@ class DockbookLiteralProcessor(markdown.inlinepatterns.InlineProcessor):
     TAG = "literal"
 
     def handleMatch(self, m, data):
-        el = etree.Element("pre")
+        el = etree.Element(self.TAG)
         el.text = m.group(1)
         return el, m.start(0), m.end(0)
 
@@ -386,14 +399,6 @@ class RemoveMarkdownTagsProcessor(markdown.inlinepatterns.InlineProcessor):
         el = etree.Element("span")
         el.text = ""
         return el, m.start(0), m.end(0)
-
-
-def rstify(text, gir, *, image_base_url=""):
-    """Convert gtk-doc to rst."""
-    if not text:
-        return ""
-
-    return GtkDocMarkdown(GtkDocExtension(gir, image_base_url)).convert(text)
 
 
 def pipe(obj, *filters):
