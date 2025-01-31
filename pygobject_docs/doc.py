@@ -11,13 +11,19 @@ See also https://gitlab.gnome.org/GNOME/gi-docgen/-/blob/main/gidocgen/utils.py
 
 """
 
+import logging
 import re
 import textwrap
+import typing
 import xml.etree.ElementTree as etree
+from functools import partial
 
 import markdown
 import markdown.blockprocessors
 import markdown.inlinepatterns
+
+
+log = logging.getLogger(__name__)
 
 
 def rstify(text, gir, *, image_base_url=""):
@@ -25,88 +31,9 @@ def rstify(text, gir, *, image_base_url=""):
     if not text:
         return ""
 
-    return GtkDocMarkdown(GtkDocExtension(gir, image_base_url), "fenced_code").convert(text)
-
-
-def _to_rst(element: etree.Element):
-    for n in range(0, len(element)):
-        el = element[n]
-
-        match el.tag:
-            case "br":
-                yield "\n\n"
-            case "div":
-                yield from _to_rst(el)
-            case "param":
-                yield f"``{el.attrib['name']}``"
-            case "h1" | "h2" | "h3":
-                yield el.text
-                yield "\n"
-                yield "-" * 20
-                yield "\n"
-            case "p":
-                if el.text:
-                    yield el.text
-                yield from _to_rst(el)
-                yield "\n"
-            case "a":
-                yield "`"
-                if el.text:
-                    yield el.text
-                yield from _to_rst(el)
-                yield f" <{el.attrib['href']}>`_"
-            case "img":
-                # yield f".. image:: {image_base_url}/{el.attrib['src']}"
-                yield f".. image:: {el.attrib['src']}\n"
-            case "blockquote":
-                yield textwrap.indent(to_rst(el), "    ")
-            case "pre":
-                yield "\n.. code-block::\n    :dedent:\n"
-                yield textwrap.indent(to_rst(el), "    ")
-            case "code":
-                yield "``"
-                yield el.text
-                yield "``"
-            case "em":
-                yield "*"
-                yield el.text
-                yield "*"
-            case "strong":
-                yield "**"
-                yield el.text
-                yield "**"
-            case "li":
-                yield "* "
-                yield el.text
-                yield from _to_rst(el)
-            case "codeabbr" | "literal":
-                yield f"``{el.text}``"
-            case "span":
-                if el.text:
-                    yield el.text
-                yield from _to_rst(el)
-            case "ol":
-                yield from _to_rst(el)
-                yield "\n"
-            case "ul":
-                yield from _to_rst(el)
-                yield "\n"
-            case "const" | "func" | "ctype":
-                if el.tag in el.attrib:
-                    yield f":{el.tag}:`~{el.attrib[el.tag]}`"
-                elif "raw" in el.attrib:
-                    yield el.attrib["raw"]
-                else:
-                    yield el.text
-            case "kbd":
-                yield f":kbd:`{el.text}`"
-            case "ref":
-                yield f":obj:`~{el.attrib['type']}`"
-            case _:
-                raise ValueError(f"Unknown tag {etree.tostring(el).decode('utf-8')}")
-
-        if el.tail:
-            yield el.tail
+    return GtkDocMarkdown(
+        partial(to_rst, image_base_url=image_base_url), GtkDocExtension(gir), "fenced_code"
+    ).convert(text)
 
 
 def strip_none(iterable):
@@ -115,33 +42,115 @@ def strip_none(iterable):
             yield i
 
 
-def to_rst(element):
+def to_rst(element, image_base_url):
+    def _to_rst(element: etree.Element):
+        for n in range(0, len(element)):
+            el = element[n]
+
+            match el.tag:
+                case "br":
+                    yield "\n\n"
+                case "div":
+                    yield from _to_rst(el)
+                case "param":
+                    yield f"``{el.attrib['name']}``"
+                case "h1" | "h2" | "h3":
+                    yield el.text
+                    yield "\n"
+                    yield "-" * 20
+                    yield "\n"
+                case "p":
+                    if el.text:
+                        yield el.text
+                    yield from _to_rst(el)
+                    yield "\n"
+                case "a":
+                    yield "`"
+                    if el.text:
+                        yield el.text
+                    yield from _to_rst(el)
+                    yield f" <{el.attrib['href']}>`_"
+                case "img":
+                    yield f".. image:: {image_base_url}/{el.attrib['src']}\n"
+                case "blockquote":
+                    yield textwrap.indent(to_rst(el, image_base_url), "    ")
+                case "pre":
+                    yield "\n.. code-block::\n    :dedent:\n"
+                    yield textwrap.indent(to_rst(el, image_base_url), "    ")
+                case "code":
+                    yield "``"
+                    yield el.text
+                    yield "``"
+                case "em":
+                    yield "*"
+                    yield el.text
+                    yield "*"
+                case "strong":
+                    yield "**"
+                    yield el.text
+                    yield "**"
+                case "li":
+                    yield "* "
+                    yield el.text
+                    yield from _to_rst(el)
+                case "codeabbr" | "literal":
+                    yield f"``{el.text}``"
+                case "span":
+                    if el.text:
+                        yield el.text
+                    yield from _to_rst(el)
+                case "ol":
+                    yield from _to_rst(el)
+                    yield "\n"
+                case "ul":
+                    yield from _to_rst(el)
+                    yield "\n"
+                case "const" | "func" | "ctype":
+                    if el.tag in el.attrib:
+                        yield f":{el.tag}:`~{el.attrib[el.tag]}`"
+                    elif "raw" in el.attrib:
+                        yield el.attrib["raw"]
+                    else:
+                        yield el.text
+                case "kbd":
+                    yield f":kbd:`{el.text}`"
+                case "ref":
+                    yield f":obj:`~{el.attrib['type']}`"
+                case _:
+                    raise ValueError(f"Unknown tag {etree.tostring(el).decode('utf-8')}")
+
+            if el.tail:
+                yield el.tail
+
     return "".join(strip_none(_to_rst(element)))
 
 
 class GtkDocMarkdown(markdown.Markdown):
-    markdown.Markdown.output_formats["rst"] = to_rst  # type: ignore[index]
-
-    def __init__(self, *extensions, output_format="rst"):
-        super().__init__(extensions=extensions, output_format=output_format)
+    def __init__(self, serializer, *extensions):
+        super().__init__(extensions=extensions)
         self.stripTopLevelTags = False
-
         self.inlinePatterns.deregister("html")
         self.postprocessors.deregister("amp_substitute")
         self.postprocessors.deregister("raw_html")
 
+        self.serializer = serializer
+
+    def set_output_format(self, _format: str) -> typing.Self:
+        # Do nothing, we have a custom serializer
+        return self
+
 
 class GtkDocExtension(markdown.Extension):
-    def __init__(self, gir, image_base_url):
+    def __init__(self, gir):
         super().__init__()
         self.gir = gir
-        self.image_base_url = image_base_url
 
     def extendMarkdown(self, md):
         # We want a space after the hash, so we can distinguish between a C type and a header
         markdown.blockprocessors.HashHeaderProcessor.RE = re.compile(
             r"(?:^|\n)(?P<level>#{1,6}) (?P<header>(?:\\.|[^\\])*?)#*(?:\n|$)"
         )
+        md.parser.blockprocessors.register(PictureProcessor(md.parser), "picture", 80)
 
         LINK_RE = r"((?:[Ff]|[Hh][Tt])[Tt][Pp][Ss]?://[\w+\.\?=#-]*)"  # link (`http://www.example.com`)
         md.inlinePatterns.register(
@@ -192,6 +201,25 @@ class GtkDocExtension(markdown.Extension):
             CodeAbbreviationProcessor.TAG,
             40,
         )
+
+
+class PictureProcessor(markdown.blockprocessors.BlockProcessor):
+    RE = re.compile(r"^[ \t]*\<picture\>.*?\<\/picture\>", re.MULTILINE | re.DOTALL)
+
+    def test(self, parent: etree.Element, block: str) -> bool:
+        return bool(self.RE.search(block))
+
+    def run(self, parent: etree.Element, blocks: list[str]) -> bool | None:
+        text = ""
+        while "</picture>" not in text:
+            text += blocks.pop(0)
+
+        path = re.sub(r'^.* src="([^"]+)".*$', r"\1", text, flags=re.DOTALL)
+
+        e = etree.SubElement(parent, "img", {"src": path})
+        e.tail = "\n"
+
+        return True
 
 
 class ReferenceProcessor(markdown.inlinepatterns.InlineProcessor):
@@ -401,28 +429,8 @@ class RemoveMarkdownTagsProcessor(markdown.inlinepatterns.InlineProcessor):
         return el, m.start(0), m.end(0)
 
 
-def pipe(obj, *filters):
-    for f in filters:
-        obj = f(obj)
-    return obj
-
-
 def s_after_inline_code(lines):
     return (re.sub(r"(?<=`)s(?=\W|$)", r"'s", line) for line in lines)
-
-
-def markdown_images(lines, image_url):
-    return (re.sub(r" *!\[.*?\]\((.+?)\)", f"\n.. image:: {image_url}/\\1\n", line) for line in lines)
-
-
-def markdown_heading(lines):
-    for line in lines:
-        if re.search(r"^#+ ", line):
-            h = line.split(" ", 1)[1]
-            yield h
-            yield "-" * len(h)
-        else:
-            yield line
 
 
 def code_snippets(lines):
@@ -447,18 +455,4 @@ def code_snippets(lines):
         elif in_code:
             yield f"   {line}"
         else:
-            yield line
-
-
-def html_picture(lines, image_url):
-    picture = False
-    for line in lines:
-        if "<picture>" in line:
-            picture = True
-        if "</picture>" in line:
-            picture = False
-        elif picture and "<img " in line:
-            path = re.sub(r'^.* src="([^"]+)".*$', r"\1", line)
-            yield f".. image:: {image_url}/{path}" if image_url else ".. error:: No image URL not available. Please `raise an issue <https://gitlab.gnome.org/amolenaar/pygobject-docs/-/issues>`_."
-        elif not picture:
             yield line

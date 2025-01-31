@@ -367,7 +367,8 @@ def test_c_symbol_to_python(glib, text, expected):
 
 
 def test_html_picture_tag(glib):
-    text = """
+    text = dedent(
+        """\
     Freeform text.
 
     <picture>
@@ -377,6 +378,7 @@ def test_html_picture_tag(glib):
 
     More freeform text.
     """
+    )
 
     rst = rstify(text, gir=glib, image_base_url="https://example.com")
 
