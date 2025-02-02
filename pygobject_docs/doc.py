@@ -71,6 +71,9 @@ def to_rst(element, image_base_url):
                     yield f" <{el.attrib['href']}>`_"
                 case "img":
                     yield f".. image:: {image_base_url}/{el.attrib['src']}\n"
+                    if el.tail:
+                        yield el.tail.lstrip()
+                    continue
                 case "blockquote":
                     yield textwrap.indent(to_rst(el, image_base_url), "    ")
                 case "pre":
@@ -96,6 +99,8 @@ def to_rst(element, image_base_url):
                     yield "* "
                     yield el.text
                     yield from _to_rst(el)
+                case "table":
+                    yield from _to_rst_table(el)
                 case "codeabbr" | "literal":
                     yield f"``{el.text}``"
                 case "span":
@@ -124,6 +129,43 @@ def to_rst(element, image_base_url):
 
             if el.tail:
                 yield el.tail
+
+    def _to_rst_table(element):
+        assert element.tag == "table"
+
+        yield ".. list-table::\n"
+        if element.attrib.get("header") == "yes":
+            yield "    :header-rows: 1\n"
+
+        yield "\n"
+
+        for n in range(0, len(element)):
+            row = element[n]
+
+            match row.tag:
+                case "tr":
+                    first = True
+                    for m in range(0, len(row)):
+                        cell = row[m]
+                        match cell.tag:
+                            case "td":
+                                lines = ((cell.text or "") + "".join(strip_none(_to_rst(cell)))).split("\n")
+                                print("lines", lines)
+                                if lines:
+                                    yield ("    * - " if first else "      - ")
+                                    yield lines.pop(0).lstrip()
+                                    yield "\n"
+                                while lines:
+                                    yield " " * 8
+                                    yield lines.pop(0)
+                                    yield "\n"
+                            case _:
+                                raise ValueError(
+                                    f"Unknown table cell tag {etree.tostring(row).decode('utf-8')}"
+                                )
+                        first = False
+                case _:
+                    raise ValueError(f"Unknown table row tag {etree.tostring(row).decode('utf-8')}")
 
     return "".join(strip_none(_to_rst(element)))
 
@@ -157,6 +199,7 @@ class GtkDocExtension(markdown.Extension):
             r"(?:^|\n)(?P<level>#{1,6}) (?P<header>(?:\\.|[^\\])*?)#*(?:\n|$)"
         )
         md.parser.blockprocessors.register(CodeBlockProcessor(md.parser), "code_block", 120)
+        md.parser.blockprocessors.register(TableProcessor(md.parser), "table", 120)
         md.parser.blockprocessors.register(PictureProcessor(md.parser), "picture", 80)
 
         LINK_RE = r"((?:[Ff]|[Hh][Tt])[Tt][Pp][Ss]?://[\w+\.\?=#-]*)"  # link (`http://www.example.com`)
@@ -279,6 +322,35 @@ class CodeBlockProcessor(markdown.blockprocessors.BlockProcessor):
         code = etree.SubElement(pre, "code")
         code.text = markdown.util.AtomicString("\n".join(code_block))
         pre.tail = "\n"
+
+        return True
+
+
+class TableProcessor(markdown.blockprocessors.BlockProcessor):
+    def test(self, _parent: etree.Element, block: str) -> bool:
+        return block.strip().startswith("| ") or block.strip().endswith(" |")
+
+    def run(self, parent: etree.Element, blocks: list[str]) -> bool | None:
+        table_lines = []
+        lines = blocks.pop(0).split("\n")
+        for line in lines:
+            if line.startswith("| ") and line.endswith("|"):
+                table_lines.append(line)
+            else:
+                raise ValueError(f"Invalid table line: {line}")
+
+        cells = [[cell.strip() for cell in line[1:-1].split("|")] for line in table_lines]
+
+        header_row = "---" in cells[1] if len(cells) > 1 else False
+
+        table = etree.SubElement(parent, "table", {"header": "yes" if header_row else "no"})
+        for rownum, row in enumerate(cells):
+            if rownum == 1 and header_row:
+                continue
+            tr = etree.SubElement(table, "tr")
+            for cell in row:
+                el = etree.SubElement(tr, "td")
+                el.text = cell
 
         return True
 

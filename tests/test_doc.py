@@ -301,6 +301,7 @@ def test_simple_table(glib):
         | field 1 | field 2 |
         | field 3 | long field 4 |
 
+        Lorum ipsum
         """
     )
 
@@ -308,17 +309,17 @@ def test_simple_table(glib):
 
     assert rst == dedent(
         """\
-        +---------+--------------+
-        | field 1 | field 2      |
-        +---------+--------------+
-        | field 3 | long field 4 |
-        +---------+--------------+
+        .. list-table::
 
-        """
+            * - field 1
+              - field 2
+            * - field 3
+              - long field 4
+
+        Lorum ipsum"""
     )
 
 
-@pytest.mark.xfail()
 def test_table_with_header_row(glib):
     text = dedent(
         """\
@@ -334,19 +335,18 @@ def test_table_with_header_row(glib):
 
     assert rst == dedent(
         """\
-        +----------+--------------+
-        | header 1 | header 2     |
-        +==========+==============+
-        | field 1  | field 2      |
-        +----------+--------------+
-        | field 3  | long field 4 |
-        +----------+--------------+
+        .. list-table::
+            :header-rows: 1
 
-        """
+            * - header 1
+              - header 2
+            * - field 1
+              - field 2
+            * - field 3
+              - long field 4"""
     )
 
 
-@pytest.mark.xfail()
 def test_table_with_multiline_content(glib):
     text = dedent(
         """\
@@ -355,24 +355,42 @@ def test_table_with_multiline_content(glib):
         | "none" | ![](default.png) "default" | ![](help.png) "help" |
         | ![](pointer.png) "pointer" | ![](cell_cursor.png) "cell" |
 
+        Lorum ipsum
         """
     )
 
     rst = rstify(text, gir=glib, image_base_url="http://example.com")
 
+    # +-------------------------------------------+-----------------------------------------------+
+    # |                                           |                                               |
+    # +===========================================+===============================================+
+    # | "none"                                    | .. image:: http://example.com/default.png     |
+    # |                                           | "default"                                     |
+    # +-------------------------------------------+-----------------------------------------------+
+    # | .. image:: http://example.com/pointer.png | .. image:: http://example.com/cell_cursor.png |
+    # | "pointer"                                 | "cell"                                        |
+    # +-------------------------------------------+-----------------------------------------------+
+
     assert rst == dedent(
         """\
-        +-------------------------------------------+-----------------------------------------------+
-        |                                           |                                               |
-        +===========================================+===============================================+
-        | "none"                                    | .. image:: http://example.com/default.png     |
-        |                                           | "default"                                     |
-        +-------------------------------------------+-----------------------------------------------+
-        | .. image:: http://example.com/pointer.png | .. image:: http://example.com/cell_cursor.png |
-        | "pointer"                                 | "cell"                                        |
-        +-------------------------------------------+-----------------------------------------------+
+        .. list-table::
+            :header-rows: 1
 
-        """
+            * -
+              -
+              -
+              -
+            * - "none"
+              - .. image:: http://example.com/default.png
+                "default"
+              - .. image:: http://example.com/help.png
+                "help"
+            * - .. image:: http://example.com/pointer.png
+                "pointer"
+              - .. image:: http://example.com/cell_cursor.png
+                "cell"
+
+        Lorum ipsum"""
     )
 
 
