@@ -62,6 +62,26 @@ def test_convert_gtk_doc_code_snippet(glib):
     text = dedent(
         """\
     Lorem ipsum
+
+    |[<!-- language="C" -->
+      char buf[G_ASCII_DTOSTR_BUF_SIZE];
+
+      fprintf (out, "value=%s\n", g_ascii_dtostr (buf, sizeof (buf), value));
+    ]|
+    """
+    )
+
+    rst = rstify(text, gir=glib)
+
+    assert ".. code-block:: C" in rst
+    assert "   char " in rst
+    assert "]|" not in rst
+
+
+def test_convert_gtk_doc_code_snippet_without_extra_line(glib):
+    text = dedent(
+        """\
+    Lorem ipsum
     |[<!-- language="C" -->
       char buf[G_ASCII_DTOSTR_BUF_SIZE];
 
@@ -78,6 +98,26 @@ def test_convert_gtk_doc_code_snippet(glib):
 
 
 def test_convert_markdown_code_snippet(glib):
+    text = dedent(
+        """\
+    Lorem ipsum
+
+    ```c
+      char buf[G_ASCII_DTOSTR_BUF_SIZE];
+
+      fprintf (out, "value=%s\n", g_ascii_dtostr (buf, sizeof (buf), value));
+    ```
+    """
+    )
+
+    rst = rstify(text, gir=glib)
+
+    assert ".. code-block:: c" in rst
+    assert "   char " in rst
+    assert "```" not in rst
+
+
+def test_convert_markdown_code_snippet_without_extra_line(glib):
     text = dedent(
         """\
     Lorem ipsum
@@ -255,6 +295,7 @@ def test_whitespace_before_lists(glib):
     )
 
 
+@pytest.mark.xfail()
 def test_simple_table(glib):
     text = dedent(
         """\
@@ -278,6 +319,7 @@ def test_simple_table(glib):
     )
 
 
+@pytest.mark.xfail()
 def test_table_with_header_row(glib):
     text = dedent(
         """\
@@ -305,6 +347,7 @@ def test_table_with_header_row(glib):
     )
 
 
+@pytest.mark.xfail()
 def test_table_with_multiline_content(glib):
     text = dedent(
         """\

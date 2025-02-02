@@ -21,7 +21,8 @@ from functools import partial
 import markdown
 import markdown.blockprocessors
 import markdown.inlinepatterns
-
+import markdown.preprocessors
+import markdown.util
 
 log = logging.getLogger(__name__)
 
@@ -31,9 +32,7 @@ def rstify(text, gir, *, image_base_url=""):
     if not text:
         return ""
 
-    return GtkDocMarkdown(
-        partial(to_rst, image_base_url=image_base_url), GtkDocExtension(gir), "fenced_code"
-    ).convert(text)
+    return GtkDocMarkdown(partial(to_rst, image_base_url=image_base_url), GtkDocExtension(gir)).convert(text)
 
 
 def strip_none(iterable):
@@ -75,8 +74,12 @@ def to_rst(element, image_base_url):
                 case "blockquote":
                     yield textwrap.indent(to_rst(el, image_base_url), "    ")
                 case "pre":
-                    yield "\n.. code-block::\n    :dedent:\n"
-                    yield textwrap.indent(to_rst(el, image_base_url), "    ")
+                    if lang := el.attrib.get("language", ""):
+                        yield f"\n.. code-block:: {lang}\n    :dedent:\n"
+                    else:
+                        yield "\n.. code-block::\n    :dedent:\n"
+                    for t in el.itertext():
+                        yield textwrap.indent(t, "    ")
                 case "code":
                     yield "``"
                     yield el.text
@@ -146,10 +149,14 @@ class GtkDocExtension(markdown.Extension):
         self.gir = gir
 
     def extendMarkdown(self, md):
+        # Ensure code blocks start with a blank line
+        md.preprocessors.register(CodeBlockPreprocessor(md), "pre_code_block", 50)
+
         # We want a space after the hash, so we can distinguish between a C type and a header
         markdown.blockprocessors.HashHeaderProcessor.RE = re.compile(
             r"(?:^|\n)(?P<level>#{1,6}) (?P<header>(?:\\.|[^\\])*?)#*(?:\n|$)"
         )
+        md.parser.blockprocessors.register(CodeBlockProcessor(md.parser), "code_block", 120)
         md.parser.blockprocessors.register(PictureProcessor(md.parser), "picture", 80)
 
         LINK_RE = r"((?:[Ff]|[Hh][Tt])[Tt][Pp][Ss]?://[\w+\.\?=#-]*)"  # link (`http://www.example.com`)
@@ -220,6 +227,64 @@ class PictureProcessor(markdown.blockprocessors.BlockProcessor):
         e.tail = "\n"
 
         return True
+
+
+class CodeBlockPreprocessor(markdown.preprocessors.Preprocessor):
+    def run(self, lines: list[str]) -> list[str]:
+        def insert_blank_lines_before_code_blocks(lines):
+            for line in lines:
+                if line.strip().startswith("```") or line.strip().startswith("|["):
+                    yield ""
+                yield line
+
+        a = list(insert_blank_lines_before_code_blocks(lines))
+        return a
+
+
+class CodeBlockProcessor(markdown.blockprocessors.BlockProcessor):
+    def test(self, _parent: etree.Element, block: str) -> bool:
+        return block.strip().startswith("```") or block.strip().startswith("|[")
+
+    def run(self, parent: etree.Element, blocks: list[str]) -> bool | None:
+        code_block = []
+        lang = ""
+        in_code = ""
+        while 1:
+            block = blocks.pop(0)
+            if not in_code and block.lstrip().startswith("```"):
+                lines = block.lstrip().split("\n")
+                lang = lines[0].lstrip()[3:]
+                code_block.extend(lines[1:])
+                in_code = "md"
+            elif not in_code and block.lstrip().startswith("|["):
+                lines = block.lstrip().split("\n")
+                lang = re.sub(r' *\|\[ *(<!-- *language="(\w+)" *-->)?', r"\2", lines[0])
+                code_block.extend(lines[1:])
+                in_code = "gtk-doc"
+            elif in_code == "md" and block.rstrip().endswith("```"):
+                code_block.append(block.rstrip()[:-3])
+                break
+            elif in_code == "gtk-doc" and block.rstrip().endswith("]|"):
+                code_block.append(block.rstrip()[:-2])
+                break
+            elif in_code:
+                code_block.append(block)
+            else:
+                raise ValueError("Cannot find a code block in {line}")
+
+            # Add extra newline after every block
+            code_block.append("")
+
+        pre = etree.SubElement(parent, "pre", {"language": lang})
+        code = etree.SubElement(pre, "code")
+        code.text = markdown.util.AtomicString("\n".join(code_block))
+        pre.tail = "\n"
+
+        return True
+
+
+def code_snippets(lines):
+    """Deal with markdown and gtk-doc style code blocks."""
 
 
 class ReferenceProcessor(markdown.inlinepatterns.InlineProcessor):
@@ -431,28 +496,3 @@ class RemoveMarkdownTagsProcessor(markdown.inlinepatterns.InlineProcessor):
 
 def s_after_inline_code(lines):
     return (re.sub(r"(?<=`)s(?=\W|$)", r"'s", line) for line in lines)
-
-
-def code_snippets(lines):
-    """Deal with markdown and gtk-doc style code blocks."""
-    in_code = False
-    for line in lines:
-        if not in_code and line.lstrip().startswith("```"):
-            lang = line.lstrip()[3:]
-            yield f"\n.. code-block:: {lang}\n   :dedent:\n"
-            in_code = "md"
-        elif not in_code and re.search(r"^ *\|\[", line):
-            yield re.sub(
-                r' *\|\[ *(<!-- *language="(\w+)" *-->)?', r"\n.. code-block:: \2\n   :dedent:\n", line
-            )
-            in_code = "gtk-doc"
-        elif in_code == "md" and line.lstrip() == "```":
-            yield ""
-            in_code = False
-        elif in_code == "gtk-doc" and re.search(r"^ *\]\|", line):
-            yield ""
-            in_code = False
-        elif in_code:
-            yield f"   {line}"
-        else:
-            yield line
