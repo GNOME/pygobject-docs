@@ -295,7 +295,6 @@ def test_whitespace_before_lists(glib):
     )
 
 
-@pytest.mark.xfail()
 def test_simple_table(glib):
     text = dedent(
         """\

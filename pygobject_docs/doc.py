@@ -283,10 +283,6 @@ class CodeBlockProcessor(markdown.blockprocessors.BlockProcessor):
         return True
 
 
-def code_snippets(lines):
-    """Deal with markdown and gtk-doc style code blocks."""
-
-
 class ReferenceProcessor(markdown.inlinepatterns.InlineProcessor):
     """[class@Widget.Foo] -> :class:`Widget.Foo`"""
 
@@ -324,9 +320,6 @@ class SignalOrPropertyProcessor(markdown.inlinepatterns.InlineProcessor):
         el.attrib["type"] = f"{package}.{m.group(1)}.{self.section}.{m.group(2).replace('-', '_')}"
 
         return el, m.start(0), m.end(0)
-
-
-# (re.compile(r"\[`*(?:alias|callback)@(.+?)`*\]"), r"``\1``"),
 
 
 class ParameterProcessor(markdown.inlinepatterns.InlineProcessor):
@@ -492,7 +485,3 @@ class RemoveMarkdownTagsProcessor(markdown.inlinepatterns.InlineProcessor):
         el = etree.Element("span")
         el.text = ""
         return el, m.start(0), m.end(0)
-
-
-def s_after_inline_code(lines):
-    return (re.sub(r"(?<=`)s(?=\W|$)", r"'s", line) for line in lines)
