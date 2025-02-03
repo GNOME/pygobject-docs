@@ -183,6 +183,7 @@ class GtkDocMarkdown(markdown.Markdown):
         super().__init__(extensions=extensions)
         self.stripTopLevelTags = False
         self.preprocessors.deregister("html_block")
+        self.parser.blockprocessors.deregister("code")
         self.inlinePatterns.deregister("html")
         self.postprocessors.deregister("amp_substitute")
         self.postprocessors.deregister("raw_html")
