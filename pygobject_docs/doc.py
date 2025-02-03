@@ -11,6 +11,7 @@ See also https://gitlab.gnome.org/GNOME/gi-docgen/-/blob/main/gidocgen/utils.py
 
 """
 
+import html
 import logging
 import re
 import textwrap
@@ -22,6 +23,7 @@ import markdown
 import markdown.blockprocessors
 import markdown.inlinepatterns
 import markdown.preprocessors
+import markdown.treeprocessors
 import markdown.util
 
 log = logging.getLogger(__name__)
@@ -85,7 +87,7 @@ def to_rst(element, image_base_url):
                         yield textwrap.indent(t, "    ")
                 case "code":
                     yield "``"
-                    yield el.text
+                    yield html.unescape(el.text or "")
                     yield "``"
                 case "em":
                     yield "*"
@@ -180,6 +182,7 @@ class GtkDocMarkdown(markdown.Markdown):
     def __init__(self, serializer, *extensions):
         super().__init__(extensions=extensions)
         self.stripTopLevelTags = False
+        self.preprocessors.deregister("html_block")
         self.inlinePatterns.deregister("html")
         self.postprocessors.deregister("amp_substitute")
         self.postprocessors.deregister("raw_html")
@@ -207,6 +210,8 @@ class GtkDocExtension(markdown.Extension):
         md.parser.blockprocessors.register(CodeBlockProcessor(md.parser), "code_block", 120)
         md.parser.blockprocessors.register(TableProcessor(md.parser), "table", 120)
         md.parser.blockprocessors.register(PictureProcessor(md.parser), "picture", 80)
+
+        md.treeprocessors.register(AsteriskTreeprocessor(md), "asterisk", 10)
 
         # Do not do this, since it breaks links in link text
         # LINK_RE = r"((?:[Ff]|[Hh][Tt])[Tt][Pp][Ss]?://[\w+\.\?=#-]*)"  # link (`http://www.example.com`)
@@ -243,15 +248,17 @@ class GtkDocExtension(markdown.Extension):
             250,
         )
 
+        # This pattern should take precedence over strong and emphasized text, but after inline code
+        md.inlinePatterns.register(
+            ParameterProcessor(ParameterProcessor.PATTERN, md), ParameterProcessor.TAG, 100
+        )
+
         # Low prio parsers
         md.inlinePatterns.register(
             CSymbolProcessor(CSymbolProcessor.PATTERN, md, self.gir), CSymbolProcessor.TAG, 40
         )
         md.inlinePatterns.register(
             CTypeProcessor(CTypeProcessor.PATTERN, md, self.gir), CTypeProcessor.TAG, 40
-        )
-        md.inlinePatterns.register(
-            ParameterProcessor(ParameterProcessor.PATTERN, md), ParameterProcessor.TAG, 40
         )
         md.inlinePatterns.register(
             CodeAbbreviationProcessor(CodeAbbreviationProcessor.PATTERN, md),
@@ -373,6 +380,17 @@ class TableProcessor(markdown.blockprocessors.BlockProcessor):
         return True
 
 
+class AsteriskTreeprocessor(markdown.treeprocessors.Treeprocessor):
+    """Escape `*` symbols, 'cause they're used to emphasize text."""
+
+    def run(self, root: etree.Element) -> None:
+        for el in root.iter():
+            if el.text and not isinstance(el.text, markdown.util.AtomicString) and "*" in el.text:
+                el.text = el.text.replace("*", "\\*")
+            if el.tail and not isinstance(el.text, markdown.util.AtomicString) and "*" in el.tail:
+                el.tail = el.tail.replace("*", "\\*")
+
+
 class ReferenceProcessor(markdown.inlinepatterns.InlineProcessor):
     """[class@Widget.Foo] -> :class:`Widget.Foo`"""
 
@@ -415,11 +433,12 @@ class SignalOrPropertyProcessor(markdown.inlinepatterns.InlineProcessor):
 class ParameterProcessor(markdown.inlinepatterns.InlineProcessor):
     """@parameter -> ``parameter``"""
 
-    PATTERN = r"@(\w+)"
+    PATTERN = r"(\*)?@(\w+)"
     TAG = "param"
 
     def handleMatch(self, m, data):
-        el = etree.Element(self.TAG, {"name": m.group(1)})
+        # NB. Preceding start (pointer) is dropped
+        el = etree.Element(self.TAG, {"name": m.group(2)})
         return el, m.start(0), m.end(0)
 
 

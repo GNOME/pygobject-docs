@@ -17,6 +17,10 @@ def glib():
         ["`class`", "``class``"],
         ["`char*[]`", "``char*[]``"],
         ["`func()`", "``func()``"],
+        [
+            "`gtk_list_store_insert_with_values (list_store, iter, position...)`",
+            "``gtk_list_store_insert_with_values (list_store, iter, position...)``",
+        ],
         ["`cls::prop`", "``cls::prop``"],
         ["`interface`s", "``interface``\\s"],
         ["test `Class` and `Interface`s.", "test ``Class`` and ``Interface``\\s."],
@@ -36,6 +40,7 @@ def glib():
             "[func@Gdk.GLContext.get_current]; [func@Gdk.GLContext.clear_current].",
             ":obj:`~gi.repository.Gdk.GLContext.get_current`\\; :obj:`~gi.repository.Gdk.GLContext.clear_current`\\.",
         ],
+        ["The toplevel element is `<interface>`.", "The toplevel element is ``<interface>``\\."],
     ],
 )
 def test_markdown_inline_code(glib, text, expected):
@@ -148,6 +153,38 @@ def test_convert_markdown_code_snippet_without_extra_line(glib):
     assert "```" not in rst
 
 
+def test_convert_xml_code_block(glib):
+    text = dedent(
+        """\
+        ```xml
+        <?xml version="1.0" encoding="UTF-8">
+        <interface domain="your-app">
+        ...
+        </interface>
+        ```
+
+        Lorum ipsum
+        """
+    )
+
+    expected = dedent(
+        """\
+        .. code-block:: xml
+            :dedent:
+
+            <?xml version="1.0" encoding="UTF-8">
+            <interface domain="your-app">
+            ...
+            </interface>
+
+        Lorum ipsum"""
+    )
+
+    rst = rstify(text, gir=glib)
+
+    assert dedent(rst) == expected
+
+
 def test_convert_css_code_block(glib):
     text = dedent(
         """\
@@ -257,6 +294,14 @@ def test_paragraph(glib):
 
 def test_parameters(glib):
     text = "Lorem @ipsum et amilet"
+
+    rst = rstify(text, gir=glib)
+
+    assert rst == "Lorem ``ipsum`` et amilet"
+
+
+def test_parameter_remove_pointer(glib):
+    text = "Lorem *@ipsum et amilet"
 
     rst = rstify(text, gir=glib)
 
@@ -514,3 +559,11 @@ def test_docbook_literal(glib):
 
     assert "``PCRE2_UTF``\\." in rst
     assert "literal" not in rst
+
+
+def test_escape_asterisk(glib):
+    text = "- A *pointer."
+
+    rst = rstify(text, gir=glib)
+
+    assert rst == "* A \\*pointer."
