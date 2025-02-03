@@ -18,11 +18,23 @@ def glib():
         ["`char*[]`", "``char*[]``"],
         ["`func()`", "``func()``"],
         ["`cls::prop`", "``cls::prop``"],
-        ["`interface`s", "``interface``s"],
-        ["test `Class` and `Interface`s.", "test ``Class`` and ``Interface``s."],
+        ["`interface`s", "``interface``\\s"],
+        ["test `Class` and `Interface`s.", "test ``Class`` and ``Interface``\\s."],
         [
             "[`DBusActivatable` interface](https://some-url#dbus)",
-            "```DBusActivatable`` interface <https://some-url#dbus>`_",
+            "```DBusActivatable`` interface <https://some-url#dbus>`__",
+        ],
+        [
+            "A link [https://uefi.org/pnp_id_list](https://uefi.org/pnp_id_list).",
+            "A link `https://uefi.org/pnp_id_list <https://uefi.org/pnp_id_list>`__\\.",
+        ],
+        [
+            "You can check which `GdkGLContext` is the current one by using [func@Gdk.GLContext.get_current]; lorum",
+            "You can check which ``GdkGLContext`` is the current one by using :obj:`~gi.repository.Gdk.GLContext.get_current`\\; lorum",
+        ],
+        [
+            "[func@Gdk.GLContext.get_current]; [func@Gdk.GLContext.clear_current].",
+            ":obj:`~gi.repository.Gdk.GLContext.get_current`\\; :obj:`~gi.repository.Gdk.GLContext.clear_current`\\.",
         ],
     ],
 )
@@ -136,6 +148,40 @@ def test_convert_markdown_code_snippet_without_extra_line(glib):
     assert "```" not in rst
 
 
+def test_convert_css_code_block(glib):
+    text = dedent(
+        """\
+        # CSS nodes
+
+        |[<!-- language="plain" -->
+        list[.separators][.rich-list][.navigation-sidebar][.boxed-list]
+        ╰── row[.activatable]
+        ]|
+
+        `GtkListBox` uses a single CSS node named list.
+        """
+    )
+
+    expected = dedent(
+        """\
+        CSS nodes
+        --------------------------------------------------------------------------------
+
+
+        .. code-block:: plain
+            :dedent:
+
+            list[.separators][.rich-list][.navigation-sidebar][.boxed-list]
+            ╰── row[.activatable]
+
+        ``GtkListBox`` uses a single CSS node named list."""
+    )
+
+    rst = rstify(text, gir=glib)
+
+    assert dedent(rst) == expected
+
+
 def test_class_link(glib):
     text = "Lorem ipsum [class@Gtk.Builder] et amilet"
 
@@ -222,7 +268,7 @@ def test_italic_text(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert rst == "This is a func_name and *italic text*."
+    assert rst == "This is a func_name and *italic text*\\."
 
 
 def test_keyboard_shortcut(glib):
@@ -265,7 +311,7 @@ def test_code_abbreviation(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert rst == "This is a ``func_name_`` and *italic text*."
+    assert rst == "This is a ``func_name_`` and *italic text*\\."
 
 
 def test_code_abbreviation_with_ellipsis(glib):
@@ -273,7 +319,7 @@ def test_code_abbreviation_with_ellipsis(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert rst == "the ``g_convert_``… functions"
+    assert rst == "the ``g_convert_``\\… functions"
 
 
 def test_whitespace_before_lists(glib):
@@ -371,7 +417,8 @@ def test_table_with_multiline_content(glib):
     # | "pointer"                                 | "cell"                                        |
     # +-------------------------------------------+-----------------------------------------------+
 
-    assert rst == dedent(
+    # Dedent the rst output, to shrink lines that only contain spaces.
+    assert dedent(rst) == dedent(
         """\
         .. list-table::
             :header-rows: 1
@@ -382,12 +429,16 @@ def test_table_with_multiline_content(glib):
               -
             * - "none"
               - .. image:: http://example.com/default.png
+
                 "default"
               - .. image:: http://example.com/help.png
+
                 "help"
             * - .. image:: http://example.com/pointer.png
+
                 "pointer"
               - .. image:: http://example.com/cell_cursor.png
+
                 "cell"
 
         Lorum ipsum"""
@@ -409,8 +460,8 @@ def test_remove_tags(glib):
         ["a #gint32 value", "a :obj:`int` value"],
         ["#gint32 value", ":obj:`int` value"],
         [
-            "In a url http://example.com#section-123",
-            "In a url `http://example.com#section-123 <http://example.com#section-123>`_",
+            "In a url <http://example.com#section-123>",
+            "In a url `http://example.com#section-123 <http://example.com#section-123>`__",
         ],
         [
             "If we were to use g_variant_get_child_value()",
@@ -461,5 +512,5 @@ def test_docbook_literal(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert "``PCRE2_UTF``." in rst
+    assert "``PCRE2_UTF``\\." in rst
     assert "literal" not in rst

@@ -56,7 +56,7 @@ def to_rst(element, image_base_url):
                 case "h1" | "h2" | "h3":
                     yield el.text
                     yield "\n"
-                    yield "-" * 20
+                    yield "-" * 80
                     yield "\n"
                 case "p":
                     if el.text:
@@ -68,9 +68,9 @@ def to_rst(element, image_base_url):
                     if el.text:
                         yield el.text
                     yield from _to_rst(el)
-                    yield f" <{el.attrib['href']}>`_"
+                    yield f" <{el.attrib['href']}>`__"
                 case "img":
-                    yield f".. image:: {image_base_url}/{el.attrib['src']}\n"
+                    yield f".. image:: {image_base_url}/{el.attrib['src']}\n\n"
                     if el.tail:
                         yield el.tail.lstrip()
                     continue
@@ -78,9 +78,9 @@ def to_rst(element, image_base_url):
                     yield textwrap.indent(to_rst(el, image_base_url), "    ")
                 case "pre":
                     if lang := el.attrib.get("language", ""):
-                        yield f"\n.. code-block:: {lang}\n    :dedent:\n"
+                        yield f"\n.. code-block:: {lang}\n    :dedent:\n\n"
                     else:
-                        yield "\n.. code-block::\n    :dedent:\n"
+                        yield "\n.. code-block::\n    :dedent:\n\n"
                     for t in el.itertext():
                         yield textwrap.indent(t, "    ")
                 case "code":
@@ -90,22 +90,23 @@ def to_rst(element, image_base_url):
                 case "em":
                     yield "*"
                     yield el.text
+                    yield from _to_rst(el)
                     yield "*"
                 case "strong":
                     yield "**"
                     yield el.text
+                    yield from _to_rst(el)
                     yield "**"
                 case "li":
-                    yield "* "
-                    yield el.text
-                    yield from _to_rst(el)
+                    text = textwrap.indent((el.text or "") + "".join(strip_none(_to_rst(el))), "  ")
+                    text = "*" + text[1:]
+                    yield text
                 case "table":
                     yield from _to_rst_table(el)
                 case "codeabbr" | "literal":
                     yield f"``{el.text}``"
                 case "span":
-                    if el.text:
-                        yield el.text
+                    yield el.text
                     yield from _to_rst(el)
                 case "ol":
                     yield from _to_rst(el)
@@ -128,6 +129,12 @@ def to_rst(element, image_base_url):
                     raise ValueError(f"Unknown tag {etree.tostring(el).decode('utf-8')}")
 
             if el.tail:
+                if (
+                    el.tag in ("a", "param", "code", "em", "strong", "codeabbr", "literal", "kbd", "ref")
+                    and not el.tail[0].isspace()
+                ):
+                    yield "\\"
+
                 yield el.tail
 
     def _to_rst_table(element):
@@ -150,14 +157,13 @@ def to_rst(element, image_base_url):
                         match cell.tag:
                             case "td":
                                 lines = ((cell.text or "") + "".join(strip_none(_to_rst(cell)))).split("\n")
-                                print("lines", lines)
                                 if lines:
-                                    yield ("    * - " if first else "      - ")
-                                    yield lines.pop(0).lstrip()
+                                    yield (
+                                        ("    * - " if first else "      - ") + lines.pop(0).lstrip()
+                                    ).rstrip()
                                     yield "\n"
                                 while lines:
-                                    yield " " * 8
-                                    yield lines.pop(0)
+                                    yield ((" " * 8) + lines.pop(0)).rstrip()
                                     yield "\n"
                             case _:
                                 raise ValueError(
@@ -202,10 +208,11 @@ class GtkDocExtension(markdown.Extension):
         md.parser.blockprocessors.register(TableProcessor(md.parser), "table", 120)
         md.parser.blockprocessors.register(PictureProcessor(md.parser), "picture", 80)
 
-        LINK_RE = r"((?:[Ff]|[Hh][Tt])[Tt][Pp][Ss]?://[\w+\.\?=#-]*)"  # link (`http://www.example.com`)
-        md.inlinePatterns.register(
-            markdown.inlinepatterns.AutolinkInlineProcessor(LINK_RE, md), "autolink2", 110
-        )
+        # Do not do this, since it breaks links in link text
+        # LINK_RE = r"((?:[Ff]|[Hh][Tt])[Tt][Pp][Ss]?://[\w+\.\?=#-]*)"  # link (`http://www.example.com`)
+        # md.inlinePatterns.register(
+        #     markdown.inlinepatterns.AutolinkInlineProcessor(LINK_RE, md), "autolink2", 110
+        # )
 
         md.inlinePatterns.register(
             ReferenceProcessor(ReferenceProcessor.PATTERN, md, self.gir), ReferenceProcessor.TAG, 250
@@ -273,12 +280,23 @@ class PictureProcessor(markdown.blockprocessors.BlockProcessor):
 
 
 class CodeBlockPreprocessor(markdown.preprocessors.Preprocessor):
+    """Add some extra space around code blocks.
+
+    This way the parser can more easily process the code block.
+    """
+
     def run(self, lines: list[str]) -> list[str]:
         def insert_blank_lines_before_code_blocks(lines):
             for line in lines:
-                if line.strip().startswith("```") or line.strip().startswith("|["):
+                if (
+                    line.strip().startswith("```")
+                    or line.strip().startswith("|[")
+                    or line.strip().startswith("]|")
+                ):
                     yield ""
                 yield line
+                if line.strip().endswith("]|"):
+                    yield ""
 
         a = list(insert_blank_lines_before_code_blocks(lines))
         return a
@@ -292,7 +310,7 @@ class CodeBlockProcessor(markdown.blockprocessors.BlockProcessor):
         code_block = []
         lang = ""
         in_code = ""
-        while 1:
+        while blocks:
             block = blocks.pop(0)
             if not in_code and block.lstrip().startswith("```"):
                 lines = block.lstrip().split("\n")
@@ -358,7 +376,7 @@ class TableProcessor(markdown.blockprocessors.BlockProcessor):
 class ReferenceProcessor(markdown.inlinepatterns.InlineProcessor):
     """[class@Widget.Foo] -> :class:`Widget.Foo`"""
 
-    PATTERN = r"\[(?:ctor|class|const|enum|error|flags|func|id|iface|method|struct|type|vfunc)@(.+)\]"
+    PATTERN = r"\[(?:ctor|class|const|enum|error|flags|func|id|iface|method|struct|type|vfunc)@(.+?)\]"
     TAG = "ref"
 
     def __init__(self, pattern, md, gir):
@@ -467,7 +485,8 @@ class CConstantProcessor(markdown.inlinepatterns.InlineProcessor):
         elif s := self.gir.c_const(g):
             el.attrib["const"] = f"gi.repository.{s}"
         else:
-            el.attrib["raw"] = f"``{g}``"
+            return None, None, None
+            # el.attrib["raw"] = f"``{g}``"
 
         return el, m.start(0), m.end(0)
 
