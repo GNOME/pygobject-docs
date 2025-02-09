@@ -100,9 +100,7 @@ def to_rst(element, image_base_url):
                     yield from _to_rst(el)
                     yield "**"
                 case "li":
-                    text = textwrap.indent((el.text or "") + "".join(strip_none(_to_rst(el))), "  ")
-                    text = "*" + text[1:]
-                    yield text
+                    yield "- " + (el.text or "").lstrip() + "".join(strip_none(_to_rst(el)))
                 case "table":
                     yield from _to_rst_table(el)
                 case "codeabbr" | "literal":
@@ -254,17 +252,17 @@ class GtkDocExtension(markdown.Extension):
             ParameterProcessor(ParameterProcessor.PATTERN, md), ParameterProcessor.TAG, 100
         )
 
-        # Low prio parsers
+        # Low prio parsers NB. em/strong has prio 60
         md.inlinePatterns.register(
-            CSymbolProcessor(CSymbolProcessor.PATTERN, md, self.gir), CSymbolProcessor.TAG, 40
+            CSymbolProcessor(CSymbolProcessor.PATTERN, md, self.gir), CSymbolProcessor.TAG, 67
         )
         md.inlinePatterns.register(
-            CTypeProcessor(CTypeProcessor.PATTERN, md, self.gir), CTypeProcessor.TAG, 40
+            CTypeProcessor(CTypeProcessor.PATTERN, md, self.gir), CTypeProcessor.TAG, 66
         )
         md.inlinePatterns.register(
             CodeAbbreviationProcessor(CodeAbbreviationProcessor.PATTERN, md),
             CodeAbbreviationProcessor.TAG,
-            40,
+            65,
         )
 
 
@@ -524,7 +522,7 @@ class CSymbolProcessor(markdown.inlinepatterns.InlineProcessor):
     def handleMatch(self, m, data):
         el = etree.Element(self.TAG)
         g = m.group(1)
-        el.text = f"{g}()"
+        el.text = markdown.util.AtomicString(f"{g}()")
         if s := self.gir.c_symbol(g):
             el.attrib["func"] = f"gi.repository.{s}"
 
@@ -557,14 +555,14 @@ class CTypeProcessor(markdown.inlinepatterns.InlineProcessor):
 
 
 class CodeAbbreviationProcessor(markdown.inlinepatterns.InlineProcessor):
-    """func_name_ -> ``func_name_``"""
+    """func_name_ -> ``func_name_``; func_name_*() -> ``func_name_*()``"""
 
-    PATTERN = r"(?:(?<!\w)|^)(\w+_[\.]*)(?!\w)"
+    PATTERN = r"(?:(?<!\w)|^)(\w+_\w+_(\*\(\))?)(?!\w)"
     TAG = "codeabbr"
 
     def handleMatch(self, m, data):
         el = etree.Element(self.TAG)
-        el.text = m.group(1)
+        el.text = markdown.util.AtomicString(m.group(1))
         return el, m.start(0), m.end(0)
 
 

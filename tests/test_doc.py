@@ -382,7 +382,48 @@ def test_whitespace_before_lists(glib):
         """\
         line of text.
 
-        * list item."""
+        - list item."""
+    )
+
+
+def test_multi_line_list_item(glib):
+    text = dedent(
+        """\
+        - line one
+          line two
+        """
+    )
+
+    rst = rstify(text, gir=glib)
+
+    assert rst == dedent(
+        """\
+        - line one
+          line two"""
+    )
+
+
+def test_multi_line_list_item_with_paragraphs(glib):
+    text = dedent(
+        """\
+        - item one
+          line two
+
+          paragraph two
+        - item two
+        """
+    )
+
+    rst = rstify(text, gir=glib)
+
+    assert rst == dedent(
+        """\
+        - item one
+          line two
+
+
+        paragraph two
+        - item two"""
     )
 
 
@@ -514,6 +555,7 @@ def test_remove_tags(glib):
         ],
         ["Good old function g_access()", "Good old function :func:`~gi.repository.GLib.access`"],
         [r"%G_SPAWN_ERROR_TOO_BIG", ":const:`~gi.repository.GLib.SpawnError.TOO_BIG`"],
+        ["A function_with_*() function", "A ``function_with_*()`` function"],
     ],
 )
 def test_c_symbol_to_python(glib, text, expected):
@@ -566,4 +608,4 @@ def test_escape_asterisk(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert rst == "* A \\*pointer."
+    assert rst == "- A \\*pointer."
