@@ -82,7 +82,12 @@ def signature(subject: Callable, bound=False) -> Signature:
     if fun := getattr(overrides, _override_key(subject), None):
         return sphinx_signature(fun)
 
-    return sphinx_signature(subject, bound_method=bound)
+    try:
+        return sphinx_signature(subject, bound_method=bound)
+    except ValueError:
+        # workaround for type parameter defined twice
+        log.error(f"Cannot convert item {subject}", exc_info=True)
+        return sphinx_signature(lambda: None)
 
 
 def _override_key(subject):
