@@ -36,6 +36,9 @@ html_theme = "pydata_sphinx_theme"
 html_show_copyright = False
 html_title = project
 
+# Ensure mirrors and forks point to one canonical source
+html_baseurl = "https://api.pygobject.gnome.org/"
+
 html_theme_options = {
     "globaltoc_maxdepth": 2,
     "navigation_depth": 3,
