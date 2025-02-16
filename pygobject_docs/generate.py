@@ -5,6 +5,8 @@ Usage:
     python -m pygobject_docs.generate GObject 2.0
 """
 
+import argparse
+import dataclasses
 import importlib
 import logging
 import sys
@@ -14,6 +16,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import gi
+import sphinx.cmd.make_mode
 from jinja2 import Environment, PackageLoader
 from sphinx.util.inspect import stringify_annotation
 from sphinx.util.docstrings import prepare_docstring
@@ -470,20 +473,58 @@ def generate(namespace, version, base_path):
     generate_index(namespace, version, out_path)
 
 
-def generate_all(libraries: list[str]):
+def generate_all(out_path: Path, libraries: list[str]):
     for lib in libraries:
         namespace, version = lib.split("-")
         log.info("Generating pages for %s", namespace)
-        base_path = Path("build/source")
-        generate(namespace, version, base_path)
+        generate(namespace, version, out_path)
 
-    generate_top_index(libraries, base_path)
+    generate_top_index(libraries, out_path)
+
+
+def sphinx_build_docs(source_path: Path, base_path: Path):
+    return sphinx.cmd.make_mode.run_make_mode(
+        ["html", str(source_path), str(base_path), "-c", "pygobject_docs"]
+    )
+
+
+@dataclasses.dataclass
+class Args:
+    log_level: str
+    build: bool
+    libraries: list[str]
+
+
+def parse_args(args) -> Args:
+    parser = argparse.ArgumentParser(description="GNOME Python API documentation generator")
+
+    parser.add_argument(
+        "--log-level",
+        "-l",
+        default="info",
+        choices=["debug", "info", "warning", "error"],
+        help="set log level (default: info)",
+    )
+    parser.add_argument("--build", "-b", default=False, help="build generated docs with Sphinx (default: no)")
+    parser.add_argument("libraries", nargs="*", help="library namespaces to generate documentation for")
+
+    return Args(**vars(parser.parse_args(args)))
 
 
 if __name__ == "__main__":
+    args = parse_args(sys.argv[1:])
+
+    build_path = Path("build")
+    source_path = build_path / "source"
+
     logging.basicConfig(
-        format="%(asctime)s %(levelname)s:%(message)s", datefmt="%H:%M:%S", level=logging.INFO
+        format="%(asctime)s %(levelname)s:%(message)s",
+        datefmt="%H:%M:%S",
+        level=getattr(logging, args.log_level.upper()),
     )
 
     patch_gi_overrides()
-    generate_all(sys.argv[1:])
+    generate_all(source_path, args.libraries)
+
+    if args.build:
+        sphinx_build_docs(source_path, build_path)
