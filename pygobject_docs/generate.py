@@ -28,6 +28,7 @@ from pygobject_docs.inspect import (
     custom_docstring,
     is_classmethod,
     signature,
+    vfunc_signature,
     patch_gi_overrides,
     is_ref_unref_copy_or_steal_function,
 )
@@ -387,7 +388,7 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             virtual_methods=[
                 (
                     f"do_{info.get_name()}",
-                    sig := signature(info),
+                    sig := vfunc_signature(info),
                     member_doc("virtual-method", info.get_name()),
                     parameter_docs("virtual-method", info.get_name(), sig),
                     member_return_doc("virtual-method", info.get_name()),
