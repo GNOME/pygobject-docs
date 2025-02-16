@@ -13,6 +13,8 @@ repos:
     rev: v1.1.1
     hooks:
       - id: mypy
+        additional_dependencies:
+          - types-Markdown
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:

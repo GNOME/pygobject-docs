@@ -14,16 +14,33 @@ def glib():
 @pytest.mark.parametrize(
     "text, expected",
     [
-        ["`class`", "``class``\n"],
-        ["`char*[]`", "``char*[]``\n"],
-        ["`func()`", "``func()``\n"],
-        ["`cls::prop`", "``cls::prop``\n"],
-        ["`interface`s", "``interface``'s\n"],
-        ["test `Class` and `Interface`s.", "test ``Class`` and ``Interface``'s.\n"],
+        ["`class`", "``class``"],
+        ["`char*[]`", "``char*[]``"],
+        ["`func()`", "``func()``"],
+        [
+            "`gtk_list_store_insert_with_values (list_store, iter, position...)`",
+            "``gtk_list_store_insert_with_values (list_store, iter, position...)``",
+        ],
+        ["`cls::prop`", "``cls::prop``"],
+        ["`interface`s", "``interface``\\s"],
+        ["test `Class` and `Interface`s.", "test ``Class`` and ``Interface``\\s."],
         [
             "[`DBusActivatable` interface](https://some-url#dbus)",
-            "```DBusActivatable`` interface <https://some-url#dbus>`_\n",
+            "```DBusActivatable`` interface <https://some-url#dbus>`__",
         ],
+        [
+            "A link [https://uefi.org/pnp_id_list](https://uefi.org/pnp_id_list).",
+            "A link `https://uefi.org/pnp_id_list <https://uefi.org/pnp_id_list>`__\\.",
+        ],
+        [
+            "You can check which `GdkGLContext` is the current one by using [func@Gdk.GLContext.get_current]; lorum",
+            "You can check which ``GdkGLContext`` is the current one by using :obj:`~gi.repository.Gdk.GLContext.get_current`\\; lorum",
+        ],
+        [
+            "[func@Gdk.GLContext.get_current]; [func@Gdk.GLContext.clear_current].",
+            ":obj:`~gi.repository.Gdk.GLContext.get_current`\\; :obj:`~gi.repository.Gdk.GLContext.clear_current`\\.",
+        ],
+        ["The toplevel element is `<interface>`.", "The toplevel element is ``<interface>``\\."],
     ],
 )
 def test_markdown_inline_code(glib, text, expected):
@@ -37,7 +54,7 @@ def test_convert_constant(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert rst == "Lorem :const:`True` ipsum :const:`False` :const:`None`.\n"
+    assert rst == "Lorem :const:`True` ipsum :const:`False` :const:`None`."
 
 
 def test_convert_c_constant(glib):
@@ -62,6 +79,26 @@ def test_convert_gtk_doc_code_snippet(glib):
     text = dedent(
         """\
     Lorem ipsum
+
+    |[<!-- language="C" -->
+      char buf[G_ASCII_DTOSTR_BUF_SIZE];
+
+      fprintf (out, "value=%s\n", g_ascii_dtostr (buf, sizeof (buf), value));
+    ]|
+    """
+    )
+
+    rst = rstify(text, gir=glib)
+
+    assert ".. code-block:: C" in rst
+    assert "   char " in rst
+    assert "]|" not in rst
+
+
+def test_convert_gtk_doc_code_snippet_without_extra_line(glib):
+    text = dedent(
+        """\
+    Lorem ipsum
     |[<!-- language="C" -->
       char buf[G_ASCII_DTOSTR_BUF_SIZE];
 
@@ -81,6 +118,7 @@ def test_convert_markdown_code_snippet(glib):
     text = dedent(
         """\
     Lorem ipsum
+
     ```c
       char buf[G_ASCII_DTOSTR_BUF_SIZE];
 
@@ -94,6 +132,91 @@ def test_convert_markdown_code_snippet(glib):
     assert ".. code-block:: c" in rst
     assert "   char " in rst
     assert "```" not in rst
+
+
+def test_convert_markdown_code_snippet_without_extra_line(glib):
+    text = dedent(
+        """\
+    Lorem ipsum
+    ```c
+      char buf[G_ASCII_DTOSTR_BUF_SIZE];
+
+      fprintf (out, "value=%s\n", g_ascii_dtostr (buf, sizeof (buf), value));
+    ```
+    """
+    )
+
+    rst = rstify(text, gir=glib)
+
+    assert ".. code-block:: c" in rst
+    assert "   char " in rst
+    assert "```" not in rst
+
+
+def test_convert_xml_code_block(glib):
+    text = dedent(
+        """\
+        ```xml
+        <?xml version="1.0" encoding="UTF-8">
+        <interface domain="your-app">
+        ...
+        </interface>
+        ```
+
+        Lorum ipsum
+        """
+    )
+
+    expected = dedent(
+        """\
+        .. code-block:: xml
+            :dedent:
+
+            <?xml version="1.0" encoding="UTF-8">
+            <interface domain="your-app">
+            ...
+            </interface>
+
+        Lorum ipsum"""
+    )
+
+    rst = rstify(text, gir=glib)
+
+    assert dedent(rst) == expected
+
+
+def test_convert_css_code_block(glib):
+    text = dedent(
+        """\
+        # CSS nodes
+
+        |[<!-- language="plain" -->
+        list[.separators][.rich-list][.navigation-sidebar][.boxed-list]
+        ╰── row[.activatable]
+        ]|
+
+        `GtkListBox` uses a single CSS node named list.
+        """
+    )
+
+    expected = dedent(
+        """\
+        CSS nodes
+        --------------------------------------------------------------------------------
+
+
+        .. code-block:: plain
+            :dedent:
+
+            list[.separators][.rich-list][.navigation-sidebar][.boxed-list]
+            ╰── row[.activatable]
+
+        ``GtkListBox`` uses a single CSS node named list."""
+    )
+
+    rst = rstify(text, gir=glib)
+
+    assert dedent(rst) == expected
 
 
 def test_class_link(glib):
@@ -161,12 +284,28 @@ def test_signal_link_without_namespace(glib):
     assert ":obj:`~gi.repository.GLib.TestClass.signals.signal_name`" in rst
 
 
+def test_paragraph(glib):
+    text = "Lorem ipsum\n\net amilet"
+
+    rst = rstify(text, gir=glib)
+
+    assert rst == "Lorem ipsum\n\net amilet"
+
+
 def test_parameters(glib):
     text = "Lorem @ipsum et amilet"
 
     rst = rstify(text, gir=glib)
 
-    assert rst == "Lorem ``ipsum`` et amilet\n"
+    assert rst == "Lorem ``ipsum`` et amilet"
+
+
+def test_parameter_remove_pointer(glib):
+    text = "Lorem *@ipsum et amilet"
+
+    rst = rstify(text, gir=glib)
+
+    assert rst == "Lorem ``ipsum`` et amilet"
 
 
 def test_italic_text(glib):
@@ -174,7 +313,7 @@ def test_italic_text(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert rst == "This is a func_name and *italic text*.\n"
+    assert rst == "This is a func_name and *italic text*\\."
 
 
 def test_keyboard_shortcut(glib):
@@ -217,7 +356,7 @@ def test_code_abbreviation(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert rst == "This is a ``func_name_`` and *italic text*.\n"
+    assert rst == "This is a ``func_name_`` and *italic text*\\."
 
 
 def test_code_abbreviation_with_ellipsis(glib):
@@ -225,13 +364,14 @@ def test_code_abbreviation_with_ellipsis(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert rst == "the ``g_convert_``… functions\n"
+    assert rst == "the ``g_convert_``\\… functions"
 
 
 def test_whitespace_before_lists(glib):
     text = dedent(
         """\
         line of text.
+
         - list item.
         """
     )
@@ -242,8 +382,48 @@ def test_whitespace_before_lists(glib):
         """\
         line of text.
 
-        - list item.
+        - list item."""
+    )
+
+
+def test_multi_line_list_item(glib):
+    text = dedent(
+        """\
+        - line one
+          line two
         """
+    )
+
+    rst = rstify(text, gir=glib)
+
+    assert rst == dedent(
+        """\
+        - line one
+          line two"""
+    )
+
+
+def test_multi_line_list_item_with_paragraphs(glib):
+    text = dedent(
+        """\
+        - item one
+          line two
+
+          paragraph two
+        - item two
+        """
+    )
+
+    rst = rstify(text, gir=glib)
+
+    assert rst == dedent(
+        """\
+        - item one
+          line two
+
+
+        paragraph two
+        - item two"""
     )
 
 
@@ -253,6 +433,7 @@ def test_simple_table(glib):
         | field 1 | field 2 |
         | field 3 | long field 4 |
 
+        Lorum ipsum
         """
     )
 
@@ -260,13 +441,14 @@ def test_simple_table(glib):
 
     assert rst == dedent(
         """\
-        +---------+--------------+
-        | field 1 | field 2      |
-        +---------+--------------+
-        | field 3 | long field 4 |
-        +---------+--------------+
+        .. list-table::
 
-        """
+            * - field 1
+              - field 2
+            * - field 3
+              - long field 4
+
+        Lorum ipsum"""
     )
 
 
@@ -285,15 +467,15 @@ def test_table_with_header_row(glib):
 
     assert rst == dedent(
         """\
-        +----------+--------------+
-        | header 1 | header 2     |
-        +==========+==============+
-        | field 1  | field 2      |
-        +----------+--------------+
-        | field 3  | long field 4 |
-        +----------+--------------+
+        .. list-table::
+            :header-rows: 1
 
-        """
+            * - header 1
+              - header 2
+            * - field 1
+              - field 2
+            * - field 3
+              - long field 4"""
     )
 
 
@@ -305,24 +487,47 @@ def test_table_with_multiline_content(glib):
         | "none" | ![](default.png) "default" | ![](help.png) "help" |
         | ![](pointer.png) "pointer" | ![](cell_cursor.png) "cell" |
 
+        Lorum ipsum
         """
     )
 
     rst = rstify(text, gir=glib, image_base_url="http://example.com")
 
-    assert rst == dedent(
-        """\
-        +-------------------------------------------+-----------------------------------------------+
-        |                                           |                                               |
-        +===========================================+===============================================+
-        | "none"                                    | .. image:: http://example.com/default.png     |
-        |                                           | "default"                                     |
-        +-------------------------------------------+-----------------------------------------------+
-        | .. image:: http://example.com/pointer.png | .. image:: http://example.com/cell_cursor.png |
-        | "pointer"                                 | "cell"                                        |
-        +-------------------------------------------+-----------------------------------------------+
+    # +-------------------------------------------+-----------------------------------------------+
+    # |                                           |                                               |
+    # +===========================================+===============================================+
+    # | "none"                                    | .. image:: http://example.com/default.png     |
+    # |                                           | "default"                                     |
+    # +-------------------------------------------+-----------------------------------------------+
+    # | .. image:: http://example.com/pointer.png | .. image:: http://example.com/cell_cursor.png |
+    # | "pointer"                                 | "cell"                                        |
+    # +-------------------------------------------+-----------------------------------------------+
 
-        """
+    # Dedent the rst output, to shrink lines that only contain spaces.
+    assert dedent(rst) == dedent(
+        """\
+        .. list-table::
+            :header-rows: 1
+
+            * -
+              -
+              -
+              -
+            * - "none"
+              - .. image:: http://example.com/default.png
+
+                "default"
+              - .. image:: http://example.com/help.png
+
+                "help"
+            * - .. image:: http://example.com/pointer.png
+
+                "pointer"
+              - .. image:: http://example.com/cell_cursor.png
+
+                "cell"
+
+        Lorum ipsum"""
     )
 
 
@@ -331,22 +536,26 @@ def test_remove_tags(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert rst == "I/O Priority\n"
+    assert rst == "I/O Priority"
 
 
 @pytest.mark.parametrize(
     "text, expected",
     [
-        ["This is a #GQueue", "This is a :obj:`~gi.repository.GLib.Queue`\n"],
-        ["a #gint32 value", "a :obj:`int` value\n"],
-        ["#gint32 value", ":obj:`int` value\n"],
-        ["In a url http://example.com#section-123", "In a url http://example.com#section-123\n"],
+        ["This is a #GQueue", "This is a :obj:`~gi.repository.GLib.Queue`"],
+        ["a #gint32 value", "a :obj:`int` value"],
+        ["#gint32 value", ":obj:`int` value"],
+        [
+            "In a url <http://example.com#section-123>",
+            "In a url `http://example.com#section-123 <http://example.com#section-123>`__",
+        ],
         [
             "If we were to use g_variant_get_child_value()",
-            "If we were to use :func:`~gi.repository.GLib.Variant.get_child_value`\n",
+            "If we were to use :func:`~gi.repository.GLib.Variant.get_child_value`",
         ],
-        ["Good old function g_access()", "Good old function :func:`~gi.repository.GLib.access`\n"],
-        [r"%G_SPAWN_ERROR_TOO_BIG", ":const:`~gi.repository.GLib.SpawnError.TOO_BIG`\n"],
+        ["Good old function g_access()", "Good old function :func:`~gi.repository.GLib.access`"],
+        [r"%G_SPAWN_ERROR_TOO_BIG", ":const:`~gi.repository.GLib.SpawnError.TOO_BIG`"],
+        ["A function_with_*() function", "A ``function_with_*()`` function"],
     ],
 )
 def test_c_symbol_to_python(glib, text, expected):
@@ -356,7 +565,8 @@ def test_c_symbol_to_python(glib, text, expected):
 
 
 def test_html_picture_tag(glib):
-    text = """
+    text = dedent(
+        """\
     Freeform text.
 
     <picture>
@@ -366,6 +576,7 @@ def test_html_picture_tag(glib):
 
     More freeform text.
     """
+    )
 
     rst = rstify(text, gir=glib, image_base_url="https://example.com")
 
@@ -388,5 +599,13 @@ def test_docbook_literal(glib):
 
     rst = rstify(text, gir=glib)
 
-    assert "``PCRE2_UTF``." in rst
+    assert "``PCRE2_UTF``\\." in rst
     assert "literal" not in rst
+
+
+def test_escape_asterisk(glib):
+    text = "- A *pointer."
+
+    rst = rstify(text, gir=glib)
+
+    assert rst == "- A \\*pointer."

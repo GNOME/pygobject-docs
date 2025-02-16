@@ -1,5 +1,5 @@
 import pytest
-from gi.repository import GLib, GObject
+from gi.repository import GLib, Gio, GObject
 
 from pygobject_docs.inspect import (
     custom_docstring,
@@ -136,3 +136,7 @@ def test_function_with_closure():
     sig = signature(GObject.signal_handler_find)
 
     assert sig
+
+
+def test_gio_file_stream_seek_vfunc():
+    signature(Gio.FileIOStream.do_seek)
