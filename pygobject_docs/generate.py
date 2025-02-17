@@ -446,12 +446,15 @@ def order(libraries: list[str], top: list[str]):
     return [lib for _, lib in sorted((index(lib.split("-", 1)[0]), lib) for lib in libraries)]
 
 
-def generate_top_index(libraries: list[str], out_path: Path):
+def generate_top_index(libraries: list[str], gnome_version: str, out_path: Path) -> None:
     env = jinja_env()
     template = env.get_template("top-index.j2")
 
     (out_path / "index.rst").write_text(
-        template.render(libraries=order(libraries, top=["GLib", "Gio", "GObject", "Gtk", "Gdk", "Adw"]))
+        template.render(
+            gnome_version=gnome_version,
+            libraries=order(libraries, top=["GLib", "Gio", "GObject", "Gtk", "Gdk", "Adw"]),
+        )
     )
 
     # Copy templates
@@ -474,13 +477,13 @@ def generate(namespace, version, base_path):
     generate_index(namespace, version, out_path)
 
 
-def generate_all(out_path: Path, libraries: list[str]):
+def generate_all(out_path: Path, libraries: list[str], gnome_version: str):
     for lib in libraries:
         namespace, version = lib.split("-")
         log.info("Generating pages for %s", namespace)
         generate(namespace, version, out_path)
 
-    generate_top_index(libraries, out_path)
+    generate_top_index(libraries, gnome_version, out_path)
 
 
 def sphinx_build_docs(source_path: Path, base_path: Path):
@@ -493,6 +496,7 @@ def sphinx_build_docs(source_path: Path, base_path: Path):
 class Args:
     log_level: str
     build: bool
+    gnome: str
     libraries: list[str]
 
 
@@ -506,7 +510,14 @@ def parse_args(args) -> Args:
         choices=["debug", "info", "warning", "error"],
         help="set log level (default: info)",
     )
-    parser.add_argument("--build", "-b", default=False, help="build generated docs with Sphinx (default: no)")
+    parser.add_argument(
+        "--build",
+        "-b",
+        default=False,
+        action=argparse.BooleanOptionalAction,
+        help="build generated docs with Sphinx (default: no)",
+    )
+    parser.add_argument("--gnome", "-g", default="", help="GNOME version")
     parser.add_argument("libraries", nargs="*", help="library namespaces to generate documentation for")
 
     return Args(**vars(parser.parse_args(args)))
@@ -525,7 +536,7 @@ if __name__ == "__main__":
     )
 
     patch_gi_overrides()
-    generate_all(source_path, args.libraries)
+    generate_all(source_path, args.libraries, args.gnome)
 
     if args.build:
         sphinx_build_docs(source_path, build_path)

@@ -1,6 +1,5 @@
-@media (min-width: 960px) {
-    .navbar-expand-lg .navbar-nav .dropdown-menu {
-      height: 80vh;
-      overflow-y: scroll;
-    }
+@media (min-width: 320px) {
+  .library-index > ul {
+    columns: 2;
   }
+}

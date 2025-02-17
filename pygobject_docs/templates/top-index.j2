@@ -1,5 +1,9 @@
-Welcome to GNOME Python API documentation
-==================================================
+GNOME Python API documentation
+==============================
+
+{% if gnome_version %}
+GNOME version: {{ gnome_version }}
+{% endif %}
 
 Also known as: `PyGObject <https://pygobject.gnome.org>`_ API docs.
 
@@ -13,25 +17,29 @@ The API for the PyGObject library itself (:mod:`gi`) is documented in the `PyGOb
 
 .. note::
 
-   The documentation is derived from the official C-based API's. Things such as code examples
-   are not translated to Python. In general that should not be a problem, since the mapping from
-   C to Python is pretty straightforward.
+   The documentation is derived from the official C-based API's. This means that the documentation can contain
+   C-specific wording. Code examples are not translated to Python.
+   In general that should not be a problem, since the mapping from C to Python is pretty straightforward.
 
-If you find an inconsistency in the API docs, please `create an issue <https://gitlab.gnome.org/amolenaar/pygobject-docs/-/issues>`_.
+If you find an inconsistency in the API docs, please `create an issue <https://gitlab.gnome.org/GNOME/pygobject-docs/-/issues>`_.
 
 .. toctree::
+   :class: library-index
    :maxdepth: 1
    :glob:
    :caption: Libraries
+
 
 {% for lib in libraries %}
    {{ lib }}/index
 {% endfor %}
    pycairo <https://pycairo.readthedocs.io/>
 
-.. toctree::
-   :maxdepth: 1
-   :caption: External References
 
-   PyGObject Docs <https://pygobject.gnome.org/>
-   GNOME Developer Documentation <https://developer.gnome.org/>
+.. seealso::
+
+   `PyGObject Docs <https://pygobject.gnome.org/>`__
+      Documentation about the PyGObject library, and usage.
+
+   `GNOME Developer Documentation <https://developer.gnome.org/>`__
+      Everything you need to know to build GNOME applications.
