@@ -23,7 +23,8 @@ test:
 pages:
   script:
   - ls /usr/share/gir-1.0
-  - python3 -m pygobject_docs.generate --build $(cat libraries.txt)
+  - GNOME_VERSION=$(dnf info gnome-shell | grep '^Version' | cut -f2 -d:)
+  - python3 -m pygobject_docs.generate --build --gnome "$GNOME_VERSION" $(cat libraries.txt)
   - mv build/html public
   artifacts:
     paths:
