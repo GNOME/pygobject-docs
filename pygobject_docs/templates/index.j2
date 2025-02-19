@@ -54,5 +54,9 @@ Dependencies
 ------------
 
 {% for dep in dependencies %}
-*  :doc:`{{ dep }} <{% if dep == "cairo-1.0" %}https://pycairo.readthedocs.io/{% else %}../{{ dep }}/index{% endif %}>`
+{% if dep == "cairo-1.0" %}
+* `cairo-1.0 <https://pycairo.readthedocs.io/>`__
+{% else %}
+*  :doc:`{{ dep }} ../{{ dep }}/index>`
+{% endif %}
 {% endfor%}
