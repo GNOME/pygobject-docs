@@ -13,7 +13,6 @@
   <developer-forum rdf:resource="https://discourse.gnome.org/tags/c/platform/5/python" />
   <category rdf:resource="http://api.gnome.org/doap-extensions#core" />
   <bug-database rdf:resource="https://gitlab.gnome.org/GNOME/pygobject-docs/issues/" />
-  <programming-language>C</programming-language>
   <programming-language>Python</programming-language>
   <maintainer>
     <foaf:Person>
