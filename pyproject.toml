@@ -15,8 +15,8 @@ classifiers = [
 dependencies = [
     "PyGObject @ git+https://gitlab.gnome.org/GNOME/pygobject.git@main",
     "jinja2",
-    "sphinx>7,<8",
-    "gi-docgen==2024.1",
+    "sphinx>8,<9",
+    "gi-docgen==2025.3",
     "pydata-sphinx-theme",
 ]
 dynamic = ["version"]
