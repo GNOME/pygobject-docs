@@ -78,11 +78,20 @@ def custom_docstring(subject: Callable | None) -> str | None:
     return None
 
 
-def signature(subject: Callable, bound=False) -> Signature:
+def signature(subject: Callable, bound=False, is_async=False) -> Signature:
     if fun := getattr(overrides, _override_key(subject), None):
         return sphinx_signature(fun)
 
-    return sphinx_signature(subject, bound_method=bound)
+    return (
+        async_signature(subject, bound=False) if is_async else sphinx_signature(subject, bound_method=bound)
+    )
+
+
+def async_signature(subject: Callable, bound=False) -> Signature:
+    sig = sphinx_signature(subject, bound_method=bound)
+    params = list(sig.parameters.values())[:-3]
+    finish_sig = sphinx_signature(subject.get_finish_func())  # type: ignore[attr-defined]
+    return Signature(params, return_annotation=finish_sig.return_annotation)
 
 
 def vfunc_signature(subject: Callable) -> Signature:
