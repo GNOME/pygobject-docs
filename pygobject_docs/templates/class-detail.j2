@@ -79,10 +79,14 @@ Methods
 .. class:: {{ class_name }}
    :no-index:
 
-   {% for method_name, signature, method_doc, parameters, return_doc, is_classmethod, method_depr, method_since in methods %}
+   {% for method_name, signature, method_doc, parameters, return_doc, is_classmethod, is_async, method_depr, method_since in methods %}
    .. {% if is_classmethod %}class{% endif %}method:: {{ method_name }}{{ signature }}
+      {% if is_async %}      :async:
 
+      This is the `awaitable <https://pygobject.gnome.org/guide/asynchronous.html>`_ version of :meth:`{{ method_name }}`.
+      {% else %}
       {{ method_doc | indent(6) }}
+      {% endif %}
 
       {% if method_since %}
       .. versionadded:: {{ method_since }}

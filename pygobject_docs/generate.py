@@ -11,12 +11,14 @@ import importlib
 import logging
 import sys
 import warnings
+from collections.abc import Iterator
 
 from functools import lru_cache
 from pathlib import Path
 
 import gi
 import sphinx.cmd.make_mode
+from gi.repository import GLib
 from jinja2 import Environment, PackageLoader
 from sphinx.util.inspect import stringify_annotation
 from sphinx.util.docstrings import prepare_docstring
@@ -311,6 +313,18 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             return version, rstify(message, gir=gir)
         return depr
 
+    def with_async_methods(members) -> Iterator[tuple[bool, str]]:
+        for name in members:
+            if determine_member_category(
+                klass, name
+            ) == MemberCategory.Methods and not is_ref_unref_copy_or_steal_function(name):
+                try:
+                    if getattr(klass, name).get_finish_func():
+                        yield (True, name)
+                except (AttributeError, GLib.Error):
+                    pass
+                yield (False, name)
+
     (out_path / f"{category.single}-{class_name}.rst").write_text(
         template.render(
             class_name=class_name,
@@ -351,17 +365,16 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             methods=[
                 (
                     name,
-                    sig := signature(getattr(klass, name), bound=True),
+                    sig := signature(getattr(klass, name), bound=True, is_async=is_async),
                     member_doc("method", name),
                     parameter_docs("method", name, sig),
                     member_return_doc("method", name),
                     is_classmethod(klass, name),
+                    is_async,
                     member_deprecated("method", class_name, name),
                     gir.member_since("method", class_name, name),
                 )
-                for name in members
-                if determine_member_category(klass, name) == MemberCategory.Methods
-                and not is_ref_unref_copy_or_steal_function(name)
+                for is_async, name in with_async_methods(members)
             ],
             properties=[
                 (
