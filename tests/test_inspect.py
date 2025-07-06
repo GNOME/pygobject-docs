@@ -2,6 +2,7 @@ import pytest
 from gi.repository import GLib, Gio, GObject
 
 from pygobject_docs.inspect import (
+    async_signature,
     custom_docstring,
     is_classmethod,
     is_ref_unref_copy_or_steal_function,
@@ -89,6 +90,15 @@ def test_gi_function_is_classmethod():
     assert is_classmethod(GObject.Object, "install_properties")
     assert not is_classmethod(GObject.Object, "notify")
     assert not is_classmethod(GObject.ValueArray, "append")
+
+
+def test_async_signature():
+    sig = async_signature(Gio.File.append_to_async)
+
+    assert (
+        str(sig)
+        == "(self, flags: ~gi.repository.Gio.FileCreateFlags, io_priority: int) -> ~gi.repository.Gio.FileOutputStream"
+    )
 
 
 def test_method_with_length_parameter():
