@@ -479,6 +479,33 @@ def test_table_with_header_row(glib):
     )
 
 
+def test_table_with_solid_header_row(glib):
+    text = dedent(
+        """\
+        | header 1 | header 2     |
+        |----------|--------------|
+        | field 1  | field 2      |
+        | field 3  | long field 4 |
+
+        """
+    )
+
+    rst = rstify(text, gir=glib)
+
+    assert rst == dedent(
+        """\
+        .. list-table::
+            :header-rows: 1
+
+            * - header 1
+              - header 2
+            * - field 1
+              - field 2
+            * - field 3
+              - long field 4"""
+    )
+
+
 def test_table_with_multiline_content(glib):
     text = dedent(
         """\
