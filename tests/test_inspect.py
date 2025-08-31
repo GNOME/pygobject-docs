@@ -67,10 +67,7 @@ def test_function_with_default_value():
 def test_method_with_multiple_return_values():
     from gi.repository import Gtk
 
-    assert (
-        str(signature(Gtk.Scrollable.get_border))
-        == "(self) -> ~typing.Tuple[bool, ~gi.repository.Gtk.Border]"
-    )
+    assert str(signature(Gtk.Scrollable.get_border)) == "(self) -> tuple[bool, ~gi.repository.Gtk.Border]"
 
 
 def test_python_method_is_classmethod():
