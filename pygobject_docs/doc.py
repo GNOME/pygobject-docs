@@ -358,14 +358,14 @@ class TableProcessor(markdown.blockprocessors.BlockProcessor):
         table_lines = []
         lines = blocks.pop(0).split("\n")
         for line in lines:
-            if line.startswith("| ") and line.endswith("|"):
+            if (line.startswith("| ") or line.startswith("|-")) and line.endswith("|"):
                 table_lines.append(line)
             else:
                 raise ValueError(f"Invalid table line: {line}")
 
         cells = [[cell.strip() for cell in line[1:-1].split("|")] for line in table_lines]
 
-        header_row = "---" in cells[1] if len(cells) > 1 else False
+        header_row = any("---" in c for c in cells[1]) if len(cells) > 1 else False
 
         table = etree.SubElement(parent, "table", {"header": "yes" if header_row else "no"})
         for rownum, row in enumerate(cells):
