@@ -35,17 +35,21 @@ def patch_gi_overrides():
 
     # Fix already loaded types
 
-    GLib.Idle.__module__ = "gi.repository.GLib"
-    GLib.IOChannel.__module__ = "gi.repository.GLib"
-    GLib.MainContext.__module__ = "gi.repository.GLib"
-    GLib.MainLoop.__module__ = "gi.repository.GLib"
-    GLib.PollFD.__module__ = "gi.repository.GLib"
-    GLib.Source.__module__ = "gi.repository.GLib"
-    GLib.Timeout.__module__ = "gi.repository.GLib"
-    GLib.Variant.__module__ = "gi.repository.GLib"
-    GObject.Binding.__module__ = "gi.repository.GObject"
-    GObject.Object.__module__ = "gi.repository.GObject"
-    GObject.Value.__module__ = "gi.repository.GObject"
+    def fix_override(type_, namespace):
+        type_.__module__ = f"gi.repository.{namespace}"
+        type_.__overridden__ = type_
+
+    fix_override(GLib.Idle, "GLib")
+    fix_override(GLib.IOChannel, "GLib")
+    fix_override(GLib.MainContext, "GLib")
+    fix_override(GLib.MainLoop, "GLib")
+    fix_override(GLib.PollFD, "GLib")
+    fix_override(GLib.Source, "GLib")
+    fix_override(GLib.Timeout, "GLib")
+    fix_override(GLib.Variant, "GLib")
+    fix_override(GObject.Binding, "GObject")
+    fix_override(GObject.Object, "GObject")
+    fix_override(GObject.Value, "GObject")
 
 
 def is_classmethod(klass: type, name: str) -> bool:
