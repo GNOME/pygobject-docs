@@ -55,7 +55,7 @@ def to_rst(element, image_base_url):
                     yield from _to_rst(el)
                 case "param":
                     yield f"``{el.attrib['name']}``"
-                case "h1" | "h2" | "h3":
+                case "h1" | "h2" | "h3" | "h4":
                     yield el.text
                     yield "\n"
                     yield "-" * 80
