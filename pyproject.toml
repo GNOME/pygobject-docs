@@ -16,7 +16,7 @@ dependencies = [
     "PyGObject @ git+https://gitlab.gnome.org/GNOME/pygobject.git@main",
     "jinja2",
     "sphinx>8,<9",
-    "gi-docgen==2025.3",
+    "gi-docgen==2026.1",
     "pydata-sphinx-theme",
 ]
 dynamic = ["version"]
