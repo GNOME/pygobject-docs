@@ -26,8 +26,7 @@ def test_override_include_members_from_base(gobject):
     assert "bind_property_full" in names
 
 
-def test_should_not_include_unsuppoered_methods(gobject):
-    ...
+def test_should_not_include_unsuppoered_methods(gobject): ...
 
 
 def test_properties(gobject):

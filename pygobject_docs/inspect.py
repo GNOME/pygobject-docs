@@ -9,7 +9,11 @@ from re import match
 
 from gi.repository import GLib, GObject
 from sphinx.util.docstrings import prepare_docstring
-from sphinx.util.inspect import getdoc, signature as sphinx_signature, stringify_signature
+from sphinx.util.inspect import (
+    getdoc,
+    signature as sphinx_signature,
+    stringify_signature,
+)
 
 from pygobject_docs import overrides
 
@@ -69,7 +73,9 @@ def custom_docstring(subject: Callable | None) -> str | None:
     if subject.__doc__:
         doc = prepare_docstring(getdoc(subject))
         return (
-            None if not doc or doc[0] == ":Constructors:" or match(r"^\w+\(.*\)", doc[0]) else "\n".join(doc)
+            None
+            if not doc or doc[0] == ":Constructors:" or match(r"^\w+\(.*\)", doc[0])
+            else "\n".join(doc)
         )
 
     try:
@@ -87,7 +93,9 @@ def signature(subject: Callable, bound=False, is_async=False) -> Signature:
         return sphinx_signature(fun)
 
     return (
-        async_signature(subject, bound=False) if is_async else sphinx_signature(subject, bound_method=bound)
+        async_signature(subject, bound=False)
+        if is_async
+        else sphinx_signature(subject, bound_method=bound)
     )
 
 

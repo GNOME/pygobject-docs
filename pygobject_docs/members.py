@@ -15,10 +15,12 @@ def own_dir(obj_type: type) -> list[str]:
     ):
         return dir(obj_type)
 
-    if getattr(obj_type, "__overridden__", None) is obj_type or obj_type.__module__.startswith(
-        "gi.overrides"
-    ):
-        return sorted(set(chain(obj_type.__dict__.keys(), obj_type.__base__.__dict__.keys())))
+    if getattr(
+        obj_type, "__overridden__", None
+    ) is obj_type or obj_type.__module__.startswith("gi.overrides"):
+        return sorted(
+            set(chain(obj_type.__dict__.keys(), obj_type.__base__.__dict__.keys()))
+        )
 
     return sorted(obj_type.__dict__.keys())
 

@@ -128,7 +128,8 @@ def test_member_constructor(gobject):
 
 
 @pytest.mark.parametrize(
-    "name", ["connect", "connect_data", "find_property", "bind_property", "install_properties"]
+    "name",
+    ["connect", "connect_data", "find_property", "bind_property", "install_properties"],
 )
 def test_member_method(gobject, name):
     obj_type = gobject.Object

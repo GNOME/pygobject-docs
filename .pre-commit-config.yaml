@@ -1,27 +1,24 @@
 repos:
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.4
+    rev: v2.4.2
     hooks:
     - id: codespell
       args: [--ignore-words, .codespell.txt]
-  - repo: https://github.com/psf/black
-    rev: 23.1.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: 'v0.15.21'
     hooks:
-      - id: black
-        language_version: python3
+      - id: ruff
+        args: [--fix, --preview]
+      - id: ruff-format
+        types_or: [python, spec]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.1.1
+    rev: v2.3.0
     hooks:
       - id: mypy
         additional_dependencies:
           - types-Markdown
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v6.0.0
     hooks:
       - id: check-toml
       - id: check-yaml
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.0.259'
-    hooks:
-      - id: ruff
-        args: [--fix]
