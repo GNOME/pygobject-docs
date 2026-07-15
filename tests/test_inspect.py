@@ -48,7 +48,7 @@ def test_class_signature():
 def test_gi_function_signature():
     assert (
         str(signature(GObject.flags_complete_type_info))
-        == "(g_flags_type: ~gobject.GType, const_values: ~gi.repository.GObject.FlagsValue) -> ~gi.repository.GObject.TypeInfo"
+        == "(g_flags_type: ~gobject.GType, const_values: list[~gi.repository.GObject.FlagsValue]) -> ~gi.repository.GObject.TypeInfo"
     )
     assert (
         str(signature(GObject.signal_handler_unblock))
