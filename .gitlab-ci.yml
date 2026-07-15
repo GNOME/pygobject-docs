@@ -5,7 +5,7 @@ variables:
 
 before_script:
   - >
-    dnf install -y git-core python3-devel python3-pip python3-gobject \
+    dnf install -y git-core python3-devel python3-pip python3-gobject
     flatpak-devel gobject-introspection-devel
     gtk4-devel gtksourceview5-devel libadwaita-devel gcr-devel gstreamer1-devel
     libshumate-devel libsoup3-devel vte291-gtk4-devel
