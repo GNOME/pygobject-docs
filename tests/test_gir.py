@@ -86,13 +86,17 @@ def test_method_parameter_docs(gobject):
 
 
 def test_class_method_parameter_docs(gobject):
-    doc = gobject.member_parameter_doc("method", "Object", "find_property", "property_name")
+    doc = gobject.member_parameter_doc(
+        "method", "Object", "find_property", "property_name"
+    )
 
     assert doc
 
 
 def test_virtual_method_parameter_docs(gobject):
-    doc = gobject.member_parameter_doc("virtual-method", "ParamSpec", "values_cmp", "value1")
+    doc = gobject.member_parameter_doc(
+        "virtual-method", "ParamSpec", "values_cmp", "value1"
+    )
 
     assert doc == ""
 

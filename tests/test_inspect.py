@@ -14,7 +14,10 @@ def test_function_signature():
     def func(arg: str, obj: GObject.Object) -> str | int:
         return 1
 
-    assert str(signature(func)) == "(arg: str, obj: ~gi.repository.GObject.Object) -> str | int"
+    assert (
+        str(signature(func))
+        == "(arg: str, obj: ~gi.repository.GObject.Object) -> str | int"
+    )
 
 
 def test_builtin_function_signature():
@@ -34,16 +37,18 @@ def test_function_with_callback_signature():
 
 def test_class_signature():
     class Foo:
-        def method(self, arg: int) -> GObject.Object:
-            ...
+        def method(self, arg: int) -> GObject.Object: ...
 
-    assert str(signature(Foo.method)) == "(self, arg: int) -> ~gi.repository.GObject.Object"
+    assert (
+        str(signature(Foo.method))
+        == "(self, arg: int) -> ~gi.repository.GObject.Object"
+    )
 
 
 def test_gi_function_signature():
     assert (
         str(signature(GObject.flags_complete_type_info))
-        == "(g_flags_type: ~gobject.GType, const_values: ~gi.repository.GObject.FlagsValue) -> ~gi.repository.GObject.TypeInfo"
+        == "(g_flags_type: ~gobject.GType, const_values: list[~gi.repository.GObject.FlagsValue]) -> ~gi.repository.GObject.TypeInfo"
     )
     assert (
         str(signature(GObject.signal_handler_unblock))
@@ -60,24 +65,28 @@ def test_builtin_method():
 
 @pytest.mark.xfail(reason="default argument values not implemented")
 def test_function_with_default_value():
-    assert str(signature(GLib.base64_encode)) == "(data: ~typing.Sequence[str] = None) -> str"
+    assert (
+        str(signature(GLib.base64_encode))
+        == "(data: ~typing.Sequence[str] = None) -> str"
+    )
 
 
 @pytest.mark.desktop
 def test_method_with_multiple_return_values():
     from gi.repository import Gtk
 
-    assert str(signature(Gtk.Scrollable.get_border)) == "(self) -> tuple[bool, ~gi.repository.Gtk.Border]"
+    assert (
+        str(signature(Gtk.Scrollable.get_border))
+        == "(self) -> tuple[bool, ~gi.repository.Gtk.Border]"
+    )
 
 
 def test_python_method_is_classmethod():
     class A:
         @classmethod
-        def yup(cls):
-            ...
+        def yup(cls): ...
 
-        def nope(self):
-            ...
+        def nope(self): ...
 
     assert is_classmethod(A, "yup")
     assert not is_classmethod(A, "nope")

@@ -3,7 +3,16 @@ import types
 from enum import IntEnum, IntFlag, StrEnum, auto
 
 from gi.module import repository
-from gi._gi import EnumInfo, FunctionInfo, GType, InterfaceInfo, ObjectInfo, StructInfo, UnionInfo, VFuncInfo
+from gi._gi import (
+    EnumInfo,
+    FunctionInfo,
+    GType,
+    InterfaceInfo,
+    ObjectInfo,
+    StructInfo,
+    UnionInfo,
+    VFuncInfo,
+)
 from gi.types import GObjectMeta, StructMeta
 from gi.repository import GObject
 
@@ -75,11 +84,16 @@ def determine_category(module, name, gir=None) -> Category:
         if gir and gir.struct_for(name):
             return Category.ClassStructures
         return Category.Structures
-    elif isinstance(info, InterfaceInfo) or (namespace, name) == ("GObject", "GInterface"):
+    elif isinstance(info, InterfaceInfo) or (namespace, name) == (
+        "GObject",
+        "GInterface",
+    ):
         return Category.Interfaces
     elif isinstance(info, ObjectInfo) or isinstance(field, (type, GObjectMeta)):
         return Category.Classes
-    elif field is None or isinstance(field, (str, int, bool, float, tuple, dict, GType)):
+    elif field is None or isinstance(
+        field, (str, int, bool, float, tuple, dict, GType)
+    ):
         return Category.Constants
 
     raise TypeError(f"Type not recognized for {module.__name__}.{name}")
@@ -91,12 +105,19 @@ def determine_member_category(obj_type, name) -> MemberCategory:
     if (
         name == "props"
         or name.startswith("_")
-        or field in (GObject.Object._unsupported_method, GObject.Object._unsupported_data_method)
+        or field
+        in (GObject.Object._unsupported_method, GObject.Object._unsupported_data_method)
         or isinstance(field, type)
     ):
         return MemberCategory.Ignored
-    elif isinstance(field, (FunctionInfo, types.MethodType)) and hasattr(field, "is_constructor"):
-        return MemberCategory.Constructors if field.is_constructor() else MemberCategory.Methods
+    elif isinstance(field, (FunctionInfo, types.MethodType)) and hasattr(
+        field, "is_constructor"
+    ):
+        return (
+            MemberCategory.Constructors
+            if field.is_constructor()
+            else MemberCategory.Methods
+        )
     elif isinstance(
         field,
         (
@@ -128,4 +149,6 @@ def determine_member_category(obj_type, name) -> MemberCategory:
     ):
         return MemberCategory.Fields
 
-    raise TypeError(f"Member type not recognized for {obj_type.__name__}.{name} ({getattr(obj_type, name)})")
+    raise TypeError(
+        f"Member type not recognized for {obj_type.__name__}.{name} ({getattr(obj_type, name)})"
+    )

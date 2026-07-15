@@ -41,10 +41,17 @@ def _parse(gir_file) -> Repository:
 
 
 def gir_dirs() -> Iterable[Path]:
-    return [path for d in GLib.get_system_data_dirs() if (path := Path(d) / "gir-1.0").exists()]
+    return [
+        path
+        for d in GLib.get_system_data_dirs()
+        if (path := Path(d) / "gir-1.0").exists()
+    ]
 
 
-NS = {"": "http://www.gtk.org/introspection/core/1.0", "glib": "http://www.gtk.org/introspection/glib/1.0"}
+NS = {
+    "": "http://www.gtk.org/introspection/core/1.0",
+    "glib": "http://www.gtk.org/introspection/glib/1.0",
+}
 
 
 class Gir:
@@ -59,10 +66,15 @@ class Gir:
 
     @property
     def dependencies(self):
-        return (f"{r.namespace.name}-{r.namespace.version}" for r in self.repo.includes.values())
+        return (
+            f"{r.namespace.name}-{r.namespace.version}"
+            for r in self.repo.includes.values()
+        )
 
     def _node(self, name) -> Function | Type | None:
-        node = self.repo.namespace.find_real_type(name) or self.repo.namespace.find_function(name)
+        node = self.repo.namespace.find_real_type(
+            name
+        ) or self.repo.namespace.find_function(name)
         if not node:
             log.debug("No GIR type found for %s", name)
         return node
@@ -108,7 +120,11 @@ class Gir:
         return param.doc.content or ""
 
     def return_doc(self, name) -> str:
-        if (obj := self.repo.namespace.find_function(name)) and obj.return_value and obj.return_value.doc:
+        if (
+            (obj := self.repo.namespace.find_function(name))
+            and obj.return_value
+            and obj.return_value.doc
+        ):
             return obj.return_value.doc.content or ""
 
         return ""
@@ -141,9 +157,19 @@ class Gir:
         if member_type == "constructor":
             return next((m for m in node.constructors if m.name == name), None)
         if member_type == "method":
-            return (hasattr(node, "methods") and next((m for m in node.methods if m.name == name), None)) or (
+            return (
+                hasattr(node, "methods")
+                and next((m for m in node.methods if m.name == name), None)
+            ) or (
                 hasattr(node, "functions")
-                and next((m for m in node.functions if m.name in (name, f"interface_{name}")), None)
+                and next(
+                    (
+                        m
+                        for m in node.functions
+                        if m.name in (name, f"interface_{name}")
+                    ),
+                    None,
+                )
             )
         if member_type == "virtual-method":
             return next((m for m in node.virtual_methods if m.name == name), None)
@@ -164,7 +190,9 @@ class Gir:
 
         return ""
 
-    def member_deprecated(self, member_type, class_name, name) -> tuple[str, str] | None:
+    def member_deprecated(
+        self, member_type, class_name, name
+    ) -> tuple[str, str] | None:
         if member := self.member(member_type, class_name, name):
             return member.deprecated_since
 
@@ -234,7 +262,9 @@ class Gir:
                 (
                     m
                     for m in chain(
-                        s.methods, s.functions, s.constructors if hasattr(s, "constructors") else []
+                        s.methods,
+                        s.functions,
+                        s.constructors if hasattr(s, "constructors") else [],
                     )
                     if m.identifier == name
                 ),
@@ -254,7 +284,11 @@ class Gir:
             return None
 
         ns, t, m = symbol
-        return f"{ns.name}.{t.name}.{m.name.upper()}" if t else f"{ns.name}.{m.name.upper()}"
+        return (
+            f"{ns.name}.{t.name}.{m.name.upper()}"
+            if t
+            else f"{ns.name}.{m.name.upper()}"
+        )
 
     def _resolve_constants(self):
         constants = {}
@@ -263,7 +297,9 @@ class Gir:
         for const in ns.get_constants():
             constants[const.ctype] = (ns, None, const)
 
-        for type in chain(ns.get_enumerations(), ns.get_bitfields(), ns.get_error_domains()):
+        for type in chain(
+            ns.get_enumerations(), ns.get_bitfields(), ns.get_error_domains()
+        ):
             for member in type.members:
                 constants[member.identifier] = (ns, type, member)
 

@@ -23,7 +23,12 @@ from jinja2 import Environment, PackageLoader
 from sphinx.util.inspect import stringify_annotation
 from sphinx.util.docstrings import prepare_docstring
 
-from pygobject_docs.category import Category, determine_category, determine_member_category, MemberCategory
+from pygobject_docs.category import (
+    Category,
+    determine_category,
+    determine_member_category,
+    MemberCategory,
+)
 from pygobject_docs.doc import rstify
 from pygobject_docs.gir import load_gir_file
 from pygobject_docs.inspect import (
@@ -69,7 +74,9 @@ def import_module(namespace, version):
 @lru_cache(maxsize=0)
 def jinja_env():
     env = Environment(loader=PackageLoader("pygobject_docs"), lstrip_blocks=True)
-    env.filters["capfirst"] = lambda text: f"{text[0].upper()}{text[1:]}" if text else ""
+    env.filters["capfirst"] = lambda text: (
+        f"{text[0].upper()}{text[1:]}" if text else ""
+    )
     return env
 
 
@@ -82,7 +89,9 @@ def output_path(base_path, namespace, version):
 def generate_functions(namespace, version, out_path):
     mod = import_module(namespace, version)
 
-    if not any(determine_category(mod, name) == Category.Functions for name in dir(mod)):
+    if not any(
+        determine_category(mod, name) == Category.Functions for name in dir(mod)
+    ):
         return
 
     gir = load_gir_file(namespace, version)
@@ -149,7 +158,9 @@ def generate_functions(namespace, version, out_path):
 def generate_constants(namespace, version, out_path):
     mod = import_module(namespace, version)
 
-    if not any(determine_category(mod, name) == Category.Constants for name in dir(mod)):
+    if not any(
+        determine_category(mod, name) == Category.Constants for name in dir(mod)
+    ):
         return
 
     gir = load_gir_file(namespace, version)
@@ -195,7 +206,8 @@ def generate_classes(namespace, version, out_path, category, title=None):
     class_names = [
         name
         for name in dir(mod)
-        if determine_category(mod, name, gir) == category and (namespace, name) not in BLACKLIST
+        if determine_category(mod, name, gir) == category
+        and (namespace, name) not in BLACKLIST
     ]
 
     if not class_names:
@@ -231,7 +243,9 @@ def generate_classes(namespace, version, out_path, category, title=None):
     )
 
 
-def generate_class(gir, namespace, version, class_name, klass, out_path, category, caught_warnings):
+def generate_class(
+    gir, namespace, version, class_name, klass, out_path, category, caught_warnings
+):
     image_base_url = C_API_DOCS.get(namespace, "")
     template = jinja_env().get_template("class-detail.j2")
 
@@ -253,7 +267,9 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             return "PyGObject-3.16.0", rstify(str(caught_warnings[0].message), gir=gir)
         return None
 
-    members = [m for m in own_dir(klass) if (namespace, klass.__name__, m) not in BLACKLIST]
+    members = [
+        m for m in own_dir(klass) if (namespace, klass.__name__, m) not in BLACKLIST
+    ]
 
     for member in members:
         if member.startswith("_"):
@@ -278,7 +294,9 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             return custom_doc
 
         return rstify(
-            gir.member_doc(member_type, class_name, member_name), gir=gir, image_base_url=image_base_url
+            gir.member_doc(member_type, class_name, member_name),
+            gir=gir,
+            image_base_url=image_base_url,
         )
 
     def member_return_doc(member_type, member_name):
@@ -317,7 +335,9 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
         for name in members:
             if determine_member_category(
                 klass, name
-            ) == MemberCategory.Methods and not is_ref_unref_copy_or_steal_function(name):
+            ) == MemberCategory.Methods and not is_ref_unref_copy_or_steal_function(
+                name
+            ):
                 try:
                     if getattr(klass, name).get_finish_func():
                         yield (True, name)
@@ -328,7 +348,9 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
     (out_path / f"{category.single}-{class_name}.rst").write_text(
         template.render(
             class_name=class_name,
-            class_signature="" if category == Category.Enums else signature(klass.__init__, bound=True),
+            class_signature=""
+            if category == Category.Enums
+            else signature(klass.__init__, bound=True),
             namespace=namespace,
             version=version,
             entity_type=category.single.title(),
@@ -365,7 +387,9 @@ def generate_class(gir, namespace, version, class_name, klass, out_path, categor
             methods=[
                 (
                     name,
-                    sig := signature(getattr(klass, name), bound=True, is_async=is_async),
+                    sig := signature(
+                        getattr(klass, name), bound=True, is_async=is_async
+                    ),
                     member_doc("method", name),
                     parameter_docs("method", name, sig),
                     member_return_doc("method", name),
@@ -422,7 +446,16 @@ def generate_index(namespace, version, out_path):
     template = env.get_template("index.j2")
 
     library_version = (
-        ".".join(map(str, [mod.MAJOR_VERSION, mod.MINOR_VERSION, getattr(mod, "MICRO_VERSION", 0)]))
+        ".".join(
+            map(
+                str,
+                [
+                    mod.MAJOR_VERSION,
+                    mod.MINOR_VERSION,
+                    getattr(mod, "MICRO_VERSION", 0),
+                ],
+            )
+        )
         if hasattr(mod, "MAJOR_VERSION")
         else "-"
     )
@@ -456,17 +489,24 @@ def order(libraries: list[str], top: list[str]):
         except ValueError:
             return len(top)
 
-    return [lib for _, lib in sorted((index(lib.split("-", 1)[0]), lib) for lib in libraries)]
+    return [
+        lib
+        for _, lib in sorted((index(lib.split("-", 1)[0]), lib) for lib in libraries)
+    ]
 
 
-def generate_top_index(libraries: list[str], gnome_version: str, out_path: Path) -> None:
+def generate_top_index(
+    libraries: list[str], gnome_version: str, out_path: Path
+) -> None:
     env = jinja_env()
     template = env.get_template("top-index.j2")
 
     (out_path / "index.rst").write_text(
         template.render(
             gnome_version=gnome_version,
-            libraries=order(libraries, top=["GLib", "Gio", "GObject", "Gtk", "Gdk", "Adw"]),
+            libraries=order(
+                libraries, top=["GLib", "Gio", "GObject", "Gtk", "Gdk", "Adw"]
+            ),
         )
     )
 
@@ -514,7 +554,9 @@ class Args:
 
 
 def parse_args(args) -> Args:
-    parser = argparse.ArgumentParser(description="GNOME Python API documentation generator")
+    parser = argparse.ArgumentParser(
+        description="GNOME Python API documentation generator"
+    )
 
     parser.add_argument(
         "--log-level",
@@ -531,7 +573,9 @@ def parse_args(args) -> Args:
         help="build generated docs with Sphinx (default: no)",
     )
     parser.add_argument("--gnome", "-g", default="", help="GNOME version")
-    parser.add_argument("libraries", nargs="*", help="library namespaces to generate documentation for")
+    parser.add_argument(
+        "libraries", nargs="*", help="library namespaces to generate documentation for"
+    )
 
     return Args(**vars(parser.parse_args(args)))
 

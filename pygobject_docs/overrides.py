@@ -5,9 +5,11 @@ from gi.repository import GLib, GObject
 
 # GLib
 def gi__gi_add_emission_hook(
-    type: GObject.Object, name: str, callback: Callable[[...], None], *args: Any  # type: ignore[misc]
-) -> None:
-    ...
+    type: GObject.Object,
+    name: str,
+    callback: Callable[[...], None],  # type: ignore[misc]
+    *args: Any,
+) -> None: ...
 
 
 def gi__gi_spawn_async(  # type: ignore[empty-body]
@@ -27,8 +29,7 @@ def gi__gi_spawn_async(  # type: ignore[empty-body]
     """
 
 
-def gi__gi_Pid_close() -> None:
-    ...
+def gi__gi_Pid_close() -> None: ...
 
 
 # GObject
@@ -36,8 +37,7 @@ def gi__gi_list_properties() -> list[GObject.ParamSpec]:  # type: ignore[empty-b
     ...
 
 
-def gi__gi_new(gtype: GObject.GType) -> None:
-    ...
+def gi__gi_new(gtype: GObject.GType) -> None: ...
 
 
 def gi__gi_signal_new(  # type: ignore[empty-body]
@@ -46,16 +46,13 @@ def gi__gi_signal_new(  # type: ignore[empty-body]
     signal_flags: GObject.SignalFlags,
     return_type: type,
     param_types: Sequence[GObject.GType],
-) -> int:
-    ...
+) -> int: ...
 
 
-def gi__gi_type_register(type) -> GObject.GType:
-    ...
+def gi__gi_type_register(type) -> GObject.GType: ...
 
 
-def gi__gi_GObject___init__(**properties: Any):
-    ...
+def gi__gi_GObject___init__(**properties: Any): ...
 
 
 def gi__gi_GObject_bind_property(
@@ -108,7 +105,9 @@ def gi__gi_GObject_chain(*params) -> object | None:
 
 
 def gi__gi_GObject_connect(  # type: ignore[empty-body]
-    detailed_signal: str, handler: Callable[[GObject.Object, ...], Any], *args: Any  # type: ignore[misc]
+    detailed_signal: str,
+    handler: Callable[[GObject.Object, ...], Any],  # type: ignore[misc]
+    *args: Any,
 ) -> int:
     """
     The ``connect()`` method adds a function or method (handler) to the end of the list of signal handlers for the named ``detailed_signal`` but before the default class signal handler. An optional set of parameters may be specified after the handler parameter. These will all be passed to the signal handler when invoked.
@@ -146,7 +145,9 @@ def gi__gi_GObject_connect(  # type: ignore[empty-body]
 
 
 def gi__gi_GObject_connect_after(  # type: ignore[empty-body]
-    detailed_signal: str, handler: Callable[[GObject.Object, ...], Any], *args: Any  # type: ignore[misc]
+    detailed_signal: str,
+    handler: Callable[[GObject.Object, ...], Any],  # type: ignore[misc]
+    *args: Any,
 ) -> int:
     """
     The ``connect_after()`` method is similar to the :meth:`~gi.repository.GObject.Object.connect` method except that the handler is added to the signal handler list after the default class signal handler. Otherwise the details of handler definition and invocation are the same.
@@ -158,7 +159,10 @@ def gi__gi_GObject_connect_after(  # type: ignore[empty-body]
 
 
 def gi__gi_GObject_connect_object(  # type: ignore[empty-body]
-    detailed_signal: str, handler: Callable[[GObject.Object, ...], Any], object: GObject.Object, *args: Any  # type: ignore[misc]
+    detailed_signal: str,
+    handler: Callable[[GObject.Object, ...], Any],  # type: ignore[misc]
+    object: GObject.Object,
+    *args: Any,
 ) -> int:
     """
     The ``connect_after()`` method is similar to the :meth:`~gi.repository.GObject.Object.connect` method except that it takes an additional object as argument. The object is weakly referenced and the signal is
@@ -167,56 +171,59 @@ def gi__gi_GObject_connect_object(  # type: ignore[empty-body]
 
 
 def gi__gi_GObject_connect_object_after(  # type: ignore[empty-body]
-    detailed_signal: str, handler: Callable[[GObject.Object, Any], Any], object: GObject.Object, *args: Any
+    detailed_signal: str,
+    handler: Callable[[GObject.Object, Any], Any],
+    object: GObject.Object,
+    *args: Any,
 ) -> int:
     """
     The ``connect_object_after()`` method is similar to the :meth:`~gi.repository.GObject.Object.connect_object` method except that the handler is added to the signal handler list after the default class signal handler. Otherwise the details of handler definition and invocation are the same.
     """
 
 
-def gi__gi_GObject_disconnect_by_func(func: Callable[[GObject.Object, ...], Any]) -> None:  # type: ignore[misc]
+def gi__gi_GObject_disconnect_by_func(
+    func: Callable[[GObject.Object, ...], Any],  # type: ignore[misc]
+) -> None:
     """
     Disconnect a function (callable) from any signal.
     """
 
 
-def gi__gi_GObject_emit(signal_name: str, *args) -> None:
-    ...
+def gi__gi_GObject_emit(signal_name: str, *args) -> None: ...
 
 
 def gi__gi_GObject_get_properties(*prop_names: str) -> tuple[Any, ...]:  # type: ignore[empty-body]
     ...
 
 
-def gi__gi_GObject_get_property(prop_name: str) -> Any:
-    ...
+def gi__gi_GObject_get_property(prop_name: str) -> Any: ...
 
 
-def gi__gi_GObject_handler_block_by_func(func: Callable[[GObject.Object, ...], ...]) -> int:  # type: ignore[empty-body,misc]
-    ...
+def gi__gi_GObject_handler_block_by_func(  # type: ignore[empty-body]
+    func: Callable[[GObject.Object, ...], ...],  # type: ignore[misc]
+) -> int: ...
 
 
-def gi__gi_GObject_handler_unblock_by_func(func: Callable[[GObject.Object, ...], ...]) -> int:  # type: ignore[empty-body,misc]
-    ...
+def gi__gi_GObject_handler_unblock_by_func(  # type: ignore[empty-body]
+    func: Callable[[GObject.Object, ...], ...],  # type: ignore[misc]
+) -> int: ...
 
 
-def gi__gi_GObject_set_properties(**props) -> None:
-    ...
+def gi__gi_GObject_set_properties(**props) -> None: ...
 
 
-def gi__gi_GObject_set_property(prop_name: str, prop_value: Any) -> None:
-    ...
+def gi__gi_GObject_set_property(prop_name: str, prop_value: Any) -> None: ...
 
 
-def gi__gi_GObject_weak_ref(callback: Callable[[Any], None] | None, *args: Any) -> GObject.Object:
-    ...
+def gi__gi_GObject_weak_ref(
+    callback: Callable[[Any], None] | None, *args: Any
+) -> GObject.Object: ...
 
 
 # GLib.OptionContext
 
 
-def gi__gi_OptionContext_add_group(group: GLib.OptionGroup) -> None:
-    ...
+def gi__gi_OptionContext_add_group(group: GLib.OptionGroup) -> None: ...
 
 
 def gi__gi_OptionContext_get_help_enabled() -> bool:  # type: ignore[empty-body]
@@ -227,51 +234,41 @@ def gi__gi_OptionContext_get_ignore_unknown_options() -> bool:  # type: ignore[e
     ...
 
 
-def gi__gi_OptionContext_get_main_group() -> GLib.OptionGroup:
-    ...
+def gi__gi_OptionContext_get_main_group() -> GLib.OptionGroup: ...
 
 
 def gi__gi_OptionContext_parse(argv: Sequence[str]) -> tuple[bool, list[str]]:  # type: ignore[empty-body]
     ...
 
 
-def gi__gi_OptionContext_set_help_enabled(help_enabled: bool) -> None:
-    ...
+def gi__gi_OptionContext_set_help_enabled(help_enabled: bool) -> None: ...
 
 
-def gi__gi_OptionContext_set_ignore_unknown_options(ignore_unknown: bool) -> None:
-    ...
+def gi__gi_OptionContext_set_ignore_unknown_options(ignore_unknown: bool) -> None: ...
 
 
-def gi__gi_OptionContext_set_main_group(group: GLib.OptionGroup) -> None:
-    ...
+def gi__gi_OptionContext_set_main_group(group: GLib.OptionGroup) -> None: ...
 
 
-def gi__gi_OptionGroup_add_entries(entries: list[GLib.OptionEntry]) -> None:
-    ...
+def gi__gi_OptionGroup_add_entries(entries: list[GLib.OptionEntry]) -> None: ...
 
 
-def gi__gi_OptionGroup_set_translation_domain(domain: str) -> None:
-    ...
+def gi__gi_OptionGroup_set_translation_domain(domain: str) -> None: ...
 
 
-def gi__gi_GObjectWeakRef_unref() -> None:
-    ...
+def gi__gi_GObjectWeakRef_unref() -> None: ...
 
 
-def gobject_GBoxed_copy() -> GObject.GBoxed:
-    ...
+def gobject_GBoxed_copy() -> GObject.GBoxed: ...
 
 
 # GObject.GType
 
 
-def None_from_name(name: str) -> GObject.GType:
-    ...
+def None_from_name(name: str) -> GObject.GType: ...
 
 
-def gobject_GType_has_value_table() -> None:
-    ...
+def gobject_GType_has_value_table() -> None: ...
 
 
 def gobject_GType_is_a(type: GObject.GType) -> bool:  # type: ignore[empty-body]

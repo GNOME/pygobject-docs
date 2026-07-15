@@ -34,7 +34,9 @@ def rstify(text, gir, *, image_base_url=""):
     if not text:
         return ""
 
-    return GtkDocMarkdown(partial(to_rst, image_base_url=image_base_url), GtkDocExtension(gir)).convert(text)
+    return GtkDocMarkdown(
+        partial(to_rst, image_base_url=image_base_url), GtkDocExtension(gir)
+    ).convert(text)
 
 
 def strip_none(iterable):
@@ -100,7 +102,11 @@ def to_rst(element, image_base_url):
                     yield from _to_rst(el)
                     yield "**"
                 case "li":
-                    yield "- " + (el.text or "").lstrip() + "".join(strip_none(_to_rst(el)))
+                    yield (
+                        "- "
+                        + (el.text or "").lstrip()
+                        + "".join(strip_none(_to_rst(el)))
+                    )
                 case "table":
                     yield from _to_rst_table(el)
                 case "codeabbr" | "literal":
@@ -126,11 +132,24 @@ def to_rst(element, image_base_url):
                 case "ref":
                     yield f":obj:`~{el.attrib['type']}`"
                 case _:
-                    raise ValueError(f"Unknown tag {etree.tostring(el).decode('utf-8')}")
+                    raise ValueError(
+                        f"Unknown tag {etree.tostring(el).decode('utf-8')}"
+                    )
 
             if el.tail:
                 if (
-                    el.tag in ("a", "param", "code", "em", "strong", "codeabbr", "literal", "kbd", "ref")
+                    el.tag
+                    in (
+                        "a",
+                        "param",
+                        "code",
+                        "em",
+                        "strong",
+                        "codeabbr",
+                        "literal",
+                        "kbd",
+                        "ref",
+                    )
                     and not el.tail[0].isspace()
                 ):
                     yield "\\"
@@ -156,10 +175,14 @@ def to_rst(element, image_base_url):
                         cell = row[m]
                         match cell.tag:
                             case "td":
-                                lines = ((cell.text or "") + "".join(strip_none(_to_rst(cell)))).split("\n")
+                                lines = (
+                                    (cell.text or "")
+                                    + "".join(strip_none(_to_rst(cell)))
+                                ).split("\n")
                                 if lines:
                                     yield (
-                                        ("    * - " if first else "      - ") + lines.pop(0).lstrip()
+                                        ("    * - " if first else "      - ")
+                                        + lines.pop(0).lstrip()
                                     ).rstrip()
                                     yield "\n"
                                 while lines:
@@ -171,7 +194,9 @@ def to_rst(element, image_base_url):
                                 )
                         first = False
                 case _:
-                    raise ValueError(f"Unknown table row tag {etree.tostring(row).decode('utf-8')}")
+                    raise ValueError(
+                        f"Unknown table row tag {etree.tostring(row).decode('utf-8')}"
+                    )
 
     return "".join(strip_none(_to_rst(element)))
 
@@ -206,7 +231,9 @@ class GtkDocExtension(markdown.Extension):
         markdown.blockprocessors.HashHeaderProcessor.RE = re.compile(
             r"(?:^|\n)(?P<level>#{1,6}) (?P<header>(?:\\.|[^\\])*?)#*(?:\n|$)"
         )
-        md.parser.blockprocessors.register(CodeBlockProcessor(md.parser), "code_block", 120)
+        md.parser.blockprocessors.register(
+            CodeBlockProcessor(md.parser), "code_block", 120
+        )
         md.parser.blockprocessors.register(TableProcessor(md.parser), "table", 120)
         md.parser.blockprocessors.register(PictureProcessor(md.parser), "picture", 80)
 
@@ -219,27 +246,41 @@ class GtkDocExtension(markdown.Extension):
         # )
 
         md.inlinePatterns.register(
-            ReferenceProcessor(ReferenceProcessor.PATTERN, md, self.gir), ReferenceProcessor.TAG, 250
+            ReferenceProcessor(ReferenceProcessor.PATTERN, md, self.gir),
+            ReferenceProcessor.TAG,
+            250,
         )
         md.inlinePatterns.register(
-            SignalOrPropertyProcessor(SignalOrPropertyProcessor.PROP_PATTERN, md, self.gir, "props"),
+            SignalOrPropertyProcessor(
+                SignalOrPropertyProcessor.PROP_PATTERN, md, self.gir, "props"
+            ),
             SignalOrPropertyProcessor.PROP_TAG,
             250,
         )
         md.inlinePatterns.register(
-            SignalOrPropertyProcessor(SignalOrPropertyProcessor.SIG_PATTERN, md, self.gir, "signals"),
+            SignalOrPropertyProcessor(
+                SignalOrPropertyProcessor.SIG_PATTERN, md, self.gir, "signals"
+            ),
             SignalOrPropertyProcessor.SIG_TAG,
             250,
         )
-        md.inlinePatterns.register(KbdProcessor(KbdProcessor.PATTERN, md), KbdProcessor.TAG, 250)
         md.inlinePatterns.register(
-            CConstantProcessor(CConstantProcessor.PATTERN, md, self.gir), CConstantProcessor.TAG, 250
+            KbdProcessor(KbdProcessor.PATTERN, md), KbdProcessor.TAG, 250
         )
         md.inlinePatterns.register(
-            DockbookNoteProcessor(DockbookNoteProcessor.PATTERN, md), DockbookNoteProcessor.TAG, 250
+            CConstantProcessor(CConstantProcessor.PATTERN, md, self.gir),
+            CConstantProcessor.TAG,
+            250,
         )
         md.inlinePatterns.register(
-            DockbookLiteralProcessor(DockbookLiteralProcessor.PATTERN, md), DockbookLiteralProcessor.TAG, 250
+            DockbookNoteProcessor(DockbookNoteProcessor.PATTERN, md),
+            DockbookNoteProcessor.TAG,
+            250,
+        )
+        md.inlinePatterns.register(
+            DockbookLiteralProcessor(DockbookLiteralProcessor.PATTERN, md),
+            DockbookLiteralProcessor.TAG,
+            250,
         )
         md.inlinePatterns.register(
             RemoveMarkdownTagsProcessor(RemoveMarkdownTagsProcessor.PATTERN, md),
@@ -249,12 +290,16 @@ class GtkDocExtension(markdown.Extension):
 
         # This pattern should take precedence over strong and emphasized text, but after inline code
         md.inlinePatterns.register(
-            ParameterProcessor(ParameterProcessor.PATTERN, md), ParameterProcessor.TAG, 100
+            ParameterProcessor(ParameterProcessor.PATTERN, md),
+            ParameterProcessor.TAG,
+            100,
         )
 
         # Low prio parsers NB. em/strong has prio 60
         md.inlinePatterns.register(
-            CSymbolProcessor(CSymbolProcessor.PATTERN, md, self.gir), CSymbolProcessor.TAG, 67
+            CSymbolProcessor(CSymbolProcessor.PATTERN, md, self.gir),
+            CSymbolProcessor.TAG,
+            67,
         )
         md.inlinePatterns.register(
             CTypeProcessor(CTypeProcessor.PATTERN, md, self.gir), CTypeProcessor.TAG, 66
@@ -325,7 +370,9 @@ class CodeBlockProcessor(markdown.blockprocessors.BlockProcessor):
                 in_code = "md"
             elif not in_code and block.lstrip().startswith("|["):
                 lines = block.lstrip().split("\n")
-                lang = re.sub(r' *\|\[ *(<!-- *language="(\w+)" *-->)?', r"\2", lines[0])
+                lang = re.sub(
+                    r' *\|\[ *(<!-- *language="(\w+)" *-->)?', r"\2", lines[0]
+                )
                 code_block.extend(lines[1:])
                 in_code = "gtk-doc"
             elif in_code == "md" and block.rstrip().endswith("```"):
@@ -363,11 +410,15 @@ class TableProcessor(markdown.blockprocessors.BlockProcessor):
             else:
                 raise ValueError(f"Invalid table line: {line}")
 
-        cells = [[cell.strip() for cell in line[1:-1].split("|")] for line in table_lines]
+        cells = [
+            [cell.strip() for cell in line[1:-1].split("|")] for line in table_lines
+        ]
 
         header_row = any("---" in c for c in cells[1]) if len(cells) > 1 else False
 
-        table = etree.SubElement(parent, "table", {"header": "yes" if header_row else "no"})
+        table = etree.SubElement(
+            parent, "table", {"header": "yes" if header_row else "no"}
+        )
         for rownum, row in enumerate(cells):
             if rownum == 1 and header_row:
                 continue
@@ -384,9 +435,17 @@ class AsteriskTreeprocessor(markdown.treeprocessors.Treeprocessor):
 
     def run(self, root: etree.Element) -> None:
         for el in root.iter():
-            if el.text and not isinstance(el.text, markdown.util.AtomicString) and "*" in el.text:
+            if (
+                el.text
+                and not isinstance(el.text, markdown.util.AtomicString)
+                and "*" in el.text
+            ):
                 el.text = el.text.replace("*", "\\*")
-            if el.tail and not isinstance(el.text, markdown.util.AtomicString) and "*" in el.tail:
+            if (
+                el.tail
+                and not isinstance(el.text, markdown.util.AtomicString)
+                and "*" in el.tail
+            ):
                 el.tail = el.tail.replace("*", "\\*")
 
 
@@ -402,7 +461,9 @@ class ReferenceProcessor(markdown.inlinepatterns.InlineProcessor):
 
     def handleMatch(self, m, data):
         el = etree.Element(self.TAG)
-        package = "gi.repository" if "." in m.group(1) else f"gi.repository.{self.namespace}"
+        package = (
+            "gi.repository" if "." in m.group(1) else f"gi.repository.{self.namespace}"
+        )
         el.attrib["type"] = f"{package}.{m.group(1)}"
 
         return el, m.start(0), m.end(0)
@@ -423,8 +484,12 @@ class SignalOrPropertyProcessor(markdown.inlinepatterns.InlineProcessor):
 
     def handleMatch(self, m, data):
         el = etree.Element("ref")
-        package = "gi.repository" if "." in m.group(1) else f"gi.repository.{self.namespace}"
-        el.attrib["type"] = f"{package}.{m.group(1)}.{self.section}.{m.group(2).replace('-', '_')}"
+        package = (
+            "gi.repository" if "." in m.group(1) else f"gi.repository.{self.namespace}"
+        )
+        el.attrib["type"] = (
+            f"{package}.{m.group(1)}.{self.section}.{m.group(2).replace('-', '_')}"
+        )
 
         return el, m.start(0), m.end(0)
 

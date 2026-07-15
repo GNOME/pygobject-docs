@@ -40,7 +40,10 @@ def glib():
             "[func@Gdk.GLContext.get_current]; [func@Gdk.GLContext.clear_current].",
             ":obj:`~gi.repository.Gdk.GLContext.get_current`\\; :obj:`~gi.repository.Gdk.GLContext.clear_current`\\.",
         ],
-        ["The toplevel element is `<interface>`.", "The toplevel element is ``<interface>``\\."],
+        [
+            "The toplevel element is `<interface>`.",
+            "The toplevel element is ``<interface>``\\.",
+        ],
     ],
 )
 def test_markdown_inline_code(glib, text, expected):
@@ -580,7 +583,10 @@ def test_remove_tags(glib):
             "If we were to use g_variant_get_child_value()",
             "If we were to use :func:`~gi.repository.GLib.Variant.get_child_value`",
         ],
-        ["Good old function g_access()", "Good old function :func:`~gi.repository.GLib.access`"],
+        [
+            "Good old function g_access()",
+            "Good old function :func:`~gi.repository.GLib.access`",
+        ],
         [r"%G_SPAWN_ERROR_TOO_BIG", ":const:`~gi.repository.GLib.SpawnError.TOO_BIG`"],
         ["A function_with_*() function", "A ``function_with_*()`` function"],
     ],

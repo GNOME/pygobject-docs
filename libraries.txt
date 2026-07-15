@@ -23,7 +23,7 @@ GstNet-1.0
 Gtk-4.0
 GtkSource-5
 HarfBuzz-0.0
-ICal-3.0
+ICalGLib-3.0
 JavaScriptCore-6.0
 Pango-1.0
 PangoCairo-1.0
