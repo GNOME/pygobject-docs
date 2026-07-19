@@ -345,98 +345,100 @@ def generate_class(
                     pass
                 yield (False, name)
 
+    arguments = {
+        "class_name": class_name,
+        "class_signature": ""
+        if category == Category.Enums
+        else signature(klass.__init__, bound=True),
+        "namespace": namespace,
+        "version": version,
+        "entity_type": category.single.title(),
+        "doc": doc(),
+        "deprecated": deprecated(class_name),
+        "since": gir.since(class_name),
+        "ancestors": gir.ancestors(class_name),
+        "descendants": gir.descendants(class_name),
+        "implements": gir.implements(class_name),
+        "implementations": gir.implementations(class_name),
+        "constructors": [
+            (
+                name,
+                sig := signature(getattr(klass, name), bound=True),
+                member_doc("constructor", name),
+                parameter_docs("constructor", name, sig),
+                member_return_doc("constructor", name),
+                member_deprecated("constructor", class_name, name),
+                gir.member_since("constructor", class_name, name),
+            )
+            for name in members
+            if determine_member_category(klass, name) == MemberCategory.Constructors
+        ],
+        "fields": [
+            (
+                name,
+                member_doc("field", field_name := name.lower()),
+                member_deprecated("field", class_name, field_name),
+                gir.member_since("field", class_name, field_name),
+            )
+            for name in members
+            if determine_member_category(klass, name) == MemberCategory.Fields
+        ],
+        "methods": [
+            (
+                name,
+                sig := signature(getattr(klass, name), bound=True, is_async=is_async),
+                member_doc("method", name),
+                parameter_docs("method", name, sig),
+                member_return_doc("method", name),
+                is_classmethod(klass, name),
+                is_async,
+                member_deprecated("method", class_name, name),
+                gir.member_since("method", class_name, name),
+            )
+            for is_async, name in with_async_methods(members)
+        ],
+        "properties": [
+            (
+                name,
+                stringify_annotation(type, mode="smart"),
+                member_doc("property", name),
+                member_deprecated("property", class_name, name),
+                gir.member_since("property", class_name, name),
+            )
+            for name, type in properties(klass)
+        ],
+        "signals": [
+            (
+                name := info.get_name(),
+                sig := signature(info),
+                member_doc("signal", name),
+                parameter_docs("signal", name, sig),
+                member_return_doc("signal", name),
+                member_deprecated("signal", class_name, name),
+                gir.member_since("signal", class_name, name),
+            )
+            for info in signals(klass)
+        ],
+        "virtual_methods": [
+            (
+                f"do_{info.get_name()}",
+                sig := vfunc_signature(info),
+                member_doc("virtual-method", info.get_name()),
+                parameter_docs("virtual-method", info.get_name(), sig),
+                member_return_doc("virtual-method", info.get_name()),
+                member_deprecated("virtual-method", class_name, info.get_name()),
+                gir.member_since("virtual-method", class_name, info.get_name()),
+            )
+            for info in virtual_methods(klass)
+            if (namespace, klass.__name__, f"do_{info.get_name()}") not in BLACKLIST
+        ],
+    }
+
     (out_path / f"{category.single}-{class_name}.rst").write_text(
-        template.render(
-            class_name=class_name,
-            class_signature=""
-            if category == Category.Enums
-            else signature(klass.__init__, bound=True),
-            namespace=namespace,
-            version=version,
-            entity_type=category.single.title(),
-            doc=doc(),
-            deprecated=deprecated(class_name),
-            since=gir.since(class_name),
-            ancestors=gir.ancestors(class_name),
-            descendants=gir.descendants(class_name),
-            implements=gir.implements(class_name),
-            implementations=gir.implementations(class_name),
-            constructors=[
-                (
-                    name,
-                    sig := signature(getattr(klass, name), bound=True),
-                    member_doc("constructor", name),
-                    parameter_docs("constructor", name, sig),
-                    member_return_doc("constructor", name),
-                    member_deprecated("constructor", class_name, name),
-                    gir.member_since("constructor", class_name, name),
-                )
-                for name in members
-                if determine_member_category(klass, name) == MemberCategory.Constructors
-            ],
-            fields=[
-                (
-                    name,
-                    member_doc("field", field_name := name.lower()),
-                    member_deprecated("field", class_name, field_name),
-                    gir.member_since("field", class_name, field_name),
-                )
-                for name in members
-                if determine_member_category(klass, name) == MemberCategory.Fields
-            ],
-            methods=[
-                (
-                    name,
-                    sig := signature(
-                        getattr(klass, name), bound=True, is_async=is_async
-                    ),
-                    member_doc("method", name),
-                    parameter_docs("method", name, sig),
-                    member_return_doc("method", name),
-                    is_classmethod(klass, name),
-                    is_async,
-                    member_deprecated("method", class_name, name),
-                    gir.member_since("method", class_name, name),
-                )
-                for is_async, name in with_async_methods(members)
-            ],
-            properties=[
-                (
-                    name,
-                    stringify_annotation(type, mode="smart"),
-                    member_doc("property", name),
-                    member_deprecated("property", class_name, name),
-                    gir.member_since("property", class_name, name),
-                )
-                for name, type in properties(klass)
-            ],
-            signals=[
-                (
-                    name := info.get_name(),
-                    sig := signature(info),
-                    member_doc("signal", name),
-                    parameter_docs("signal", name, sig),
-                    member_return_doc("signal", name),
-                    member_deprecated("signal", class_name, name),
-                    gir.member_since("signal", class_name, name),
-                )
-                for info in signals(klass)
-            ],
-            virtual_methods=[
-                (
-                    f"do_{info.get_name()}",
-                    sig := vfunc_signature(info),
-                    member_doc("virtual-method", info.get_name()),
-                    parameter_docs("virtual-method", info.get_name(), sig),
-                    member_return_doc("virtual-method", info.get_name()),
-                    member_deprecated("virtual-method", class_name, info.get_name()),
-                    gir.member_since("virtual-method", class_name, info.get_name()),
-                )
-                for info in virtual_methods(klass)
-                if (namespace, klass.__name__, f"do_{info.get_name()}") not in BLACKLIST
-            ],
-        )
+        template.render(**arguments)
     )
+
+    return arguments
 
 
 def generate_index(namespace, version, out_path):

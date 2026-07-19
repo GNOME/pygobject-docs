@@ -52,8 +52,10 @@ exclude = [
     "dist",
     "__init__.py",
 ]
-ignore = ["E501", "B905", "B019", "C901"]
 line-length = 88
+
+[tool.ruff.lint]
+ignore = ["E501", "B905", "B019", "C901"]
 select = [
     "B",
     "B9",
@@ -63,7 +65,7 @@ select = [
     "W",
 ]
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 18
 
 [build-system]
