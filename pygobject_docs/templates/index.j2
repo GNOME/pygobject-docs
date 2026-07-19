@@ -15,10 +15,10 @@ Usage:
 
 .. code-block::
    :dedent:
-   
+
    import gi
    gi.require_version("{{ namespace}}", "{{ version }}")
-   
+
    from gi.repository import {{ namespace }}
 {% if init_function %}
    {{ namespace }}.init()
@@ -57,6 +57,6 @@ Dependencies
 {% if dep == "cairo-1.0" %}
 * `cairo-1.0 <https://pycairo.readthedocs.io/>`__
 {% else %}
-*  :doc:`{{ dep }} ../{{ dep }}/index`
+*  :doc:`../{{ dep }}/index`
 {% endif %}
 {% endfor%}

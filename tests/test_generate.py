@@ -5,9 +5,11 @@ from pygobject_docs.category import Category
 from pygobject_docs.generate import (
     import_module,
     generate,
+    generate_class,
     generate_classes,
     generate_functions,
 )
+from pygobject_docs.gir import load_gir_file
 
 
 def test_generate_glib_functions(tmp_path):
@@ -29,6 +31,28 @@ def test_generate_classes(tmp_path):
 
     assert (tmp_path / "classes.rst").exists()
     assert (tmp_path / "class-Pid.rst").exists()
+
+
+def test_generate_gobject_object_class(tmp_path):
+    gir = load_gir_file("GObject", "2.0")
+    mod = import_module("GObject", "2.0")
+
+    arguments = generate_class(
+        gir,
+        "GObject",
+        "2.0",
+        "Object",
+        mod.Object,
+        tmp_path,
+        Category.Classes,
+        caught_warnings=[],
+    )
+
+    methods = arguments["methods"]
+    virtual_methods = arguments["virtual_methods"]
+
+    assert "do_dispose" in [name for name, *_ in virtual_methods]
+    assert "do_dispose" not in [name for name, *_ in methods]
 
 
 def test_generate_gobject(tmp_path):

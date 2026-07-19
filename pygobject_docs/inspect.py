@@ -70,7 +70,7 @@ def is_ref_unref_copy_or_steal_function(name) -> bool:
 
 
 def custom_docstring(subject: Callable | None) -> str | None:
-    if subject.__doc__:
+    if subject is not None and subject.__doc__:
         doc = prepare_docstring(getdoc(subject))
         return (
             None

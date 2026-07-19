@@ -118,6 +118,12 @@ def determine_member_category(obj_type, name) -> MemberCategory:
             if field.is_constructor()
             else MemberCategory.Methods
         )
+    elif isinstance(field, VFuncInfo) or (
+        isinstance(field, (types.NoneType, types.MethodDescriptorType))
+        and name.startswith("do_")
+        and name[3:] in (v.get_name() for v in obj_type.__info__.get_vfuncs())
+    ):
+        return MemberCategory.VirtualMethods
     elif isinstance(
         field,
         (
@@ -128,13 +134,6 @@ def determine_member_category(obj_type, name) -> MemberCategory:
         ),
     ):
         return MemberCategory.Methods
-    elif (
-        isinstance(field, VFuncInfo)
-        or field is None
-        and name.startswith("do_")
-        and name[3:] in (v.get_name() for v in obj_type.__info__.get_vfuncs())
-    ):
-        return MemberCategory.VirtualMethods
     elif isinstance(
         field,
         (
