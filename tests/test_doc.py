@@ -188,6 +188,47 @@ def test_convert_xml_code_block(glib):
     assert dedent(rst) == expected
 
 
+def test_convert_paragraph_with_indented_lines(glib):
+    text = dedent(
+        """\
+        First ``line`` and
+         second line.
+        """
+    )
+
+    expected = dedent(
+        """\
+        First ``line`` and
+        second line."""
+    )
+    rst = rstify(text, gir=glib)
+
+    assert dedent(rst) == expected
+
+
+def test_convert_paragraph_with_oddly_indented_lines(glib):
+    text = "\n".join(
+        [
+            "    first line",
+            "        second line",
+            "",
+            "          third line",
+        ]
+    )
+    expected = "\n".join(
+        [
+            "first line",
+            "second line",
+            "",
+            "third line",
+        ]
+    )
+
+    rst = rstify(text, gir=glib)
+
+    assert rst == expected
+
+
 def test_convert_css_code_block(glib):
     text = dedent(
         """\
@@ -392,6 +433,8 @@ def test_whitespace_before_lists(glib):
 def test_multi_line_list_item(glib):
     text = dedent(
         """\
+        Intro
+
         - line one
           line two
         """
@@ -401,6 +444,8 @@ def test_multi_line_list_item(glib):
 
     assert rst == dedent(
         """\
+        Intro
+
         - line one
           line two"""
     )

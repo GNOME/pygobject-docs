@@ -14,6 +14,7 @@ See also https://gitlab.gnome.org/GNOME/gi-docgen/-/blob/main/gidocgen/utils.py
 import html
 import logging
 import re
+import sys
 import textwrap
 import typing
 import xml.etree.ElementTree as etree
@@ -224,6 +225,7 @@ class GtkDocExtension(markdown.Extension):
         self.gir = gir
 
     def extendMarkdown(self, md):
+        md.preprocessors.register(DedentPreProcessor(md), "pre_dedent", 40)
         # Ensure code blocks start with a blank line
         md.preprocessors.register(CodeBlockPreprocessor(md), "pre_code_block", 50)
 
@@ -328,6 +330,40 @@ class PictureProcessor(markdown.blockprocessors.BlockProcessor):
         e.tail = "\n"
 
         return True
+
+
+class DedentPreProcessor(markdown.preprocessors.Preprocessor):
+    """Dedent all but the first line
+
+    This helps render paragraphs nicely with Sphinx
+    """
+
+    def run(self, lines: list[str]) -> list[str]:
+        if len(lines) < 2:
+            return lines
+
+        # from sphinx.util.docstrings.prepare_docstring
+        # ---------------------------------------------
+        # Find minimum indentation of any non-blank lines after ignored lines.
+        margin = sys.maxsize
+        for line in lines[1:]:
+            content = len(line.lstrip())
+            if content:
+                indent = len(line) - content
+                margin = min(margin, indent)
+        # Remove indentation from the first line.
+        if len(lines):
+            lines[0] = lines[0].lstrip()
+        if margin < sys.maxsize:
+            for i in range(1, len(lines)):
+                lines[i] = lines[i][margin:]
+        # Remove any leading blank lines.
+        while lines and not lines[0]:
+            lines.pop(0)
+        # make sure there is an empty line at the end
+        if lines and lines[-1]:
+            lines.append("")
+        return lines
 
 
 class CodeBlockPreprocessor(markdown.preprocessors.Preprocessor):
