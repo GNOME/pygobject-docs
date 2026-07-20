@@ -45,6 +45,17 @@ def test_class_signature():
     )
 
 
+def test_class_method_signature():
+    assert (
+        str(signature(Gio.File.new_tmp_async))
+        == "(tmpl: str | None, io_priority: int, cancellable: ~gi.repository.Gio.Cancellable | None = None, callback: ~collections.abc.Callable[[~gi.repository.GObject.Object | None, ~gi.repository.Gio.AsyncResult, ~typing.Any], None] | None = None, user_data: ~typing.Any = None) -> None"
+    )
+    assert (
+        str(signature(Gio.File.new_tmp_async, is_async=True))
+        == "(tmpl: str | None, io_priority: int) -> tuple[~gi.overrides.Gio.File, ~gi.repository.Gio.FileIOStream]"
+    )
+
+
 def test_gi_function_signature():
     assert (
         str(signature(GObject.flags_complete_type_info))
@@ -94,6 +105,7 @@ def test_python_method_is_classmethod():
 
 def test_gi_function_is_classmethod():
     assert is_classmethod(GObject.Object, "install_properties")
+    assert is_classmethod(Gio.File, "new_tmp_async")
     assert not is_classmethod(GObject.Object, "notify")
     assert not is_classmethod(GObject.ValueArray, "append")
 

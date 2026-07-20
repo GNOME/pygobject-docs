@@ -386,7 +386,11 @@ def generate_class(
         "methods": [
             (
                 name,
-                sig := signature(getattr(klass, name), bound=True, is_async=is_async),
+                sig := signature(
+                    getattr(klass, name),
+                    bound=not is_classmethod(klass, name),
+                    is_async=is_async,
+                ),
                 member_doc("method", name),
                 parameter_docs("method", name, sig),
                 member_return_doc("method", name),
